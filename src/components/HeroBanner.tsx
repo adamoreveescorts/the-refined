@@ -6,35 +6,97 @@ import { Link } from 'react-router-dom';
 
 const locations = ["New York", "London", "Paris", "Tokyo", "Sydney", "Los Angeles", "Berlin", "Madrid", "Toronto", "Dubai"];
 
+// Background slideshow images
+const backgroundImages = [
+  "/lovable-uploads/25a0dcad-e367-4364-9eab-c61f3ebd5a3b.png", // Original image
+  "/lovable-uploads/ceb551e0-7cd8-4fb3-b408-49f0f1f63b47.png", // New image 1
+  "/lovable-uploads/b51408b4-50d5-4f23-97f2-8e76ffc6ef45.png", // New image 2
+  "/lovable-uploads/85e5faf5-e587-416e-903f-d0bfe577b759.png", // New image 3
+];
+
+const SLIDE_DURATION = 3000; // 3 seconds per slide
+
 const HeroBanner = () => {
   const [selectedLocation, setSelectedLocation] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
-  const [bgLoaded, setBgLoaded] = useState(false);
-  
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [nextImageIndex, setNextImageIndex] = useState(1);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [imagesLoaded, setImagesLoaded] = useState(new Array(backgroundImages.length).fill(false));
+
+  // Preload all images
   useEffect(() => {
-    // Set loaded state after a small delay to trigger animations
+    backgroundImages.forEach((src, index) => {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => {
+        setImagesLoaded(prev => {
+          const newState = [...prev];
+          newState[index] = true;
+          return newState;
+        });
+      };
+    });
+  }, []);
+
+  // Set loaded state after a small delay to trigger animations
+  useEffect(() => {
     setTimeout(() => {
       setIsLoaded(true);
     }, 100);
-    
-    // Preload the background image
-    const img = new Image();
-    img.src = "/lovable-uploads/25a0dcad-e367-4364-9eab-c61f3ebd5a3b.png";
-    img.onload = () => setBgLoaded(true);
   }, []);
+
+  // Handle slideshow transitions
+  useEffect(() => {
+    // Only start slideshow when at least first two images are loaded
+    if (!imagesLoaded[0] || !imagesLoaded[1]) return;
+    
+    const slideInterval = setInterval(() => {
+      setIsTransitioning(true);
+      
+      setTimeout(() => {
+        setCurrentImageIndex(nextImageIndex);
+        setNextImageIndex((nextImageIndex + 1) % backgroundImages.length);
+        setIsTransitioning(false);
+      }, 1000); // Transition duration
+      
+    }, SLIDE_DURATION);
+    
+    return () => clearInterval(slideInterval);
+  }, [nextImageIndex, imagesLoaded]);
+
+  // Check if initial image is loaded
+  const initialImageLoaded = imagesLoaded[0];
 
   return (
     <div className="relative h-[80vh] min-h-[500px] max-h-[800px] w-full overflow-hidden">
-      {/* Background with color placeholder while image loads */}
+      {/* Background color placeholder */}
       <div 
-        className={`absolute inset-0 bg-navy transition-opacity duration-500 ${bgLoaded ? 'opacity-0' : 'opacity-100'}`}
+        className={`absolute inset-0 bg-navy transition-opacity duration-1000 ${initialImageLoaded ? 'opacity-0' : 'opacity-100'}`}
       ></div>
       
-      {/* Background Image with fade-in effect */}
+      {/* Current image with zoom effect */}
       <div 
-        className={`absolute inset-0 bg-cover bg-center transition-opacity duration-500 ${bgLoaded ? 'opacity-100' : 'opacity-0'}`} 
+        className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${
+          isTransitioning ? 'opacity-0' : 'opacity-100'
+        } ${initialImageLoaded ? '' : 'opacity-0'}`} 
         style={{
-          backgroundImage: 'url("/lovable-uploads/25a0dcad-e367-4364-9eab-c61f3ebd5a3b.png")'
+          backgroundImage: `url("${backgroundImages[currentImageIndex]}")`,
+          animation: 'zoomEffect 6s infinite alternate'
+        }}
+      >
+        {/* Overlay */}
+        <div className="absolute inset-0 hero-gradient"></div>
+      </div>
+      
+      {/* Next image preloaded */}
+      <div 
+        className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${
+          isTransitioning ? 'opacity-100' : 'opacity-0'
+        }`}
+        style={{
+          backgroundImage: `url("${backgroundImages[nextImageIndex]}")`,
+          animation: 'zoomEffect 6s infinite alternate'
         }}
       >
         {/* Overlay */}
