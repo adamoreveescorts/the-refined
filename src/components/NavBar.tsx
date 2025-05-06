@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X, Search, User } from 'lucide-react';
@@ -12,7 +12,7 @@ const NavBar = () => {
   const [user, setUser] = useState(null);
 
   // Check for user session on component mount
-  useState(() => {
+  useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user || null);
     });
@@ -24,7 +24,7 @@ const NavBar = () => {
     );
 
     return () => subscription.unsubscribe();
-  });
+  }, []);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
