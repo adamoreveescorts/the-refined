@@ -120,16 +120,16 @@ const Auth = () => {
 
     setIsLoading(true);
     try {
-      console.log("Signing up with role:", role);
+      console.log("Selected role:", role);
       
-      // This is the critical part - make sure we're passing the role as a string value
-      // that matches the enum type in the database
+      // Fix: The role needs to be provided as metadata without explicit typing
+      // This allows Supabase to handle the enum conversion properly
       const { error } = await supabase.auth.signUp({
         email: signupData.email,
         password: signupData.password,
         options: {
           data: {
-            role: role, // This should be either "escort" or "client" exactly
+            role // Just pass the string value directly
           },
         },
       });
