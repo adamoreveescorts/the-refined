@@ -1,320 +1,257 @@
 
 import { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { toast } from '@/hooks/use-toast';
 import { UserRole } from '@/types/auth';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { ArrowRight, Loader2 } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 interface AuthPageProps {
   mode?: 'login' | 'signup';
 }
 
 const AuthPage = ({ mode = 'login' }: AuthPageProps) => {
-  const { user, signIn, signUp } = useAuth();
-  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<'login' | 'signup'>(mode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState<UserRole>('client');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeTab, setActiveTab] = useState(mode);
-  const [showRoleSelection, setShowRoleSelection] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { signIn, signUp } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  // Redirect if already logged in
-  if (user) {
-    return <Navigate to="/" />;
-  }
-
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    
-    try {
-      const { error } = await signIn(email, password);
-      
-      if (error) {
-        toast({
-          title: "Authentication failed",
-          description: error.message,
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      toast({
-        title: "Welcome back!",
-        description: "Successfully logged in.",
-      });
-      
-      navigate('/');
-    } catch (error) {
-      console.error('Sign in error:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    setIsLoading(true);
 
-  const handleRoleSelection = async (selectedRole: UserRole) => {
-    setRole(selectedRole);
-    
-    if (password !== confirmPassword) {
-      toast({
-        title: "Passwords don't match",
-        description: "Please make sure your passwords match.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
     try {
-      const { error } = await signUp(email, password, selectedRole);
+      const { error } = await signUp(email, password, role);
       
       if (error) {
         toast({
           title: "Registration failed",
           description: error.message,
-          variant: "destructive"
+          variant: "destructive",
         });
-        return;
+      } else {
+        toast({
+          title: "Registration successful",
+          description: "Check your email for a confirmation link.",
+        });
+        navigate('/');
       }
-      
+    } catch (error: any) {
       toast({
-        title: "Check your email",
-        description: "We've sent you a confirmation link to verify your account.",
+        title: "Registration error",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
       });
-      
-      setShowRoleSelection(false);
-      setActiveTab('login');
-    } catch (error) {
-      console.error('Sign up error:', error);
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
-  const handleSignUpClick = (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!email || !password || !confirmPassword) {
+    setIsLoading(true);
+
+    try {
+      const { error } = await signIn(email, password);
+      
+      if (error) {
+        toast({
+          title: "Login failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Login successful",
+          description: "Welcome back!",
+        });
+        navigate('/');
+      }
+    } catch (error: any) {
       toast({
-        title: "Missing information",
-        description: "Please fill in all fields.",
-        variant: "destructive"
+        title: "Login error",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
       });
-      return;
+    } finally {
+      setIsLoading(false);
     }
-    
-    if (password !== confirmPassword) {
-      toast({
-        title: "Passwords don't match",
-        description: "Please make sure your passwords match.",
-        variant: "destructive"
-      });
-      return;
+  };
+
+  // Ensure the tab state is synced with the URL
+  useState(() => {
+    const path = location.pathname;
+    if (path === '/join') {
+      setActiveTab('signup');
+    } else if (path === '/login') {
+      setActiveTab('login');
     }
-    
-    setShowRoleSelection(true);
+  });
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as 'login' | 'signup');
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <NavBar />
-      <main className="flex-grow flex items-center justify-center bg-gray-50 p-4">
+      <div className="flex-grow flex items-center justify-center px-4 py-12">
         <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center">
-              {activeTab === 'login' ? 'Welcome Back' : 'Create an Account'}
-            </CardTitle>
-            <CardDescription className="text-center">
-              {activeTab === 'login' 
-                ? 'Enter your credentials to access your account' 
-                : 'Join The Refined Escort community'}
-            </CardDescription>
-          </CardHeader>
-          
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="w-full"
-          >
-            <TabsList className="grid grid-cols-2 w-full">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="login">
-              <form onSubmit={handleSignIn}>
-                <CardContent className="space-y-4 pt-4">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-2xl font-serif">
+                  {activeTab === 'login' ? 'Sign In' : 'Create Account'}
+                </CardTitle>
+                <TabsList>
+                  <TabsTrigger value="login">Login</TabsTrigger>
+                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                </TabsList>
+              </div>
+              <CardDescription>
+                {activeTab === 'login' 
+                  ? 'Enter your credentials to access your account' 
+                  : 'Join our exclusive community of refined individuals'}
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent>
+              <TabsContent value="login" className="space-y-4">
+                <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="your@email.com"
-                      required
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      placeholder="you@example.com" 
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      required
                     />
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <Label htmlFor="password">Password</Label>
-                      <Button variant="link" className="p-0 h-auto text-xs">
+                      <Link to="/forgot-password" className="text-sm text-gold">
                         Forgot password?
-                      </Button>
+                      </Link>
                     </div>
-                    <Input
-                      id="password"
+                    <Input 
+                      id="password" 
                       type="password"
-                      required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      required
                     />
                   </div>
-                </CardContent>
-                <CardFooter>
                   <Button 
                     type="submit" 
                     className="w-full btn-gold" 
-                    disabled={isSubmitting}
+                    disabled={isLoading}
                   >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Signing in...
-                      </>
-                    ) : (
-                      'Sign In'
-                    )}
+                    {isLoading ? 'Signing in...' : 'Sign In'}
                   </Button>
-                </CardFooter>
-              </form>
-            </TabsContent>
-
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUpClick}>
-                <CardContent className="space-y-4 pt-4">
+                </form>
+              </TabsContent>
+              
+              <TabsContent value="signup" className="space-y-4">
+                <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="signup-email">Email</Label>
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="your@email.com"
-                      required
+                    <Input 
+                      id="signup-email" 
+                      type="email" 
+                      placeholder="you@example.com" 
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      required
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
-                    <Input
-                      id="signup-password"
+                    <Input 
+                      id="signup-password" 
                       type="password"
-                      required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
                     />
+                    <p className="text-sm text-muted-foreground">
+                      Password must be at least 6 characters long
+                    </p>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Confirm Password</Label>
-                    <Input
-                      id="confirm-password"
-                      type="password"
-                      required
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                    />
+                    <Label>I am joining as:</Label>
+                    <RadioGroup value={role} onValueChange={value => setRole(value as UserRole)} className="grid grid-cols-2 gap-4 pt-2">
+                      <div>
+                        <RadioGroupItem
+                          value="client"
+                          id="client"
+                          className="peer sr-only"
+                        />
+                        <Label
+                          htmlFor="client"
+                          className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-card p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-gold [&:has([data-state=checked])]:border-gold"
+                        >
+                          <span>Client</span>
+                          <span className="text-xs text-muted-foreground">
+                            Looking for companionship
+                          </span>
+                        </Label>
+                      </div>
+                      <div>
+                        <RadioGroupItem
+                          value="escort"
+                          id="escort"
+                          className="peer sr-only"
+                        />
+                        <Label
+                          htmlFor="escort"
+                          className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-card p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-gold [&:has([data-state=checked])]:border-gold"
+                        >
+                          <span>Escort</span>
+                          <span className="text-xs text-muted-foreground">
+                            Offering companionship
+                          </span>
+                        </Label>
+                      </div>
+                    </RadioGroup>
                   </div>
-                </CardContent>
-                <CardFooter>
                   <Button 
                     type="submit" 
-                    className="w-full btn-gold"
-                    disabled={isSubmitting}
+                    className="w-full btn-gold" 
+                    disabled={isLoading}
                   >
-                    Continue
+                    {isLoading ? 'Creating Account...' : 'Create Account'}
                   </Button>
-                </CardFooter>
-              </form>
-            </TabsContent>
+                </form>
+              </TabsContent>
+            </CardContent>
+            
+            <CardFooter className="flex flex-col space-y-4 border-t pt-4">
+              <div className="text-sm text-center text-muted-foreground">
+                By continuing, you agree to our
+                <Link to="/terms" className="text-gold ml-1">Terms of Service</Link>
+                <span className="mx-1">and</span>
+                <Link to="/privacy" className="text-gold">Privacy Policy</Link>
+              </div>
+            </CardFooter>
           </Tabs>
         </Card>
-
-        {/* Role Selection Sheet */}
-        <Sheet open={showRoleSelection} onOpenChange={setShowRoleSelection}>
-          <SheetContent side="bottom" className="sm:max-w-md sm:mx-auto">
-            <SheetHeader>
-              <SheetTitle>Choose Your Role</SheetTitle>
-              <SheetDescription>
-                Select whether you're joining as an escort or a client.
-              </SheetDescription>
-            </SheetHeader>
-            <div className="py-6">
-              <RadioGroup value={role} onValueChange={(value) => setRole(value as UserRole)} className="grid grid-cols-2 gap-4">
-                <label
-                  htmlFor="client"
-                  className={`flex flex-col items-center justify-between rounded-md border-2 border-muted p-4 cursor-pointer hover:bg-accent hover:text-accent-foreground ${
-                    role === 'client' ? 'border-primary' : ''
-                  }`}
-                >
-                  <RadioGroupItem value="client" id="client" className="sr-only" />
-                  <div className="text-center space-y-2">
-                    <h3 className="font-medium">Client</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Looking for company
-                    </p>
-                  </div>
-                </label>
-                <label
-                  htmlFor="escort"
-                  className={`flex flex-col items-center justify-between rounded-md border-2 border-muted p-4 cursor-pointer hover:bg-accent hover:text-accent-foreground ${
-                    role === 'escort' ? 'border-primary' : ''
-                  }`}
-                >
-                  <RadioGroupItem value="escort" id="escort" className="sr-only" />
-                  <div className="text-center space-y-2">
-                    <h3 className="font-medium">Escort</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Offering companionship
-                    </p>
-                  </div>
-                </label>
-              </RadioGroup>
-              <div className="mt-6">
-                <Button 
-                  className="w-full btn-gold" 
-                  onClick={() => handleRoleSelection(role)}
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating Account...
-                    </>
-                  ) : (
-                    <>
-                      Complete Registration
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </SheetContent>
-        </Sheet>
-      </main>
+      </div>
       <Footer />
     </div>
   );
