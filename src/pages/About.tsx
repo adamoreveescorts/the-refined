@@ -1,13 +1,10 @@
-
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-
 const About = () => {
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       <NavBar />
       <main className="flex-grow">
         {/* Hero Section */}
@@ -42,11 +39,7 @@ const About = () => {
                 </p>
               </div>
               <div className="rounded-xl overflow-hidden shadow-lg">
-                <img 
-                  src="https://images.unsplash.com/photo-1531574783086-23784bb47979?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3" 
-                  alt="Elegant social gathering" 
-                  className="w-full h-auto"
-                />
+                <img src="https://images.unsplash.com/photo-1531574783086-23784bb47979?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3" alt="Elegant social gathering" className="w-full h-auto" />
               </div>
             </div>
           </div>
@@ -97,57 +90,7 @@ const About = () => {
         </section>
 
         {/* Team Section */}
-        <section className="py-16 lg:py-20 bg-white">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl mx-auto text-center mb-12">
-              <h2 className="font-serif text-3xl md:text-4xl font-bold text-navy mb-6">Our Leadership Team</h2>
-              <p className="text-charcoal">
-                Meet the dedicated professionals behind The Refined Escort's vision and operations.
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="mb-6 rounded-full overflow-hidden w-48 h-48 mx-auto">
-                  <img 
-                    src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=1961&ixlib=rb-4.0.3" 
-                    alt="Sophia Reynolds" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <h3 className="font-serif text-xl font-bold text-navy mb-1">Sophia Reynolds</h3>
-                <p className="text-gold mb-3">Founder & CEO</p>
-                <p className="text-charcoal">Former hospitality executive with a vision for redefining companionship services.</p>
-              </div>
-              
-              <div className="text-center">
-                <div className="mb-6 rounded-full overflow-hidden w-48 h-48 mx-auto">
-                  <img 
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=1974&ixlib=rb-4.0.3" 
-                    alt="Marcus Chen" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <h3 className="font-serif text-xl font-bold text-navy mb-1">Marcus Chen</h3>
-                <p className="text-gold mb-3">Chief Technology Officer</p>
-                <p className="text-charcoal">Tech innovator focused on creating secure, intuitive digital experiences.</p>
-              </div>
-              
-              <div className="text-center">
-                <div className="mb-6 rounded-full overflow-hidden w-48 h-48 mx-auto">
-                  <img 
-                    src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=1976&ixlib=rb-4.0.3" 
-                    alt="Elena Vasquez" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <h3 className="font-serif text-xl font-bold text-navy mb-1">Elena Vasquez</h3>
-                <p className="text-gold mb-3">Head of Community</p>
-                <p className="text-charcoal">Dedicated advocate for companion welfare and industry standards.</p>
-              </div>
-            </div>
-          </div>
-        </section>
+        
 
         {/* Testimonials */}
         <section className="py-16 lg:py-20 bg-gray-50">
@@ -218,8 +161,6 @@ const About = () => {
         </section>
       </main>
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default About;
