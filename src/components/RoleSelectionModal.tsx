@@ -9,6 +9,9 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { UserCircle, Users } from "lucide-react";
 
+// Define the role type to match the database enum exactly
+export type UserRole = "escort" | "client";
+
 const formSchema = z.object({
   role: z.enum(["escort", "client"], {
     required_error: "Please select a role",
@@ -19,7 +22,7 @@ type RoleSelectionFormValues = z.infer<typeof formSchema>;
 
 interface RoleSelectionModalProps {
   isOpen: boolean;
-  onRoleSelect: (role: "escort" | "client") => void;
+  onRoleSelect: (role: UserRole) => void;
   onClose: () => void;
 }
 

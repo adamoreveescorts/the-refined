@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import RoleSelectionModal from "@/components/RoleSelectionModal";
+import RoleSelectionModal, { UserRole } from "@/components/RoleSelectionModal";
 
 // Schema for login form
 const loginSchema = z.object({
@@ -115,19 +115,21 @@ const Auth = () => {
     setShowRoleModal(true);
   };
 
-  const handleRoleSelect = async (role: "escort" | "client") => {
+  const handleRoleSelect = async (role: UserRole) => {
     if (!signupData) return;
 
     setIsLoading(true);
     try {
       console.log("Signing up with role:", role);
       
+      // This is the critical part - make sure we're passing the role as a string value
+      // that matches the enum type in the database
       const { error } = await supabase.auth.signUp({
         email: signupData.email,
         password: signupData.password,
         options: {
           data: {
-            role: role,
+            role: role, // This should be either "escort" or "client" exactly
           },
         },
       });
