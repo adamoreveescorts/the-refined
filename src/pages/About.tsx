@@ -1,0 +1,225 @@
+
+import NavBar from "@/components/NavBar";
+import Footer from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
+
+const About = () => {
+  return (
+    <div className="min-h-screen flex flex-col">
+      <NavBar />
+      <main className="flex-grow">
+        {/* Hero Section */}
+        <section className="bg-navy py-16 lg:py-24 text-white">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-3xl mx-auto text-center">
+              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold mb-6">About The Refined Escort</h1>
+              <p className="text-xl text-gray-300 mb-8">
+                Redefining connection with elegance, sophistication, and discretion.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Our Story */}
+        <section className="py-16 lg:py-20 bg-white">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div>
+                <h2 className="font-serif text-3xl md:text-4xl font-bold text-navy mb-6">Our Story</h2>
+                <p className="text-charcoal mb-4">
+                  Founded in 2020, The Refined Escort emerged from a vision to elevate the standards of escort services worldwide. 
+                  We recognized a gap in the market for a platform that truly values sophistication, safety, and mutual respect.
+                </p>
+                <p className="text-charcoal mb-4">
+                  What began as a boutique service in select metropolitan areas has now expanded into a global network, 
+                  connecting discerning clients with exceptional companions who share our commitment to refinement and discretion.
+                </p>
+                <p className="text-charcoal">
+                  Today, we pride ourselves on being the premier destination for those seeking meaningful connections 
+                  that transcend the ordinary, fostering experiences that are as intellectually stimulating as they are personally fulfilling.
+                </p>
+              </div>
+              <div className="rounded-xl overflow-hidden shadow-lg">
+                <img 
+                  src="https://images.unsplash.com/photo-1531574783086-23784bb47979?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3" 
+                  alt="Elegant social gathering" 
+                  className="w-full h-auto"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Our Mission & Values */}
+        <section className="py-16 lg:py-20 bg-gray-50">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-3xl mx-auto text-center mb-12">
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-navy mb-6">Our Mission & Values</h2>
+              <p className="text-charcoal">
+                We're committed to creating a safe, respectful environment where genuine connections can flourish.
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+                <div className="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center mb-6">
+                  <span className="text-gold text-2xl font-serif">01</span>
+                </div>
+                <h3 className="font-serif text-xl font-bold text-navy mb-4">Discretion</h3>
+                <p className="text-charcoal">
+                  We prioritize privacy and confidentiality in every interaction, ensuring peace of mind for all our users.
+                </p>
+              </div>
+              
+              <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+                <div className="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center mb-6">
+                  <span className="text-gold text-2xl font-serif">02</span>
+                </div>
+                <h3 className="font-serif text-xl font-bold text-navy mb-4">Quality</h3>
+                <p className="text-charcoal">
+                  We maintain rigorous verification processes and standards to ensure exceptional experiences.
+                </p>
+              </div>
+              
+              <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+                <div className="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center mb-6">
+                  <span className="text-gold text-2xl font-serif">03</span>
+                </div>
+                <h3 className="font-serif text-xl font-bold text-navy mb-4">Respect</h3>
+                <p className="text-charcoal">
+                  We foster a community built on mutual respect, professionalism, and ethical conduct.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Team Section */}
+        <section className="py-16 lg:py-20 bg-white">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-3xl mx-auto text-center mb-12">
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-navy mb-6">Our Leadership Team</h2>
+              <p className="text-charcoal">
+                Meet the dedicated professionals behind The Refined Escort's vision and operations.
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="mb-6 rounded-full overflow-hidden w-48 h-48 mx-auto">
+                  <img 
+                    src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=1961&ixlib=rb-4.0.3" 
+                    alt="Sophia Reynolds" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <h3 className="font-serif text-xl font-bold text-navy mb-1">Sophia Reynolds</h3>
+                <p className="text-gold mb-3">Founder & CEO</p>
+                <p className="text-charcoal">Former hospitality executive with a vision for redefining companionship services.</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="mb-6 rounded-full overflow-hidden w-48 h-48 mx-auto">
+                  <img 
+                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=1974&ixlib=rb-4.0.3" 
+                    alt="Marcus Chen" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <h3 className="font-serif text-xl font-bold text-navy mb-1">Marcus Chen</h3>
+                <p className="text-gold mb-3">Chief Technology Officer</p>
+                <p className="text-charcoal">Tech innovator focused on creating secure, intuitive digital experiences.</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="mb-6 rounded-full overflow-hidden w-48 h-48 mx-auto">
+                  <img 
+                    src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=1976&ixlib=rb-4.0.3" 
+                    alt="Elena Vasquez" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <h3 className="font-serif text-xl font-bold text-navy mb-1">Elena Vasquez</h3>
+                <p className="text-gold mb-3">Head of Community</p>
+                <p className="text-charcoal">Dedicated advocate for companion welfare and industry standards.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Testimonials */}
+        <section className="py-16 lg:py-20 bg-gray-50">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-3xl mx-auto text-center mb-12">
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-navy mb-6">What People Say</h2>
+              <p className="text-charcoal">
+                Feedback from our community of companions and clients.
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+                <div className="flex items-center mb-6">
+                  <div className="ml-4">
+                    <p className="text-navy font-bold">Anonymous Client</p>
+                    <div className="flex text-gold">
+                      <span>★★★★★</span>
+                    </div>
+                  </div>
+                </div>
+                <blockquote className="text-charcoal italic">
+                  "The verification process gave me confidence in the authenticity of the profiles. 
+                  My experience was exactly as described, and the platform's discretion was impeccable."
+                </blockquote>
+              </div>
+              
+              <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+                <div className="flex items-center mb-6">
+                  <div className="ml-4">
+                    <p className="text-navy font-bold">Verified Companion</p>
+                    <div className="flex text-gold">
+                      <span>★★★★★</span>
+                    </div>
+                  </div>
+                </div>
+                <blockquote className="text-charcoal italic">
+                  "The Refined Escort has transformed my professional experience. The platform attracts respectful clients,
+                  handles administrative tasks efficiently, and provides a supportive community."
+                </blockquote>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Join Us CTA */}
+        <section className="py-16 lg:py-24 bg-navy text-white">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="font-serif text-3xl md:text-4xl font-bold mb-6">Join Our Exclusive Network</h2>
+              <p className="text-xl text-gray-300 mb-8">
+                Experience the difference of a platform built on trust, quality, and mutual respect.
+              </p>
+              <div className="flex flex-col sm:flex-row justify-center gap-4">
+                <Link to="/directory">
+                  <Button className="bg-white hover:bg-gray-100 text-navy font-medium text-base px-6">
+                    Browse Directory
+                  </Button>
+                </Link>
+                <Link to="/join">
+                  <Button className="bg-gold hover:bg-gold/90 text-navy font-medium text-base px-6">
+                    Join Today <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
+export default About;
