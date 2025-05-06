@@ -1,10 +1,7 @@
-
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-
 const CallToAction = () => {
-  return (
-    <section className="relative py-16 px-4 sm:px-6 lg:px-8">
+  return <section className="relative py-16 px-4 sm:px-6 lg:px-8">
       {/* Background */}
       <div className="absolute inset-0 bg-navy z-0">
         <div className="absolute inset-0 bg-gradient-to-r from-navy via-navy/90 to-navy/80"></div>
@@ -24,15 +21,13 @@ const CallToAction = () => {
               </Button>
             </Link>
             <Link to="/join-as-escort">
-              <Button size="lg" variant="outline" className="text-white border-white hover:bg-white/10 w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="text-white border-white w-full sm:w-auto bg-gray-900 hover:bg-gray-800">
                 List Your Profile
               </Button>
             </Link>
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default CallToAction;
