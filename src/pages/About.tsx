@@ -39,7 +39,7 @@ const About = () => {
                 </p>
               </div>
               <div className="rounded-xl overflow-hidden shadow-lg">
-                <img alt="Elegant social gathering" className="w-full h-auto" src="/lovable-uploads/3d7db99a-24d6-4da9-9949-f5e481ca2c96.jpg" />
+                <img alt="Elegant social gathering" className="w-full h-auto" src="/lovable-uploads/492644f5-27ff-4f46-9f28-d70e8dd27a8b.jpg" />
               </div>
             </div>
           </div>
