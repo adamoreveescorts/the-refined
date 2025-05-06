@@ -43,14 +43,13 @@ const WhyChooseUs = () => {
       <div 
         className="absolute inset-0 z-0" 
         style={{
-          backgroundImage: "url('/lovable-uploads/8e678f31-0ca8-49f0-aa92-43fb4bfede01.png')",
+          backgroundImage: "url('/lovable-uploads/8a09e300-5a72-4986-9f48-107f488e28fe.png')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          opacity: 0.85
         }}
       />
-      <div className="absolute inset-0 bg-black/50 z-0" />
+      <div className="absolute inset-0 bg-black/70 z-0" />
       
       <div className="container mx-auto relative z-10">
         <div className="text-center mb-10">
