@@ -26,15 +26,18 @@ const loginSchema = z.object({
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
 });
 
-// Schema for signup form
-const signupSchema = z.object({
+// Schema for signup form - separate for each role
+const baseSignupSchema = {
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
   confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+};
+
+const signupSchema = z.object(baseSignupSchema)
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 type SignupFormValues = z.infer<typeof signupSchema>;
@@ -45,7 +48,6 @@ const Auth = () => {
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
   const [isLoading, setIsLoading] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
-  const [signupData, setSignupData] = useState<SignupFormValues | null>(null);
 
   // Check for tab parameter in URL
   useEffect(() => {
@@ -110,28 +112,33 @@ const Auth = () => {
     }
   };
 
-  const handleSignupInitiate = (values: SignupFormValues) => {
-    setSignupData(values);
-    setShowRoleModal(true);
+  // This function initiates the signup process by showing the role selection modal
+  const initiateSignup = () => {
+    const result = signupForm.trigger();
+    if (result) {
+      setShowRoleModal(true);
+    }
   };
 
+  // After role selection, handle the actual signup
   const handleRoleSelect = async (role: UserRole) => {
-    if (!signupData) return;
-
     setIsLoading(true);
     try {
-      console.log("Selected role:", role);
+      // Get form values only after validation
+      const formValues = signupForm.getValues();
       
-      // Fix: The role needs to be provided as metadata without explicit typing
-      // This allows Supabase to handle the enum conversion properly
+      console.log("Selected role:", role);
+      console.log("Form values:", formValues);
+      
+      // Create the user with the selected role
       const { error } = await supabase.auth.signUp({
-        email: signupData.email,
-        password: signupData.password,
+        email: formValues.email,
+        password: formValues.password,
         options: {
           data: {
-            role // Just pass the string value directly
-          },
-        },
+            role: role
+          }
+        }
       });
 
       if (error) {
@@ -215,7 +222,7 @@ const Auth = () => {
           <TabsContent value="signup">
             <div className="mt-8 bg-white p-6 shadow rounded-lg">
               <Form {...signupForm}>
-                <form onSubmit={signupForm.handleSubmit(handleSignupInitiate)} className="space-y-6">
+                <form onSubmit={(e) => { e.preventDefault(); initiateSignup(); }} className="space-y-6">
                   <FormField
                     control={signupForm.control}
                     name="email"
