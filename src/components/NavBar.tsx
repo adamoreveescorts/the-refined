@@ -64,36 +64,38 @@ const NavBar = () => {
         </div>
       </div>
       
-      {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="md:hidden bg-white shadow-lg">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <Link to="/directory" className="block px-3 py-2 text-base font-medium text-charcoal hover:text-gold transition-colors">
-              Directory
-            </Link>
-            <Link to="/about" className="block px-3 py-2 text-base font-medium text-charcoal hover:text-gold transition-colors">
-              About
-            </Link>
-            <Link to="/faq" className="block px-3 py-2 text-base font-medium text-charcoal hover:text-gold transition-colors">
-              FAQ
-            </Link>
-            <Link to="/blog" className="block px-3 py-2 text-base font-medium text-charcoal hover:text-gold transition-colors">
-              Blog
-            </Link>
-            <Link to="/contact" className="block px-3 py-2 text-base font-medium text-charcoal hover:text-gold transition-colors">
-              Contact
-            </Link>
-            <div className="pt-4 pb-3 border-t border-gray-200">
-              <div className="flex items-center px-3">
-                <Button className="w-full btn-gold">Join Now</Button>
-              </div>
-              <div className="flex items-center px-3 mt-3">
-                <Button variant="outline" className="w-full">Sign In</Button>
-              </div>
+      {/* Mobile Menu with animation */}
+      <div 
+        className={`md:hidden bg-white shadow-lg overflow-hidden transition-all duration-300 ease-in-out ${
+          isMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+          <Link to="/directory" className="block px-3 py-2 text-base font-medium text-charcoal hover:text-gold transition-colors">
+            Directory
+          </Link>
+          <Link to="/about" className="block px-3 py-2 text-base font-medium text-charcoal hover:text-gold transition-colors">
+            About
+          </Link>
+          <Link to="/faq" className="block px-3 py-2 text-base font-medium text-charcoal hover:text-gold transition-colors">
+            FAQ
+          </Link>
+          <Link to="/blog" className="block px-3 py-2 text-base font-medium text-charcoal hover:text-gold transition-colors">
+            Blog
+          </Link>
+          <Link to="/contact" className="block px-3 py-2 text-base font-medium text-charcoal hover:text-gold transition-colors">
+            Contact
+          </Link>
+          <div className="pt-4 pb-3 border-t border-gray-200">
+            <div className="flex items-center px-3">
+              <Button className="w-full btn-gold">Join Now</Button>
+            </div>
+            <div className="flex items-center px-3 mt-3">
+              <Button variant="outline" className="w-full">Sign In</Button>
             </div>
           </div>
         </div>
-      )}
+      </div>
     </nav>
   );
 };
