@@ -8,8 +8,11 @@ import LocationsSection from "@/components/LocationsSection";
 import TestimonialSection from "@/components/TestimonialSection";
 import CallToAction from "@/components/CallToAction";
 import Footer from "@/components/Footer";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
+  const isMobile = useIsMobile();
+
   useEffect(() => {
     // Function to handle animations on scroll
     const handleScroll = () => {
@@ -29,7 +32,7 @@ const Index = () => {
     // Initial check for elements in view on page load
     setTimeout(() => {
       handleScroll();
-    }, 100);
+    }, isMobile ? 800 : 100); // Longer delay on mobile to allow for escort card animations
 
     // Add scroll event listener
     window.addEventListener('scroll', handleScroll);
@@ -38,7 +41,7 @@ const Index = () => {
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, []);
+  }, [isMobile]);
 
   return (
     <div className="min-h-screen flex flex-col">

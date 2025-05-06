@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Heart, Star, Check } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Mock escort data
 const featuredEscorts = [
@@ -69,9 +70,26 @@ const featuredEscorts = [
   },
 ];
 
-const EscortCard = ({ escort }: { escort: any }) => {
+const EscortCard = ({ escort, index }: { escort: any; index: number }) => {
+  const isMobile = useIsMobile();
+  const [isVisible, setIsVisible] = useState(!isMobile);
+  
+  useEffect(() => {
+    if (isMobile) {
+      const timer = setTimeout(() => {
+        setIsVisible(true);
+      }, 100 + index * 150); // Staggered delay based on card index
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isMobile, index]);
+  
   return (
-    <div className="group relative bg-white rounded-lg overflow-hidden shadow-md card-hover">
+    <div 
+      className={`group relative bg-white rounded-lg overflow-hidden shadow-md card-hover transition-all duration-500 ease-out ${
+        isMobile ? (isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10') : ''
+      }`}
+    >
       <Link to={`/profile/${escort.id}`}>
         <div className="aspect-[3/4] relative overflow-hidden">
           <img 
@@ -132,8 +150,8 @@ const FeaturedSection = () => {
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-          {featuredEscorts.map(escort => (
-            <EscortCard key={escort.id} escort={escort} />
+          {featuredEscorts.map((escort, index) => (
+            <EscortCard key={escort.id} escort={escort} index={index} />
           ))}
         </div>
         
