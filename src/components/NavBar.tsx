@@ -1,11 +1,39 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Search, User } from 'lucide-react';
+import { Menu, X, Search, User, LogOut } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuSeparator,
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
+  
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  const getInitials = () => {
+    if (profile?.display_name) {
+      return profile.display_name
+        .split(' ')
+        .map(name => name[0])
+        .join('')
+        .toUpperCase()
+        .substring(0, 2);
+    }
+    return user?.email?.substring(0, 2).toUpperCase() || 'U';
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md shadow-sm">
@@ -44,15 +72,55 @@ const NavBar = () => {
             <Button variant="ghost" size="icon">
               <Search className="h-5 w-5" />
             </Button>
-            <Link to="/login">
-              <Button variant="outline" size="sm" className="flex items-center">
-                <User className="h-4 w-4 mr-2" />
-                Sign In
-              </Button>
-            </Link>
-            <Link to="/join">
-              <Button size="sm" className="btn-gold">Join Now</Button>
-            </Link>
+            
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback>{getInitials()}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <div className="flex items-center justify-start gap-2 p-2">
+                    <div className="flex flex-col space-y-1 leading-none">
+                      <p className="font-medium">{profile?.display_name || user.email}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {profile?.role === 'escort' ? 'Escort' : 'Client'}
+                      </p>
+                    </div>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile">Profile</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings">Settings</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    className="cursor-pointer" 
+                    onClick={handleSignOut}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="outline" size="sm" className="flex items-center">
+                    <User className="h-4 w-4 mr-2" />
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/join">
+                  <Button size="sm" className="btn-gold">Join Now</Button>
+                </Link>
+              </>
+            )}
           </div>
           
           {/* Mobile menu button */}
@@ -86,13 +154,46 @@ const NavBar = () => {
           <Link to="/contact" className="block px-3 py-2 text-base font-medium text-charcoal hover:text-gold transition-colors">
             Contact
           </Link>
+          
           <div className="pt-4 pb-3 border-t border-gray-200">
-            <div className="flex items-center px-3">
-              <Button className="w-full btn-gold">Join Now</Button>
-            </div>
-            <div className="flex items-center px-3 mt-3">
-              <Button variant="outline" className="w-full">Sign In</Button>
-            </div>
+            {user ? (
+              <>
+                <div className="flex items-center px-3 py-2">
+                  <div className="flex-shrink-0">
+                    <Avatar className="h-10 w-10">
+                      <AvatarFallback>{getInitials()}</AvatarFallback>
+                    </Avatar>
+                  </div>
+                  <div className="ml-3">
+                    <div className="text-base font-medium">{profile?.display_name || user.email}</div>
+                    <div className="text-sm text-gray-500">{profile?.role === 'escort' ? 'Escort' : 'Client'}</div>
+                  </div>
+                </div>
+                <div className="mt-3 px-3 space-y-1">
+                  <Link to="/profile" className="block px-3 py-2 text-base font-medium text-charcoal hover:text-gold">
+                    Your Profile
+                  </Link>
+                  <Link to="/settings" className="block px-3 py-2 text-base font-medium text-charcoal hover:text-gold">
+                    Settings
+                  </Link>
+                  <button
+                    onClick={handleSignOut}
+                    className="block w-full text-left px-3 py-2 text-base font-medium text-charcoal hover:text-gold"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col space-y-2 px-3">
+                <Link to="/join">
+                  <Button className="w-full btn-gold">Join Now</Button>
+                </Link>
+                <Link to="/login">
+                  <Button variant="outline" className="w-full">Sign In</Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>
