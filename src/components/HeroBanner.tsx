@@ -11,6 +11,14 @@ const locations = [
 
 const HeroBanner = () => {
   const [selectedLocation, setSelectedLocation] = useState("");
+  const [isLoaded, setIsLoaded] = useState(false);
+  
+  useEffect(() => {
+    // Set loaded state after a small delay to trigger animations
+    setTimeout(() => {
+      setIsLoaded(true);
+    }, 100);
+  }, []);
   
   return (
     <div className="relative h-[80vh] min-h-[500px] max-h-[800px] w-full overflow-hidden">
@@ -27,15 +35,21 @@ const HeroBanner = () => {
       
       {/* Content */}
       <div className="relative h-full flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 text-center z-10">
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4 animate-fadeIn">
+        <h1 
+          className={`text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4 transition-all duration-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
+        >
           Discover Elite Companionship
         </h1>
-        <p className="text-lg sm:text-xl text-gray-100 max-w-3xl mb-8 animate-fadeIn" style={{animationDelay: '0.2s'}}>
+        <p 
+          className={`text-lg sm:text-xl text-gray-100 max-w-3xl mb-8 transition-all duration-700 delay-100 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
+        >
           Connect with sophisticated escorts worldwide through our premium directory
         </p>
         
         {/* Search Form */}
-        <div className="w-full max-w-md bg-white/10 backdrop-blur-md p-4 rounded-lg shadow-lg animate-fadeIn" style={{animationDelay: '0.4s'}}>
+        <div 
+          className={`w-full max-w-md bg-white/10 backdrop-blur-md p-4 rounded-lg shadow-lg transition-all duration-700 delay-200 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
+        >
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <select 
@@ -59,7 +73,9 @@ const HeroBanner = () => {
         </div>
         
         {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 mt-10 animate-fadeIn" style={{animationDelay: '0.6s'}}>
+        <div 
+          className={`flex flex-col sm:flex-row gap-4 mt-10 transition-all duration-700 delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
+        >
           <Link to="/directory">
             <Button variant="outline" className="text-white border-white hover:bg-white/20">
               Browse Escorts
