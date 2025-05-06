@@ -1,11 +1,40 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X, Search, User } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+
+  // Check for user session on component mount
+  useState(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user || null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user || null);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  });
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success('Logged out successfully');
+      navigate('/');
+    }
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md shadow-sm">
@@ -44,15 +73,32 @@ const NavBar = () => {
             <Button variant="ghost" size="icon">
               <Search className="h-5 w-5" />
             </Button>
-            <Link to="/login">
-              <Button variant="outline" size="sm" className="flex items-center">
-                <User className="h-4 w-4 mr-2" />
-                Sign In
-              </Button>
-            </Link>
-            <Link to="/join">
-              <Button size="sm" className="btn-gold">Join Now</Button>
-            </Link>
+            
+            {user ? (
+              <>
+                <Link to="/profile">
+                  <Button variant="outline" size="sm" className="flex items-center">
+                    <User className="h-4 w-4 mr-2" />
+                    My Profile
+                  </Button>
+                </Link>
+                <Button size="sm" className="btn-gold" onClick={handleLogout}>
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="outline" size="sm" className="flex items-center">
+                    <User className="h-4 w-4 mr-2" />
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/auth?tab=signup">
+                  <Button size="sm" className="btn-gold">Join Now</Button>
+                </Link>
+              </>
+            )}
           </div>
           
           {/* Mobile menu button */}
@@ -87,12 +133,36 @@ const NavBar = () => {
             Contact
           </Link>
           <div className="pt-4 pb-3 border-t border-gray-200">
-            <div className="flex items-center px-3">
-              <Button className="w-full btn-gold">Join Now</Button>
-            </div>
-            <div className="flex items-center px-3 mt-3">
-              <Button variant="outline" className="w-full">Sign In</Button>
-            </div>
+            {user ? (
+              <>
+                <div className="flex items-center px-3">
+                  <Link to="/profile" className="w-full">
+                    <Button variant="outline" className="w-full">
+                      <User className="h-4 w-4 mr-2" />
+                      My Profile
+                    </Button>
+                  </Link>
+                </div>
+                <div className="flex items-center px-3 mt-3">
+                  <Button className="w-full btn-gold" onClick={handleLogout}>
+                    Sign Out
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center px-3">
+                  <Link to="/auth?tab=signup" className="w-full">
+                    <Button className="w-full btn-gold">Join Now</Button>
+                  </Link>
+                </div>
+                <div className="flex items-center px-3 mt-3">
+                  <Link to="/auth" className="w-full">
+                    <Button variant="outline" className="w-full">Sign In</Button>
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
