@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import NavBar from '@/components/NavBar';
@@ -106,7 +105,6 @@ const EscortCard = ({ escort }: { escort: any }) => {
 const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filters: any }) => {
   const [ageRange, setAgeRange] = useState<number[]>([18, 50]);
   const [priceRange, setPriceRange] = useState<number[]>([100, 1000]);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
   
   const handleAgeChange = (value: number[]) => {
     setAgeRange(value);
@@ -120,19 +118,20 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
   
   return (
     <>
-      {/* Mobile Filter Button */}
+      {/* Mobile Filter Button - Keep it for mobile users to hide/show filters if needed */}
       <div className="md:hidden mb-4">
         <Button 
-          onClick={() => setIsFilterOpen(!isFilterOpen)}
+          onClick={() => {}} // We'll keep this button but it won't toggle anything now
           variant="outline"
           className="w-full flex items-center justify-center gap-2"
         >
           <Filter className="h-4 w-4" />
-          {isFilterOpen ? "Hide Filters" : "Show Filters"}
+          Hide Filters
         </Button>
       </div>
       
-      <div className={`${isFilterOpen ? 'block' : 'hidden'} md:block bg-white rounded-lg shadow-md p-4 sticky top-20`}>
+      {/* Always show the filters regardless of screen size */}
+      <div className="md:block bg-white rounded-lg shadow-md p-4 sticky top-20">
         <h3 className="font-medium text-lg mb-4">Filters</h3>
         
         {/* Location */}
