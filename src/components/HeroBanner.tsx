@@ -26,7 +26,7 @@ const HeroBanner = () => {
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{ 
-          backgroundImage: 'url("https://images.unsplash.com/photo-1483058712412-4245e9b90334?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3")', 
+          backgroundImage: 'url("/lovable-uploads/25a0dcad-e367-4364-9eab-c61f3ebd5a3b.png")', 
         }}
       >
         {/* Overlay */}
