@@ -120,6 +120,8 @@ const Auth = () => {
 
     setIsLoading(true);
     try {
+      console.log("Signing up with role:", role);
+      
       const { error } = await supabase.auth.signUp({
         email: signupData.email,
         password: signupData.password,
@@ -138,6 +140,7 @@ const Auth = () => {
       setShowRoleModal(false);
       navigate("/");
     } catch (error: any) {
+      console.error("Signup error:", error);
       toast.error(error.message || "Failed to register");
     } finally {
       setIsLoading(false);

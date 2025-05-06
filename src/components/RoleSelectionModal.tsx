@@ -32,6 +32,7 @@ const RoleSelectionModal = ({ isOpen, onRoleSelect, onClose }: RoleSelectionModa
   });
 
   const onSubmit = (values: RoleSelectionFormValues) => {
+    console.log("Selected role:", values.role);
     onRoleSelect(values.role);
   };
 
