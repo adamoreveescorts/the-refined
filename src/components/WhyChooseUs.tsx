@@ -27,11 +27,11 @@ const features = [
 const FeatureCard = ({ feature }: { feature: any }) => {
   const Icon = feature.icon;
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md text-center">
+    <div className="bg-white/90 backdrop-blur-sm p-6 rounded-lg shadow-lg text-center transition-all duration-300 hover:scale-105">
       <div className="mx-auto w-12 h-12 flex items-center justify-center bg-navy/5 rounded-full mb-4">
         <Icon className="h-6 w-6 text-gold" />
       </div>
-      <h3 className="font-serif text-xl font-medium mb-2">{feature.title}</h3>
+      <h3 className="font-serif text-xl font-medium mb-2 text-navy">{feature.title}</h3>
       <p className="text-charcoal text-sm">{feature.description}</p>
     </div>
   );
@@ -39,11 +39,23 @@ const FeatureCard = ({ feature }: { feature: any }) => {
 
 const WhyChooseUs = () => {
   return (
-    <section className="bg-gray-50 py-16 px-4 sm:px-6 lg:px-8">
-      <div className="container mx-auto">
+    <section className="py-16 px-4 sm:px-6 lg:px-8 relative">
+      <div 
+        className="absolute inset-0 z-0" 
+        style={{
+          backgroundImage: "url('/lovable-uploads/8e678f31-0ca8-49f0-aa92-43fb4bfede01.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          opacity: 0.85
+        }}
+      />
+      <div className="absolute inset-0 bg-black/50 z-0" />
+      
+      <div className="container mx-auto relative z-10">
         <div className="text-center mb-10">
-          <h2 className="text-3xl sm:text-4xl font-bold text-navy mb-4">Why Choose Us</h2>
-          <p className="text-charcoal max-w-2xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Why Choose Us</h2>
+          <p className="text-gray-200 max-w-2xl mx-auto">
             Experience the difference with our premium escort directory platform
           </p>
         </div>
