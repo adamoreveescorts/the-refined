@@ -1,22 +1,42 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
 const locations = ["New York", "London", "Paris", "Tokyo", "Sydney", "Los Angeles", "Berlin", "Madrid", "Toronto", "Dubai"];
+
 const HeroBanner = () => {
   const [selectedLocation, setSelectedLocation] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
+  const [bgLoaded, setBgLoaded] = useState(false);
+  
   useEffect(() => {
     // Set loaded state after a small delay to trigger animations
     setTimeout(() => {
       setIsLoaded(true);
     }, 100);
+    
+    // Preload the background image
+    const img = new Image();
+    img.src = "/lovable-uploads/25a0dcad-e367-4364-9eab-c61f3ebd5a3b.png";
+    img.onload = () => setBgLoaded(true);
   }, []);
-  return <div className="relative h-[80vh] min-h-[500px] max-h-[800px] w-full overflow-hidden">
-      {/* Background Image */}
-      <div className="absolute inset-0 bg-cover bg-center" style={{
-      backgroundImage: 'url("/lovable-uploads/25a0dcad-e367-4364-9eab-c61f3ebd5a3b.png")'
-    }}>
+
+  return (
+    <div className="relative h-[80vh] min-h-[500px] max-h-[800px] w-full overflow-hidden">
+      {/* Background with color placeholder while image loads */}
+      <div 
+        className={`absolute inset-0 bg-navy transition-opacity duration-500 ${bgLoaded ? 'opacity-0' : 'opacity-100'}`}
+      ></div>
+      
+      {/* Background Image with fade-in effect */}
+      <div 
+        className={`absolute inset-0 bg-cover bg-center transition-opacity duration-500 ${bgLoaded ? 'opacity-100' : 'opacity-0'}`} 
+        style={{
+          backgroundImage: 'url("/lovable-uploads/25a0dcad-e367-4364-9eab-c61f3ebd5a3b.png")'
+        }}
+      >
         {/* Overlay */}
         <div className="absolute inset-0 hero-gradient"></div>
       </div>
@@ -62,6 +82,8 @@ const HeroBanner = () => {
           </Link>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default HeroBanner;
