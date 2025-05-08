@@ -7,7 +7,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
-const ESCORT_SIGNUP_FEE = "0.01"; // Fee in USD - changed from $49.99 to $0.01
+// PayPal subscription plan ID
+const SUBSCRIPTION_PLAN_ID = "P-50J24221H22662620M5VDV5A";
 
 interface PaymentFlowProps {
   userId: string;
@@ -19,10 +20,10 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handlePaymentSuccess = async (details: any) => {
+  const handleSubscriptionSuccess = async (data: any) => {
     setLoading(true);
     try {
-      console.log("Payment successful. Transaction ID:", details.id);
+      console.log("Subscription successful. Subscription ID:", data.subscriptionID);
       
       // Update the user's payment status and activate their account
       const { error } = await supabase
@@ -37,11 +38,11 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
         throw error;
       }
       
-      toast.success("Payment successful! Your account is now active.");
+      toast.success("Subscription successful! Your account is now active.");
       onPaymentComplete();
     } catch (error: any) {
-      console.error("Payment verification error:", error);
-      toast.error("There was an error verifying your payment. Please contact support.");
+      console.error("Subscription verification error:", error);
+      toast.error("There was an error verifying your subscription. Please contact support.");
     } finally {
       setLoading(false);
     }
@@ -53,12 +54,12 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
       
       <div className="mb-6">
         <p className="text-gray-700 mb-4">
-          To activate your escort profile, please complete the payment below:
+          To activate your escort profile, please subscribe to our service:
         </p>
         <div className="p-4 bg-gray-50 rounded mb-4">
           <div className="flex justify-between">
-            <span>Registration Fee:</span>
-            <span className="font-medium">${ESCORT_SIGNUP_FEE} USD</span>
+            <span>Monthly Subscription:</span>
+            <span className="font-medium">$0.01 USD/month</span>
           </div>
         </div>
       </div>
@@ -70,40 +71,33 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
       ) : (
         <>
           <PayPalScriptProvider options={{ 
-            clientId: "AdOTEm2GN9kDNPQfM_LfolEIM3atfnKrezxo60YzK0ldeU4XzkwXSVaNrWSVtFNatIORQ-pDrMDZ9ttt",
-            currency: "USD",
-            intent: "capture"
+            clientId: "AS5vp9gEblgk1b4G-TwUYzalGa8zAEuli_VMgRqR6obImZdwl99U-39C5gHQjdtBQhcUXUJPkIWgypNw",
+            vault: true,
+            intent: "subscription",
+            components: "buttons"
           }}>
             <PayPalButtons 
               style={{
                 color: "gold",
                 shape: "rect",
-                label: "pay",
-                height: 50
+                layout: "vertical",
+                label: "subscribe"
               }}
-              createOrder={(data, actions) => {
-                return actions.order.create({
-                  intent: "CAPTURE",
-                  purchase_units: [
-                    {
-                      amount: {
-                        currency_code: "USD",
-                        value: ESCORT_SIGNUP_FEE
-                      },
-                      description: "Escort Profile Registration"
-                    }
-                  ]
+              createSubscription={(data, actions) => {
+                return actions.subscription.create({
+                  plan_id: SUBSCRIPTION_PLAN_ID
                 });
               }}
               onApprove={(data, actions) => {
-                return actions.order!.capture().then(handlePaymentSuccess);
+                // data.subscriptionID contains the subscription ID
+                return handleSubscriptionSuccess(data);
               }}
               onCancel={() => {
-                toast.info("Payment cancelled. Your account will remain inactive until payment is completed.");
+                toast.info("Subscription cancelled. Your account will remain inactive until subscription is completed.");
               }}
               onError={(err) => {
                 console.error("PayPal Error:", err);
-                toast.error("There was an error processing your payment. Please try again.");
+                toast.error("There was an error processing your subscription. Please try again.");
               }}
             />
           </PayPalScriptProvider>
@@ -121,7 +115,7 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
       )}
       
       <p className="text-xs text-gray-500 mt-6 text-center">
-        By completing payment, you agree to our terms of service and privacy policy.
+        By subscribing, you agree to our terms of service and privacy policy. Your subscription will automatically renew each month.
       </p>
     </div>
   );
