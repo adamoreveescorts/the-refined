@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
 // PayPal subscription plan ID
-const SUBSCRIPTION_PLAN_ID = "P-50J24221H22662620M5VDV5A";
+const SUBSCRIPTION_PLAN_ID = "P-8VS6273020706443GM5VDYVY";
 
 interface PaymentFlowProps {
   userId: string;
