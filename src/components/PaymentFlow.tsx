@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
-const ESCORT_SIGNUP_FEE = "49.99"; // Fee in USD
+const ESCORT_SIGNUP_FEE = "0.01"; // Fee in USD - changed from $49.99 to $0.01
 
 interface PaymentFlowProps {
   userId: string;
