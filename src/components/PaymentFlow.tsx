@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -23,17 +23,31 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
   const [approvalUrl, setApprovalUrl] = useState<string | null>(null);
   const [pendingSubscriptionId, setPendingSubscriptionId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Check for returning from PayPal approval flow
   useEffect(() => {
     const checkForReturnFromPayPal = async () => {
-      // Check if we have a pending subscription ID stored
-      const storedSubId = localStorage.getItem('pendingSubscriptionId');
-      if (storedSubId) {
+      // Check URL parameters for subscription_id or ba_token (PayPal return params)
+      const urlParams = new URLSearchParams(location.search);
+      const subscriptionId = urlParams.get('subscription_id') || localStorage.getItem('pendingSubscriptionId');
+      const baToken = urlParams.get('ba_token'); // PayPal billing agreement token
+      
+      console.log("Checking for PayPal return:", { 
+        subscriptionId, 
+        baToken, 
+        urlParams: location.search
+      });
+      
+      if ((subscriptionId || baToken) && !loading) {
         setLoading(true);
-        setPendingSubscriptionId(storedSubId);
         
         try {
+          if (subscriptionId) {
+            setPendingSubscriptionId(subscriptionId);
+            console.log("Found subscription ID:", subscriptionId);
+          }
+          
           // Clear the stored subscription ID
           localStorage.removeItem('pendingSubscriptionId');
           
@@ -62,7 +76,7 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
     };
     
     checkForReturnFromPayPal();
-  }, [userId, onPaymentComplete]);
+  }, [userId, onPaymentComplete, location.search, loading]);
 
   const handleSubscriptionCreated = (data: any) => {
     console.log("Subscription created. Full data:", data);
@@ -94,7 +108,16 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
 
   const redirectToPayPalApproval = () => {
     if (approvalUrl) {
-      window.location.href = approvalUrl;
+      // Add current URL as state parameter to help with redirects
+      const returnUrl = `${window.location.origin}/auth`;
+      
+      // Append return URL to approval URL if not already present
+      const finalUrl = approvalUrl.includes('?') 
+        ? `${approvalUrl}&returnurl=${encodeURIComponent(returnUrl)}`
+        : `${approvalUrl}?returnurl=${encodeURIComponent(returnUrl)}`;
+      
+      console.log("Redirecting to PayPal approval:", finalUrl);
+      window.location.href = finalUrl;
     }
   };
 
@@ -158,7 +181,11 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
               createSubscription={(data, actions) => {
                 console.log("Creating subscription with plan ID:", SUBSCRIPTION_PLAN_ID);
                 return actions.subscription.create({
-                  plan_id: SUBSCRIPTION_PLAN_ID
+                  plan_id: SUBSCRIPTION_PLAN_ID,
+                  application_context: {
+                    return_url: `${window.location.origin}/auth`,
+                    cancel_url: `${window.location.origin}/auth`
+                  }
                 });
               }}
               onApprove={(data, actions) => {

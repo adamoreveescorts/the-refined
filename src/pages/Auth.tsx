@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { z } from "zod";
@@ -61,11 +62,34 @@ const Auth = () => {
     } else if (tab === "login") {
       setActiveTab("login");
     }
-  }, [location]);
+    
+    // Check for PayPal return parameters
+    const subscriptionId = params.get('subscription_id');
+    const baToken = params.get('ba_token');
+    
+    if (subscriptionId || baToken) {
+      console.log("Detected PayPal return params:", { subscriptionId, baToken });
+      // If we have PayPal return parameters but no stored user ID,
+      // we might need to show a message to the user
+      if (!localStorage.getItem('pendingSubscriptionId') && !newUserId) {
+        toast.info("Payment session expired. Please try again or contact support if you've already completed payment.");
+      }
+    }
+  }, [location, newUserId]);
 
   // Check if user is already logged in
   useEffect(() => {
     const checkUser = async () => {
+      // First check for any PayPal return params
+      const params = new URLSearchParams(location.search);
+      const hasPayPalParams = params.get('subscription_id') || params.get('ba_token');
+      
+      // If we have PayPal params, we don't want to redirect away yet
+      if (hasPayPalParams) {
+        console.log("Found PayPal return parameters, skipping redirect check");
+        return;
+      }
+      
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         navigate('/');
@@ -73,7 +97,7 @@ const Auth = () => {
     };
     
     checkUser();
-  }, [navigate]);
+  }, [navigate, location.search]);
 
   // Login form
   const loginForm = useForm<LoginFormValues>({
@@ -191,6 +215,28 @@ const Auth = () => {
         />
       </div>
     );
+  }
+
+  // Check for PayPal return parameters without active payment flow
+  const params = new URLSearchParams(location.search);
+  const hasPayPalParams = params.get('subscription_id') || params.get('ba_token');
+  const storedSubId = localStorage.getItem('pendingSubscriptionId');
+  
+  if (hasPayPalParams && storedSubId && !showPaymentFlow) {
+    // We have PayPal params but no active payment flow, try to resume
+    const userId = localStorage.getItem('pendingUserId');
+    if (userId) {
+      setNewUserId(userId);
+      setShowPaymentFlow(true);
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <Loader2 className="mx-auto h-12 w-12 animate-spin text-gold" />
+            <p className="mt-4 text-lg">Processing your payment...</p>
+          </div>
+        </div>
+      );
+    }
   }
 
   return (
