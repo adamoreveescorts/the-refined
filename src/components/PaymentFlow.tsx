@@ -9,6 +9,8 @@ import { Loader2 } from "lucide-react";
 
 // PayPal subscription plan ID
 const SUBSCRIPTION_PLAN_ID = "P-8VS6273020706443GM5VDYVY";
+// PayPal client ID
+const PAYPAL_CLIENT_ID = "AS5vp9gEblgk1b4G-TwUYzalGa8zAEuli_VMgRqR6obImZdwl99U-39C5gHQjdtBQhcUXUJPkIWgypNw";
 
 interface PaymentFlowProps {
   userId: string;
@@ -71,7 +73,7 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
       ) : (
         <>
           <PayPalScriptProvider options={{ 
-            clientId: "AS5vp9gEblgk1b4G-TwUYzalGa8zAEuli_VMgRqR6obImZdwl99U-39C5gHQjdtBQhcUXUJPkIWgypNw",
+            clientId: PAYPAL_CLIENT_ID,
             vault: true,
             intent: "subscription",
             components: "buttons"
