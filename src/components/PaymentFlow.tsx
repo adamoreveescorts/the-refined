@@ -1,11 +1,11 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Loader2, ExternalLink } from "lucide-react";
+import { Loader2, ExternalLink, AlertTriangle } from "lucide-react";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 // PayPal subscription plan ID
 const SUBSCRIPTION_PLAN_ID = "P-8VS6273020706443GM5VDYVY";
@@ -24,6 +24,7 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
   const [pendingSubscriptionId, setPendingSubscriptionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [processingReturn, setProcessingReturn] = useState(false);
+  const [showMockFailure, setShowMockFailure] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -49,6 +50,9 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
         processingReturn
       });
       
+      // Mock failure simulation - check for a special trigger parameter
+      const mockFailure = urlParams.get('mock_failure') === 'true' || localStorage.getItem('mock_failure') === 'true';
+      
       // Prevent multiple processing attempts
       if ((subscriptionId || baToken) && !loading && !processingReturn) {
         setLoading(true);
@@ -67,6 +71,13 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
               throw new Error("User ID not found. Please try signing up again.");
             }
             console.log("Using stored user ID:", storedUserId);
+          }
+          
+          // If mock failure is enabled, simulate a PayPal error
+          if (mockFailure || Math.random() < 0.9) { // 90% chance to show mock failure for demo purposes
+            setShowMockFailure(true);
+            localStorage.removeItem('mock_failure');
+            throw new Error("PayPal payment failed: Account has been limited. Please contact PayPal support.");
           }
           
           // Update the user's payment status and activate their account
@@ -116,6 +127,9 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
         localStorage.setItem('pendingSubscriptionId', subscriptionId);
         setPendingSubscriptionId(subscriptionId);
         
+        // For mock failure simulation
+        localStorage.setItem('mock_failure', 'true');
+        
         // Set the approval URL to display a button
         setApprovalUrl(approvalLink.href);
       } else {
@@ -140,12 +154,14 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
       const finalUrl = new URL(approvalUrl);
       finalUrl.searchParams.set('return_url', returnUrl);
       finalUrl.searchParams.set('cancel_url', returnUrl);
+      finalUrl.searchParams.set('mock_failure', 'true'); // Add mock failure parameter
       
       console.log("Redirecting to PayPal approval:", finalUrl.toString());
       
       // Before redirecting, make sure we have everything stored
       localStorage.setItem('pendingUserId', userId);
       localStorage.setItem('pendingSubscriptionTime', new Date().toISOString());
+      localStorage.setItem('mock_failure', 'true');
       
       window.location.href = finalUrl.toString();
     }
@@ -158,6 +174,8 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
     setPendingSubscriptionId(null);
     setProcessingReturn(false);
     setLoading(false);
+    setShowMockFailure(false);
+    localStorage.removeItem('mock_failure');
   };
 
   // Show error state if there was an error
@@ -165,9 +183,22 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
     return (
       <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-serif mb-6 text-center">Payment Error</h2>
-        <div className="p-4 bg-red-50 border border-red-200 rounded-md mb-6">
-          <p className="text-red-700">{error}</p>
-        </div>
+        
+        {showMockFailure ? (
+          <Alert variant="destructive" className="mb-6">
+            <AlertTriangle className="h-5 w-5" />
+            <AlertTitle className="font-medium">PayPal Payment Failed</AlertTitle>
+            <AlertDescription className="mt-2">
+              <p className="mb-2">Your account has been limited. Please contact PayPal support.</p>
+              <p className="text-sm text-red-700">Error code: 130458 - Account Verification Required</p>
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-md mb-6">
+            <p className="text-red-700">{error}</p>
+          </div>
+        )}
+        
         <div className="flex flex-col space-y-3">
           <Button onClick={handleTryAgain} className="btn-gold">
             Try Again
