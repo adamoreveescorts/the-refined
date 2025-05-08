@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
@@ -50,8 +51,33 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
         processingReturn
       });
       
+      // Check for cancellation
+      const cancelParam = urlParams.get('cancel') === 'true';
+      if (cancelParam) {
+        setShowMockFailure(true);
+        setError("PayPal payment failed: Account has been limited. Please contact PayPal support.");
+        localStorage.removeItem('mock_failure');
+        return;
+      }
+      
       // Mock failure simulation - check for a special trigger parameter
       const mockFailure = urlParams.get('mock_failure') === 'true' || localStorage.getItem('mock_failure') === 'true';
+      
+      // Detect if user exited PayPal flow (check if we have pendingSubscriptionTime but no subscription ID)
+      const pendingTime = localStorage.getItem('pendingSubscriptionTime');
+      const currentTime = new Date().getTime();
+      const timeElapsed = pendingTime ? (currentTime - new Date(pendingTime).getTime()) : 0;
+      
+      // If we had a pending subscription that's older than 30 seconds and we have no PayPal return params, assume user exited
+      const userExited = pendingTime && !subscriptionId && !baToken && timeElapsed > 30000;
+      
+      if (userExited && !error) {
+        console.log("Detected user exited PayPal flow");
+        setShowMockFailure(true);
+        setError("PayPal payment failed: Account has been limited. Please contact PayPal support.");
+        localStorage.removeItem('mock_failure');
+        return;
+      }
       
       // Prevent multiple processing attempts
       if ((subscriptionId || baToken) && !loading && !processingReturn) {
@@ -109,7 +135,26 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
     };
     
     checkForReturnFromPayPal();
-  }, [userId, onPaymentComplete, location.search, loading, processingReturn]);
+    
+    // Set up a timer to check for user exit
+    const checkExitTimer = setTimeout(() => {
+      const pendingTime = localStorage.getItem('pendingSubscriptionTime');
+      if (pendingTime && !error && !processingReturn) {
+        const currentTime = new Date().getTime();
+        const timeElapsed = currentTime - new Date(pendingTime).getTime();
+        
+        // If it's been more than 3 minutes since redirect and no return params, assume exit
+        if (timeElapsed > 180000) {
+          console.log("No PayPal return after timeout, assuming user exited");
+          setShowMockFailure(true);
+          setError("PayPal payment failed: Account has been limited. Please contact PayPal support.");
+          localStorage.removeItem('mock_failure');
+        }
+      }
+    }, 5000); // Check after 5 seconds
+    
+    return () => clearTimeout(checkExitTimer);
+  }, [userId, onPaymentComplete, location.search, loading, processingReturn, error]);
 
   const handleSubscriptionCreated = (data: any) => {
     console.log("Subscription created. Full data:", data);
@@ -153,7 +198,7 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
       // Use proper PayPal parameters
       const finalUrl = new URL(approvalUrl);
       finalUrl.searchParams.set('return_url', returnUrl);
-      finalUrl.searchParams.set('cancel_url', returnUrl);
+      finalUrl.searchParams.set('cancel_url', `${returnUrl}?cancel=true`); // Add cancel param
       finalUrl.searchParams.set('mock_failure', 'true'); // Add mock failure parameter
       
       console.log("Redirecting to PayPal approval:", finalUrl.toString());
@@ -176,6 +221,7 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
     setLoading(false);
     setShowMockFailure(false);
     localStorage.removeItem('mock_failure');
+    localStorage.removeItem('pendingSubscriptionTime');
   };
 
   // Show error state if there was an error

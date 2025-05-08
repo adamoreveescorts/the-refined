@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { z } from "zod";
@@ -82,26 +81,41 @@ const Auth = () => {
     // Check for PayPal return parameters
     const subscriptionId = params.get('subscription_id');
     const baToken = params.get('ba_token');
+    const cancelParam = params.get('cancel') === 'true';
     const userId = localStorage.getItem('pendingUserId');
     
-    if ((subscriptionId || baToken) && userId) {
-      console.log("Detected PayPal return params:", { subscriptionId, baToken, userId });
+    if ((subscriptionId || baToken || cancelParam) && userId) {
+      console.log("Detected PayPal return params:", { subscriptionId, baToken, cancelParam, userId });
       // If we have PayPal return parameters and stored user ID, show payment flow
       setNewUserId(userId);
       setShowPaymentFlow(true);
-    } else if (subscriptionId || baToken) {
+    } else if (subscriptionId || baToken || cancelParam) {
       // If we only have PayPal params but no userId
-      console.log("PayPal params found but no userId:", { subscriptionId, baToken });
+      console.log("PayPal params found but no userId:", { subscriptionId, baToken, cancelParam });
       toast.error("Session expired. Please try signing up again.");
     }
-  }, [location, activeTab]);
+    
+    // Check if we have a pending PayPal flow that needs to be resumed
+    const pendingTime = localStorage.getItem('pendingSubscriptionTime');
+    if (pendingTime && userId && !subscriptionId && !baToken && !showPaymentFlow) {
+      const currentTime = new Date().getTime();
+      const timeElapsed = currentTime - new Date(pendingTime).getTime();
+      
+      // If it's been more than 30 seconds and we haven't received return params, assume cancel/exit
+      if (timeElapsed > 30000) {
+        console.log("Detected possible PayPal exit, showing payment flow with error");
+        setNewUserId(userId);
+        setShowPaymentFlow(true);
+      }
+    }
+  }, [location, activeTab, showPaymentFlow]);
 
   // Check if user is already logged in
   useEffect(() => {
     const checkUser = async () => {
       // First check for any PayPal return params
       const params = new URLSearchParams(location.search);
-      const hasPayPalParams = params.get('subscription_id') || params.get('ba_token');
+      const hasPayPalParams = params.get('subscription_id') || params.get('ba_token') || params.get('cancel') === 'true';
       
       // If we have PayPal params, we don't want to redirect away yet
       if (hasPayPalParams) {
@@ -253,11 +267,13 @@ const Auth = () => {
 
   // Check for PayPal return parameters without active payment flow
   const params = new URLSearchParams(location.search);
-  const hasPayPalParams = params.get('subscription_id') || params.get('ba_token');
+  const hasPayPalParams = params.get('subscription_id') || params.get('ba_token') || params.get('cancel') === 'true';
   const storedSubId = localStorage.getItem('pendingSubscriptionId');
+  const pendingTime = localStorage.getItem('pendingSubscriptionTime');
   
-  if (hasPayPalParams && storedSubId && !showPaymentFlow) {
-    // We have PayPal params but no active payment flow, try to resume
+  if ((hasPayPalParams || (pendingTime && new Date().getTime() - new Date(pendingTime).getTime() > 30000)) 
+      && !showPaymentFlow) {
+    // We have PayPal params or a timed out pending subscription but no active payment flow, try to resume
     const userId = localStorage.getItem('pendingUserId');
     if (userId) {
       setNewUserId(userId);
