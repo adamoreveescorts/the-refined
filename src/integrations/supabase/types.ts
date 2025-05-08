@@ -15,6 +15,8 @@ export type Database = {
           display_name: string | null
           email: string | null
           id: string
+          is_active: boolean | null
+          payment_status: string | null
           role: Database["public"]["Enums"]["user_role"] | null
           updated_at: string
         }
@@ -23,6 +25,8 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id: string
+          is_active?: boolean | null
+          payment_status?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string
         }
@@ -31,6 +35,8 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+          is_active?: boolean | null
+          payment_status?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string
         }

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { z } from "zod";
@@ -19,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RoleSelectionModal, { UserRole } from "@/components/RoleSelectionModal";
+import PaymentFlow from "@/components/PaymentFlow";
 
 // Schema for login form
 const loginSchema = z.object({
@@ -48,6 +48,9 @@ const Auth = () => {
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
   const [isLoading, setIsLoading] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
+  const [showPaymentFlow, setShowPaymentFlow] = useState(false);
+  const [newUserId, setNewUserId] = useState<string | null>(null);
+  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
 
   // Check for tab parameter in URL
   useEffect(() => {
@@ -122,6 +125,7 @@ const Auth = () => {
 
   // After role selection, handle the actual signup
   const handleRoleSelect = async (role: UserRole) => {
+    setSelectedRole(role);
     setIsLoading(true);
     try {
       // Get form values only after validation
@@ -131,7 +135,7 @@ const Auth = () => {
       console.log("Form values:", formValues);
       
       // Create the user with the selected role
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: formValues.email,
         password: formValues.password,
         options: {
@@ -145,17 +149,49 @@ const Auth = () => {
         throw error;
       }
 
-      toast.success("Registration successful! Please check your email for verification.");
+      setNewUserId(data.user?.id || null);
       setShowRoleModal(false);
-      navigate("/");
+      
+      // If escort role was selected, show payment flow instead of redirecting
+      if (role === "escort" && data.user?.id) {
+        setShowPaymentFlow(true);
+      } else {
+        toast.success("Registration successful! Please check your email for verification.");
+        navigate("/");
+      }
     } catch (error: any) {
       console.error("Signup error:", error);
       toast.error(error.message || "Failed to register");
+      setShowRoleModal(false);
     } finally {
       setIsLoading(false);
-      setShowRoleModal(false);
     }
   };
+
+  const handlePaymentComplete = () => {
+    setShowPaymentFlow(false);
+    navigate("/");
+  };
+
+  const handlePaymentCancel = async () => {
+    // If they cancel payment, we'll keep their account but it will remain inactive
+    toast.info("You can complete payment later from your profile page.");
+    setShowPaymentFlow(false);
+    navigate("/");
+  };
+
+  // If payment flow is active, show the payment component
+  if (showPaymentFlow && newUserId) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <PaymentFlow 
+          userId={newUserId} 
+          onPaymentComplete={handlePaymentComplete} 
+          onCancel={handlePaymentCancel} 
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
