@@ -22,8 +22,17 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
   const [loading, setLoading] = useState(false);
   const [approvalUrl, setApprovalUrl] = useState<string | null>(null);
   const [pendingSubscriptionId, setPendingSubscriptionId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [processingReturn, setProcessingReturn] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Store userId in localStorage when component mounts
+  useEffect(() => {
+    if (userId) {
+      localStorage.setItem('pendingUserId', userId);
+    }
+  }, [userId]);
 
   // Check for returning from PayPal approval flow
   useEffect(() => {
@@ -36,11 +45,15 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
       console.log("Checking for PayPal return:", { 
         subscriptionId, 
         baToken, 
-        urlParams: location.search
+        urlParams: location.search,
+        processingReturn
       });
       
-      if ((subscriptionId || baToken) && !loading) {
+      // Prevent multiple processing attempts
+      if ((subscriptionId || baToken) && !loading && !processingReturn) {
         setLoading(true);
+        setProcessingReturn(true);
+        setError(null);
         
         try {
           if (subscriptionId) {
@@ -48,8 +61,13 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
             console.log("Found subscription ID:", subscriptionId);
           }
           
-          // Clear the stored subscription ID
-          localStorage.removeItem('pendingSubscriptionId');
+          if (!userId) {
+            const storedUserId = localStorage.getItem('pendingUserId');
+            if (!storedUserId) {
+              throw new Error("User ID not found. Please try signing up again.");
+            }
+            console.log("Using stored user ID:", storedUserId);
+          }
           
           // Update the user's payment status and activate their account
           const { error } = await supabase
@@ -58,17 +76,21 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
               payment_status: "completed", 
               is_active: true 
             })
-            .eq("id", userId);
+            .eq("id", userId || localStorage.getItem('pendingUserId'));
           
           if (error) {
             throw error;
           }
           
+          // Clear the stored subscription ID
+          localStorage.removeItem('pendingSubscriptionId');
+          
           toast.success("Subscription successful! Your account is now active.");
           onPaymentComplete();
         } catch (error: any) {
           console.error("Error completing subscription after approval:", error);
-          toast.error("There was an error activating your account. Please contact support.");
+          setError(error.message || "There was an error activating your account. Please contact support.");
+          toast.error(error.message || "There was an error activating your account. Please contact support.");
         } finally {
           setLoading(false);
         }
@@ -76,7 +98,7 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
     };
     
     checkForReturnFromPayPal();
-  }, [userId, onPaymentComplete, location.search, loading]);
+  }, [userId, onPaymentComplete, location.search, loading, processingReturn]);
 
   const handleSubscriptionCreated = (data: any) => {
     console.log("Subscription created. Full data:", data);
@@ -98,28 +120,65 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
         setApprovalUrl(approvalLink.href);
       } else {
         console.error("No subscription ID found in response");
+        setError("Could not process subscription. Please try again.");
         toast.error("Could not process subscription. Please try again.");
       }
     } else {
       console.error("No approval URL found in response", data);
+      setError("Could not process subscription. Please try again.");
       toast.error("Could not process subscription. Please try again.");
     }
   };
 
   const redirectToPayPalApproval = () => {
     if (approvalUrl) {
-      // Add current URL as state parameter to help with redirects
+      // Add current URL as return_url parameter to help with redirects
       const returnUrl = `${window.location.origin}/auth`;
       
       // Append return URL to approval URL if not already present
-      const finalUrl = approvalUrl.includes('?') 
-        ? `${approvalUrl}&returnurl=${encodeURIComponent(returnUrl)}`
-        : `${approvalUrl}?returnurl=${encodeURIComponent(returnUrl)}`;
+      // Use proper PayPal parameters
+      const finalUrl = new URL(approvalUrl);
+      finalUrl.searchParams.set('return_url', returnUrl);
+      finalUrl.searchParams.set('cancel_url', returnUrl);
       
-      console.log("Redirecting to PayPal approval:", finalUrl);
-      window.location.href = finalUrl;
+      console.log("Redirecting to PayPal approval:", finalUrl.toString());
+      
+      // Before redirecting, make sure we have everything stored
+      localStorage.setItem('pendingUserId', userId);
+      localStorage.setItem('pendingSubscriptionTime', new Date().toISOString());
+      
+      window.location.href = finalUrl.toString();
     }
   };
+
+  // Function to try again if there was an error
+  const handleTryAgain = () => {
+    setError(null);
+    setApprovalUrl(null);
+    setPendingSubscriptionId(null);
+    setProcessingReturn(false);
+    setLoading(false);
+  };
+
+  // Show error state if there was an error
+  if (error) {
+    return (
+      <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h2 className="text-xl font-serif mb-6 text-center">Payment Error</h2>
+        <div className="p-4 bg-red-50 border border-red-200 rounded-md mb-6">
+          <p className="text-red-700">{error}</p>
+        </div>
+        <div className="flex flex-col space-y-3">
+          <Button onClick={handleTryAgain} className="btn-gold">
+            Try Again
+          </Button>
+          <Button variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
@@ -140,6 +199,7 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
       {loading ? (
         <div className="flex justify-center p-4">
           <Loader2 className="h-8 w-8 animate-spin text-gold" />
+          <span className="ml-2">Processing payment...</span>
         </div>
       ) : approvalUrl ? (
         <div className="flex flex-col items-center space-y-4">
@@ -212,6 +272,7 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
                   console.error("Error details:", JSON.stringify(err, null, 2));
                 }
                 
+                setError("There was an error processing your subscription. Please try again or contact support.");
                 toast.error("There was an error processing your subscription. Please try again or contact support.");
               }}
             />

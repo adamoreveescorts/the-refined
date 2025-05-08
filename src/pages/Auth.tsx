@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -52,6 +53,7 @@ const Auth = () => {
   const [showPaymentFlow, setShowPaymentFlow] = useState(false);
   const [newUserId, setNewUserId] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
+  const [formValues, setFormValues] = useState<SignupFormValues | null>(null);
 
   // Check for tab parameter in URL
   useEffect(() => {
@@ -63,19 +65,36 @@ const Auth = () => {
       setActiveTab("login");
     }
     
+    // Try to restore form values if they exist in localStorage
+    const savedFormValues = localStorage.getItem('signupFormValues');
+    if (savedFormValues) {
+      try {
+        const parsedValues = JSON.parse(savedFormValues);
+        setFormValues(parsedValues);
+        if (signupForm) {
+          signupForm.reset(parsedValues);
+        }
+      } catch (e) {
+        console.error("Failed to parse saved form values:", e);
+      }
+    }
+
     // Check for PayPal return parameters
     const subscriptionId = params.get('subscription_id');
     const baToken = params.get('ba_token');
+    const userId = localStorage.getItem('pendingUserId');
     
-    if (subscriptionId || baToken) {
-      console.log("Detected PayPal return params:", { subscriptionId, baToken });
-      // If we have PayPal return parameters but no stored user ID,
-      // we might need to show a message to the user
-      if (!localStorage.getItem('pendingSubscriptionId') && !newUserId) {
-        toast.info("Payment session expired. Please try again or contact support if you've already completed payment.");
-      }
+    if ((subscriptionId || baToken) && userId) {
+      console.log("Detected PayPal return params:", { subscriptionId, baToken, userId });
+      // If we have PayPal return parameters and stored user ID, show payment flow
+      setNewUserId(userId);
+      setShowPaymentFlow(true);
+    } else if (subscriptionId || baToken) {
+      // If we only have PayPal params but no userId
+      console.log("PayPal params found but no userId:", { subscriptionId, baToken });
+      toast.error("Session expired. Please try signing up again.");
     }
-  }, [location, newUserId]);
+  }, [location, activeTab]);
 
   // Check if user is already logged in
   useEffect(() => {
@@ -143,6 +162,10 @@ const Auth = () => {
   const initiateSignup = async () => {
     const valid = await signupForm.trigger();
     if (valid) {
+      // Store form values in localStorage to persist during redirects
+      const values = signupForm.getValues();
+      localStorage.setItem('signupFormValues', JSON.stringify(values));
+      setFormValues(values);
       setShowRoleModal(true);
     }
   };
@@ -152,16 +175,16 @@ const Auth = () => {
     setSelectedRole(role);
     setIsLoading(true);
     try {
-      // Get form values only after validation
-      const formValues = signupForm.getValues();
+      // Get form values from state or form
+      const values = formValues || signupForm.getValues();
       
       console.log("Selected role:", role);
-      console.log("Form values:", formValues);
+      console.log("Form values:", values);
       
       // Create the user with the selected role
       const { data, error } = await supabase.auth.signUp({
-        email: formValues.email,
-        password: formValues.password,
+        email: values.email,
+        password: values.password,
         options: {
           data: {
             role
@@ -173,11 +196,18 @@ const Auth = () => {
         throw error;
       }
 
-      setNewUserId(data.user?.id || null);
+      const userId = data.user?.id;
+      setNewUserId(userId || null);
+      
+      // Store userId in localStorage for persistence during PayPal redirect
+      if (userId) {
+        localStorage.setItem('pendingUserId', userId);
+      }
+      
       setShowRoleModal(false);
       
       // If escort role was selected, show payment flow instead of redirecting
-      if (role === "escort" && data.user?.id) {
+      if (role === "escort" && userId) {
         setShowPaymentFlow(true);
       } else {
         toast.success("Registration successful! Please check your email for verification.");
@@ -193,6 +223,9 @@ const Auth = () => {
   };
 
   const handlePaymentComplete = () => {
+    // Clear form data and user ID from localStorage
+    localStorage.removeItem('signupFormValues');
+    localStorage.removeItem('pendingUserId');
     setShowPaymentFlow(false);
     navigate("/");
   };
@@ -200,6 +233,7 @@ const Auth = () => {
   const handlePaymentCancel = async () => {
     // If they cancel payment, we'll keep their account but it will remain inactive
     toast.info("You can complete payment later from your profile page.");
+    localStorage.removeItem('signupFormValues');
     setShowPaymentFlow(false);
     navigate("/");
   };
