@@ -25,7 +25,17 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
   const handleSubscriptionSuccess = async (data: any) => {
     setLoading(true);
     try {
-      console.log("Subscription successful. Subscription ID:", data.subscriptionID);
+      // Log the whole data object to see what we're getting from PayPal
+      console.log("Subscription data received:", data);
+      
+      // The subscription ID is in data.subscriptionID for standard flows or data.id for some flows
+      const subscriptionId = data.subscriptionID || data.id;
+      console.log("Using subscription ID:", subscriptionId);
+      
+      if (!subscriptionId) {
+        console.error("No subscription ID found in PayPal response", data);
+        throw new Error("No subscription ID found in PayPal response");
+      }
       
       // Update the user's payment status and activate their account
       const { error } = await supabase
@@ -76,7 +86,9 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
             clientId: PAYPAL_CLIENT_ID,
             vault: true,
             intent: "subscription",
-            components: "buttons"
+            components: "buttons",
+            currency: "USD", // Explicitly set currency
+            debug: true // Enable debug mode for more verbose logging
           }}>
             <PayPalButtons 
               style={{
@@ -86,20 +98,33 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
                 label: "subscribe"
               }}
               createSubscription={(data, actions) => {
+                console.log("Creating subscription with plan ID:", SUBSCRIPTION_PLAN_ID);
                 return actions.subscription.create({
                   plan_id: SUBSCRIPTION_PLAN_ID
                 });
               }}
               onApprove={(data, actions) => {
-                // data.subscriptionID contains the subscription ID
+                // Log the full data object to debug what we're getting
+                console.log("Subscription approved. Full data:", data);
+                
+                // For subscriptions, we may not need to call .capture() like with transactions
+                // Instead, we handle the subscription data directly
                 return handleSubscriptionSuccess(data);
               }}
-              onCancel={() => {
+              onCancel={(data) => {
+                console.log("Subscription cancelled. Data:", data);
                 toast.info("Subscription cancelled. Your account will remain inactive until subscription is completed.");
               }}
               onError={(err) => {
+                // Detailed error logging
                 console.error("PayPal Error:", err);
-                toast.error("There was an error processing your subscription. Please try again.");
+                
+                // Try to extract more error details if available
+                if (err && typeof err === 'object') {
+                  console.error("Error details:", JSON.stringify(err, null, 2));
+                }
+                
+                toast.error("There was an error processing your subscription. Please try again or contact support.");
               }}
             />
           </PayPalScriptProvider>
