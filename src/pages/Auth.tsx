@@ -113,9 +113,9 @@ const Auth = () => {
   };
 
   // This function initiates the signup process by showing the role selection modal
-  const initiateSignup = () => {
-    const result = signupForm.trigger();
-    if (result) {
+  const initiateSignup = async () => {
+    const valid = await signupForm.trigger();
+    if (valid) {
       setShowRoleModal(true);
     }
   };
@@ -136,7 +136,7 @@ const Auth = () => {
         password: formValues.password,
         options: {
           data: {
-            role: role
+            role
           }
         }
       });
