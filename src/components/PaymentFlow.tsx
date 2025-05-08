@@ -70,7 +70,7 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
       ) : (
         <>
           <PayPalScriptProvider options={{ 
-            clientId: "test", // Replace with your actual PayPal Client ID in production
+            clientId: "AdOTEm2GN9kDNPQfM_LfolEIM3atfnKrezxo60YzK0ldeU4XzkwXSVaNrWSVtFNatIORQ-pDrMDZ9ttt",
             currency: "USD",
             intent: "capture"
           }}>
@@ -86,6 +86,7 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
                   purchase_units: [
                     {
                       amount: {
+                        currency_code: "USD",
                         value: ESCORT_SIGNUP_FEE
                       },
                       description: "Escort Profile Registration"
