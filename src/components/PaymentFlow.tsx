@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
@@ -17,17 +16,25 @@ interface PaymentFlowProps {
   userId: string;
   onPaymentComplete: () => void;
   onCancel: () => void;
+  showMockFailure?: boolean; // Add new prop
 }
 
-const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) => {
+const PaymentFlow = ({ userId, onPaymentComplete, onCancel, showMockFailure: initialShowMockFailure = false }: PaymentFlowProps) => {
   const [loading, setLoading] = useState(false);
   const [approvalUrl, setApprovalUrl] = useState<string | null>(null);
   const [pendingSubscriptionId, setPendingSubscriptionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [processingReturn, setProcessingReturn] = useState(false);
-  const [showMockFailure, setShowMockFailure] = useState(false);
+  const [showMockFailure, setShowMockFailure] = useState(initialShowMockFailure);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Set error message if showMockFailure is true initially
+  useEffect(() => {
+    if (initialShowMockFailure) {
+      setError("PayPal payment failed: Account has been limited. Please contact PayPal support.");
+    }
+  }, [initialShowMockFailure]);
 
   // Store userId in localStorage when component mounts
   useEffect(() => {
@@ -230,20 +237,14 @@ const PaymentFlow = ({ userId, onPaymentComplete, onCancel }: PaymentFlowProps) 
       <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-serif mb-6 text-center">Payment Error</h2>
         
-        {showMockFailure ? (
-          <Alert variant="destructive" className="mb-6">
-            <AlertTriangle className="h-5 w-5" />
-            <AlertTitle className="font-medium">PayPal Payment Failed</AlertTitle>
-            <AlertDescription className="mt-2">
-              <p className="mb-2">Your account has been limited. Please contact PayPal support.</p>
-              <p className="text-sm text-red-700">Error code: 130458 - Account Verification Required</p>
-            </AlertDescription>
-          </Alert>
-        ) : (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-md mb-6">
-            <p className="text-red-700">{error}</p>
-          </div>
-        )}
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangle className="h-5 w-5" />
+          <AlertTitle className="font-medium">PayPal Payment Failed</AlertTitle>
+          <AlertDescription className="mt-2">
+            <p className="mb-2">Your account has been limited. Please contact PayPal support.</p>
+            <p className="text-sm text-red-700">Error code: 130458 - Account Verification Required</p>
+          </AlertDescription>
+        </Alert>
         
         <div className="flex flex-col space-y-3">
           <Button onClick={handleTryAgain} className="btn-gold">

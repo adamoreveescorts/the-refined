@@ -53,6 +53,7 @@ const Auth = () => {
   const [newUserId, setNewUserId] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [formValues, setFormValues] = useState<SignupFormValues | null>(null);
+  const [showMockFailure, setShowMockFailure] = useState(false); // Track mock failure state
 
   // Check for tab parameter in URL
   useEffect(() => {
@@ -220,9 +221,10 @@ const Auth = () => {
       
       setShowRoleModal(false);
       
-      // If escort role was selected, show payment flow instead of redirecting
+      // If escort role was selected, directly show mock failure instead of payment flow
       if (role === "escort" && userId) {
         setShowPaymentFlow(true);
+        setShowMockFailure(true); // Immediately show the mock failure message
       } else {
         toast.success("Registration successful! Please check your email for verification.");
         navigate("/");
@@ -260,6 +262,7 @@ const Auth = () => {
           userId={newUserId} 
           onPaymentComplete={handlePaymentComplete} 
           onCancel={handlePaymentCancel} 
+          showMockFailure={showMockFailure} // Pass down the mock failure flag
         />
       </div>
     );
