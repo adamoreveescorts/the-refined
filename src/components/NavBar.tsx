@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Search, User } from 'lucide-react';
+import { Menu, X, Search, UserRound } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -76,9 +76,9 @@ const NavBar = () => {
             
             {user ? (
               <>
-                <Link to="/profile">
+                <Link to="/user-profile">
                   <Button variant="outline" size="sm" className="flex items-center">
-                    <User className="h-4 w-4 mr-2" />
+                    <UserRound className="h-4 w-4 mr-2" />
                     My Profile
                   </Button>
                 </Link>
@@ -90,7 +90,7 @@ const NavBar = () => {
               <>
                 <Link to="/auth">
                   <Button variant="outline" size="sm" className="flex items-center">
-                    <User className="h-4 w-4 mr-2" />
+                    <UserRound className="h-4 w-4 mr-2" />
                     Sign In
                   </Button>
                 </Link>
@@ -136,9 +136,9 @@ const NavBar = () => {
             {user ? (
               <>
                 <div className="flex items-center px-3">
-                  <Link to="/profile" className="w-full">
+                  <Link to="/user-profile" className="w-full">
                     <Button variant="outline" className="w-full">
-                      <User className="h-4 w-4 mr-2" />
+                      <UserRound className="h-4 w-4 mr-2" />
                       My Profile
                     </Button>
                   </Link>
