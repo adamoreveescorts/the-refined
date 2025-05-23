@@ -151,7 +151,7 @@ const Auth = () => {
     
     setIsLoading(true);
     try {
-      // Send OTP to user's email
+      // Use OTP (One-Time Password) for signup - this will send a verification code
       const { data, error } = await supabase.auth.signInWithOtp({
         email: formValues.email,
         options: {
