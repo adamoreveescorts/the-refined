@@ -1,12 +1,11 @@
-
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -276,7 +275,15 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
+        <div className="text-center relative">
+          {/* Add Back to Home Button */}
+          <Link to="/" className="absolute left-0 top-1/2 -translate-y-1/2">
+            <Button variant="ghost" size="sm" className="flex items-center gap-1 text-navy hover:text-gold">
+              <ArrowLeft size={16} />
+              Back to Home
+            </Button>
+          </Link>
+          
           <h2 className="mt-6 text-3xl font-serif font-bold text-navy">
             The Refined Escort
           </h2>
