@@ -274,16 +274,18 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      {/* Add Back to Home Button as a separate element above the card */}
+      <div className="absolute top-4 left-4">
+        <Link to="/">
+          <Button variant="ghost" size="sm" className="flex items-center gap-1 text-navy hover:text-gold">
+            <ArrowLeft size={16} />
+            Back to Home
+          </Button>
+        </Link>
+      </div>
+      
       <div className="w-full max-w-md space-y-8">
-        <div className="text-center relative">
-          {/* Add Back to Home Button */}
-          <Link to="/" className="absolute left-0 top-1/2 -translate-y-1/2">
-            <Button variant="ghost" size="sm" className="flex items-center gap-1 text-navy hover:text-gold">
-              <ArrowLeft size={16} />
-              Back to Home
-            </Button>
-          </Link>
-          
+        <div className="text-center">
           <h2 className="mt-6 text-3xl font-serif font-bold text-navy">
             The Refined Escort
           </h2>
