@@ -29,6 +29,7 @@ const loginSchema = z.object({
 
 // Schema for signup form
 const signupSchema = z.object({
+  username: z.string().min(3, { message: "Username must be at least 3 characters" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
   confirmPassword: z.string(),
@@ -86,6 +87,7 @@ const Auth = () => {
   const signupForm = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
+      username: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -137,7 +139,10 @@ const Auth = () => {
         email: formValues.email,
         password: formValues.password,
         options: {
-          data: { role: role },
+          data: { 
+            role: role,
+            username: formValues.username 
+          },
           emailRedirectTo: window.location.origin
         }
       });
@@ -262,6 +267,20 @@ const Auth = () => {
               <div className="mt-8 bg-white p-6 shadow rounded-lg">
                 <Form {...signupForm}>
                   <form onSubmit={(e) => { e.preventDefault(); initiateSignup(); }} className="space-y-6">
+                    <FormField
+                      control={signupForm.control}
+                      name="username"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Username</FormLabel>
+                          <FormControl>
+                            <Input placeholder="johndoe" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
                     <FormField
                       control={signupForm.control}
                       name="email"
