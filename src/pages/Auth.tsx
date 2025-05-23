@@ -20,6 +20,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RoleSelectionModal, { UserRole } from "@/components/RoleSelectionModal";
+import { 
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot
+} from "@/components/ui/input-otp";
 
 // Schema for login form
 const loginSchema = z.object({
@@ -37,8 +42,14 @@ const signupSchema = z.object({
   path: ["confirmPassword"],
 });
 
+// Schema for verification code
+const verificationSchema = z.object({
+  code: z.string().length(6, { message: "Verification code must be 6 digits" }),
+});
+
 type LoginFormValues = z.infer<typeof loginSchema>;
 type SignupFormValues = z.infer<typeof signupSchema>;
+type VerificationFormValues = z.infer<typeof verificationSchema>;
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -47,6 +58,8 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [formValues, setFormValues] = useState<SignupFormValues | null>(null);
+  const [showVerification, setShowVerification] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
 
   // Check for tab parameter in URL
   useEffect(() => {
@@ -90,6 +103,14 @@ const Auth = () => {
     },
   });
 
+  // Verification form
+  const verificationForm = useForm<VerificationFormValues>({
+    resolver: zodResolver(verificationSchema),
+    defaultValues: {
+      code: "",
+    },
+  });
+
   const handleLogin = async (values: LoginFormValues) => {
     setIsLoading(true);
     try {
@@ -121,38 +142,69 @@ const Auth = () => {
     }
   };
 
-  // After role selection, handle the actual signup
+  // After role selection, start the email verification process
   const handleRoleSelect = async (role: UserRole) => {
+    setSelectedRole(role);
+    setShowRoleModal(false);
+    
+    if (!formValues) return;
+    
     setIsLoading(true);
     try {
-      // Get form values from state or form
-      const values = formValues || signupForm.getValues();
-      
-      console.log("Selected role:", role);
-      console.log("Form values:", values);
-      
-      // Create the user with the selected role
-      const { data, error } = await supabase.auth.signUp({
-        email: values.email,
-        password: values.password,
+      // Send OTP to user's email
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email: formValues.email,
         options: {
-          data: {
-            role
-          }
+          shouldCreateUser: true,
         }
       });
-
+      
       if (error) {
         throw error;
       }
       
-      setShowRoleModal(false);
-      toast.success("Registration successful! Please check your email for verification.");
-      navigate("/");
+      toast.success("Verification code sent to your email");
+      setShowVerification(true);
     } catch (error: any) {
       console.error("Signup error:", error);
-      toast.error(error.message || "Failed to register");
-      setShowRoleModal(false);
+      toast.error(error.message || "Failed to send verification code");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Handle verification code submission
+  const handleVerification = async (values: VerificationFormValues) => {
+    if (!formValues || !selectedRole) return;
+    
+    setIsLoading(true);
+    try {
+      // Verify OTP
+      const { data, error } = await supabase.auth.verifyOtp({
+        email: formValues.email,
+        token: values.code,
+        type: 'signup',
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Now set the password and role for the user
+      const { error: passwordError } = await supabase.auth.updateUser({
+        password: formValues.password,
+        data: { role: selectedRole }
+      });
+      
+      if (passwordError) {
+        throw passwordError;
+      }
+      
+      toast.success("Account created successfully!");
+      navigate("/");
+    } catch (error: any) {
+      console.error("Verification error:", error);
+      toast.error(error.message || "Failed to verify code");
     } finally {
       setIsLoading(false);
     }
@@ -160,8 +212,8 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      {/* Add Back to Home Button as a separate element above the card */}
-      <div className="absolute top-4 left-4">
+      {/* Back to Home Button positioned correctly in the top-left */}
+      <div className="fixed top-4 left-4 z-10">
         <Link to="/">
           <Button variant="ghost" size="sm" className="flex items-center gap-1 text-navy hover:text-gold">
             <ArrowLeft size={16} />
@@ -180,114 +232,168 @@ const Auth = () => {
           </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "login" | "signup")} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="login">
-            <div className="mt-8 bg-white p-6 shadow rounded-lg">
-              <Form {...loginForm}>
-                <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-6">
-                  <FormField
-                    control={loginForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input placeholder="you@example.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={loginForm.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <Input type="password" placeholder="••••••••" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
+        {showVerification ? (
+          <div className="mt-8 bg-white p-6 shadow rounded-lg">
+            <h3 className="text-lg font-medium mb-4">Verify your email</h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Enter the 6-digit verification code sent to {formValues?.email}
+            </p>
+            <Form {...verificationForm}>
+              <form onSubmit={verificationForm.handleSubmit(handleVerification)} className="space-y-6">
+                <FormField
+                  control={verificationForm.control}
+                  name="code"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Verification Code</FormLabel>
+                      <FormControl>
+                        <InputOTP maxLength={6} {...field}>
+                          <InputOTPGroup>
+                            <InputOTPSlot index={0} />
+                            <InputOTPSlot index={1} />
+                            <InputOTPSlot index={2} />
+                            <InputOTPSlot index={3} />
+                            <InputOTPSlot index={4} />
+                            <InputOTPSlot index={5} />
+                          </InputOTPGroup>
+                        </InputOTP>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="flex flex-col gap-2">
                   <Button 
                     type="submit" 
                     className="btn-gold w-full" 
                     disabled={isLoading}
                   >
-                    {isLoading ? "Logging in..." : "Log In"}
+                    {isLoading ? "Verifying..." : "Verify Code"}
                   </Button>
-                </form>
-              </Form>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="signup">
-            <div className="mt-8 bg-white p-6 shadow rounded-lg">
-              <Form {...signupForm}>
-                <form onSubmit={(e) => { e.preventDefault(); initiateSignup(); }} className="space-y-6">
-                  <FormField
-                    control={signupForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input placeholder="you@example.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={signupForm.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <Input type="password" placeholder="••••••••" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={signupForm.control}
-                    name="confirmPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Confirm Password</FormLabel>
-                        <FormControl>
-                          <Input type="password" placeholder="••••••••" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                   
                   <Button 
-                    type="submit" 
-                    className="btn-gold w-full" 
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowVerification(false)}
                     disabled={isLoading}
                   >
-                    {isLoading ? "Creating Account..." : "Create Account"}
+                    Back
                   </Button>
-                </form>
-              </Form>
-            </div>
-          </TabsContent>
-        </Tabs>
+                </div>
+              </form>
+            </Form>
+          </div>
+        ) : (
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "login" | "signup")} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="login">Login</TabsTrigger>
+              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="login">
+              <div className="mt-8 bg-white p-6 shadow rounded-lg">
+                <Form {...loginForm}>
+                  <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-6">
+                    <FormField
+                      control={loginForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input placeholder="you@example.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={loginForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <Input type="password" placeholder="••••••••" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <Button 
+                      type="submit" 
+                      className="btn-gold w-full" 
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Logging in..." : "Log In"}
+                    </Button>
+                  </form>
+                </Form>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="signup">
+              <div className="mt-8 bg-white p-6 shadow rounded-lg">
+                <Form {...signupForm}>
+                  <form onSubmit={(e) => { e.preventDefault(); initiateSignup(); }} className="space-y-6">
+                    <FormField
+                      control={signupForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input placeholder="you@example.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={signupForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <Input type="password" placeholder="••••••••" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={signupForm.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Confirm Password</FormLabel>
+                          <FormControl>
+                            <Input type="password" placeholder="••••••••" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <Button 
+                      type="submit" 
+                      className="btn-gold w-full" 
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Creating Account..." : "Create Account"}
+                    </Button>
+                  </form>
+                </Form>
+              </div>
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
 
       <RoleSelectionModal 
