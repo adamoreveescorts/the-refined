@@ -10,11 +10,12 @@ import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { UserRound, Calendar, MapPin, Mail, Phone, Shield } from "lucide-react";
+import { UserRound, Calendar, MapPin, Mail, Phone, Shield, User } from "lucide-react";
 
 interface UserProfile {
   id: string;
   email: string;
+  username: string | null;
   display_name: string | null;
   role: string | null;
   created_at: string;
@@ -60,7 +61,8 @@ const UserProfilePage = () => {
         setProfile({
           id: data.id,
           email: data.email || session.user.email,
-          display_name: data.display_name || "User",
+          username: data.username || "User",
+          display_name: data.display_name || data.username || "User",
           role: data.role || "client",
           created_at: new Date(session.user.created_at || data.created_at).toLocaleDateString(),
           payment_status: data.payment_status || "pending",
@@ -129,10 +131,10 @@ const UserProfilePage = () => {
                   <div className="w-20 h-20 rounded-full bg-navy/10 flex items-center justify-center">
                     <UserRound className="h-10 w-10 text-navy" />
                   </div>
-                  <h3 className="text-xl font-medium">{profile.display_name}</h3>
+                  <h3 className="text-xl font-medium">{profile?.display_name}</h3>
                   
-                  <Badge className={`${profile.role === 'escort' ? 'bg-gold' : 'bg-navy'}`}>
-                    {profile.role === 'escort' ? 'Escort' : 'Client'}
+                  <Badge className={`${profile?.role === 'escort' ? 'bg-gold' : 'bg-navy'}`}>
+                    {profile?.role === 'escort' ? 'Escort' : 'Client'}
                   </Badge>
                 </div>
                 
@@ -140,10 +142,18 @@ const UserProfilePage = () => {
                 
                 <div className="space-y-3">
                   <div className="flex items-start">
+                    <User className="h-5 w-5 mr-2 text-gray-400" />
+                    <div>
+                      <p className="text-sm text-gray-500">Username</p>
+                      <p className="font-medium">{profile?.username}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start">
                     <Mail className="h-5 w-5 mr-2 text-gray-400" />
                     <div>
                       <p className="text-sm text-gray-500">Email</p>
-                      <p className="font-medium">{profile.email}</p>
+                      <p className="font-medium">{profile?.email}</p>
                     </div>
                   </div>
                   
@@ -151,7 +161,7 @@ const UserProfilePage = () => {
                     <Calendar className="h-5 w-5 mr-2 text-gray-400" />
                     <div>
                       <p className="text-sm text-gray-500">Member Since</p>
-                      <p className="font-medium">{profile.created_at}</p>
+                      <p className="font-medium">{profile?.created_at}</p>
                     </div>
                   </div>
                   
@@ -159,8 +169,8 @@ const UserProfilePage = () => {
                     <Shield className="h-5 w-5 mr-2 text-gray-400" />
                     <div>
                       <p className="text-sm text-gray-500">Account Status</p>
-                      <Badge variant={profile.is_active ? "default" : "outline"} className={profile.is_active ? "bg-green-500" : ""}>
-                        {profile.is_active ? "Active" : "Pending Activation"}
+                      <Badge variant={profile?.is_active ? "default" : "outline"} className={profile?.is_active ? "bg-green-500" : ""}>
+                        {profile?.is_active ? "Active" : "Pending Activation"}
                       </Badge>
                     </div>
                   </div>

@@ -19,6 +19,7 @@ export type Database = {
           payment_status: string | null
           role: Database["public"]["Enums"]["user_role"] | null
           updated_at: string
+          username: string | null
         }
         Insert: {
           created_at?: string
@@ -29,6 +30,7 @@ export type Database = {
           payment_status?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string
+          username?: string | null
         }
         Update: {
           created_at?: string
@@ -39,6 +41,7 @@ export type Database = {
           payment_status?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string
+          username?: string | null
         }
         Relationships: []
       }
