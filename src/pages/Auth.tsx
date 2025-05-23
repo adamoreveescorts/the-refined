@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { z } from "zod";
@@ -5,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +20,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RoleSelectionModal, { UserRole } from "@/components/RoleSelectionModal";
-import PaymentFlow from "@/components/PaymentFlow";
 
 // Schema for login form
 const loginSchema = z.object({
@@ -27,18 +27,15 @@ const loginSchema = z.object({
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
 });
 
-// Schema for signup form - separate for each role
-const baseSignupSchema = {
+// Schema for signup form
+const signupSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
   confirmPassword: z.string(),
-};
-
-const signupSchema = z.object(baseSignupSchema)
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  });
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 type SignupFormValues = z.infer<typeof signupSchema>;
@@ -49,9 +46,6 @@ const Auth = () => {
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
   const [isLoading, setIsLoading] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
-  const [showPaymentFlow, setShowPaymentFlow] = useState(false);
-  const [newUserId, setNewUserId] = useState<string | null>(null);
-  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [formValues, setFormValues] = useState<SignupFormValues | null>(null);
 
   // Check for tab parameter in URL
@@ -63,51 +57,11 @@ const Auth = () => {
     } else if (tab === "login") {
       setActiveTab("login");
     }
-    
-    // Try to restore form values if they exist in localStorage
-    const savedFormValues = localStorage.getItem('signupFormValues');
-    if (savedFormValues) {
-      try {
-        const parsedValues = JSON.parse(savedFormValues);
-        setFormValues(parsedValues);
-        if (signupForm) {
-          signupForm.reset(parsedValues);
-        }
-      } catch (e) {
-        console.error("Failed to parse saved form values:", e);
-      }
-    }
-
-    // Check for PayPal return parameters
-    const subscriptionId = params.get('subscription_id');
-    const baToken = params.get('ba_token');
-    const userId = localStorage.getItem('pendingUserId');
-    
-    if ((subscriptionId || baToken) && userId) {
-      console.log("Detected PayPal return params:", { subscriptionId, baToken, userId });
-      // If we have PayPal return parameters and stored user ID, show payment flow
-      setNewUserId(userId);
-      setShowPaymentFlow(true);
-    } else if (subscriptionId || baToken) {
-      // If we only have PayPal params but no userId
-      console.log("PayPal params found but no userId:", { subscriptionId, baToken });
-      toast.error("Session expired. Please try signing up again.");
-    }
-  }, [location, activeTab]);
+  }, [location]);
 
   // Check if user is already logged in
   useEffect(() => {
     const checkUser = async () => {
-      // First check for any PayPal return params
-      const params = new URLSearchParams(location.search);
-      const hasPayPalParams = params.get('subscription_id') || params.get('ba_token');
-      
-      // If we have PayPal params, we don't want to redirect away yet
-      if (hasPayPalParams) {
-        console.log("Found PayPal return parameters, skipping redirect check");
-        return;
-      }
-      
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         navigate('/');
@@ -115,7 +69,7 @@ const Auth = () => {
     };
     
     checkUser();
-  }, [navigate, location.search]);
+  }, [navigate]);
 
   // Login form
   const loginForm = useForm<LoginFormValues>({
@@ -161,9 +115,7 @@ const Auth = () => {
   const initiateSignup = async () => {
     const valid = await signupForm.trigger();
     if (valid) {
-      // Store form values in localStorage to persist during redirects
       const values = signupForm.getValues();
-      localStorage.setItem('signupFormValues', JSON.stringify(values));
       setFormValues(values);
       setShowRoleModal(true);
     }
@@ -171,7 +123,6 @@ const Auth = () => {
 
   // After role selection, handle the actual signup
   const handleRoleSelect = async (role: UserRole) => {
-    setSelectedRole(role);
     setIsLoading(true);
     try {
       // Get form values from state or form
@@ -194,24 +145,10 @@ const Auth = () => {
       if (error) {
         throw error;
       }
-
-      const userId = data.user?.id;
-      setNewUserId(userId || null);
-      
-      // Store userId in localStorage for persistence during PayPal redirect
-      if (userId) {
-        localStorage.setItem('pendingUserId', userId);
-      }
       
       setShowRoleModal(false);
-      
-      // If escort role was selected, show payment flow instead of redirecting
-      if (role === "escort" && userId) {
-        setShowPaymentFlow(true);
-      } else {
-        toast.success("Registration successful! Please check your email for verification.");
-        navigate("/");
-      }
+      toast.success("Registration successful! Please check your email for verification.");
+      navigate("/");
     } catch (error: any) {
       console.error("Signup error:", error);
       toast.error(error.message || "Failed to register");
@@ -220,57 +157,6 @@ const Auth = () => {
       setIsLoading(false);
     }
   };
-
-  const handlePaymentComplete = () => {
-    // Clear form data and user ID from localStorage
-    localStorage.removeItem('signupFormValues');
-    localStorage.removeItem('pendingUserId');
-    setShowPaymentFlow(false);
-    navigate("/");
-  };
-
-  const handlePaymentCancel = async () => {
-    // If they cancel payment, we'll keep their account but it will remain inactive
-    toast.info("You can complete payment later from your profile page.");
-    localStorage.removeItem('signupFormValues');
-    setShowPaymentFlow(false);
-    navigate("/");
-  };
-
-  // If payment flow is active, show the payment component
-  if (showPaymentFlow && newUserId) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <PaymentFlow 
-          userId={newUserId} 
-          onPaymentComplete={handlePaymentComplete} 
-          onCancel={handlePaymentCancel} 
-        />
-      </div>
-    );
-  }
-
-  // Check for PayPal return parameters without active payment flow
-  const params = new URLSearchParams(location.search);
-  const hasPayPalParams = params.get('subscription_id') || params.get('ba_token');
-  const storedSubId = localStorage.getItem('pendingSubscriptionId');
-  
-  if (hasPayPalParams && storedSubId && !showPaymentFlow) {
-    // We have PayPal params but no active payment flow, try to resume
-    const userId = localStorage.getItem('pendingUserId');
-    if (userId) {
-      setNewUserId(userId);
-      setShowPaymentFlow(true);
-      return (
-        <div className="min-h-screen bg-background flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <Loader2 className="mx-auto h-12 w-12 animate-spin text-gold" />
-            <p className="mt-4 text-lg">Processing your payment...</p>
-          </div>
-        </div>
-      );
-    }
-  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
