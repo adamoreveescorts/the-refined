@@ -7,13 +7,13 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { UserCircle, Users } from "lucide-react";
+import { UserCircle, Users, Building2 } from "lucide-react";
 
 // Define the role type to match the database enum exactly
-export type UserRole = "escort" | "client";
+export type UserRole = "escort" | "client" | "agency";
 
 const formSchema = z.object({
-  role: z.enum(["escort", "client"], {
+  role: z.enum(["escort", "client", "agency"], {
     required_error: "Please select a role",
   }),
 });
@@ -68,7 +68,18 @@ const RoleSelectionModal = ({ isOpen, onRoleSelect, onClose }: RoleSelectionModa
                           <UserCircle className="h-5 w-5 mr-2 text-gold" />
                           <div>
                             <p className="font-medium">Sign up as an Escort</p>
-                            <p className="text-sm text-muted-foreground">Create a profile and offer services</p>
+                            <p className="text-sm text-muted-foreground">Create a profile and offer services (Subscription required)</p>
+                          </div>
+                        </FormLabel>
+                      </div>
+                      
+                      <div className={`flex items-center space-x-2 rounded-md border p-4 ${field.value === "agency" ? "border-gold bg-muted" : ""}`}>
+                        <RadioGroupItem value="agency" id="agency" />
+                        <FormLabel htmlFor="agency" className="flex items-center cursor-pointer flex-1">
+                          <Building2 className="h-5 w-5 mr-2 text-gold" />
+                          <div>
+                            <p className="font-medium">Sign up as an Agency</p>
+                            <p className="text-sm text-muted-foreground">Manage multiple profiles and services (Subscription required)</p>
                           </div>
                         </FormLabel>
                       </div>
@@ -79,7 +90,7 @@ const RoleSelectionModal = ({ isOpen, onRoleSelect, onClose }: RoleSelectionModa
                           <Users className="h-5 w-5 mr-2 text-gold" />
                           <div>
                             <p className="font-medium">Sign up as a Client</p>
-                            <p className="text-sm text-muted-foreground">Browse profiles and book services</p>
+                            <p className="text-sm text-muted-foreground">Browse profiles and book services (Free)</p>
                           </div>
                         </FormLabel>
                       </div>

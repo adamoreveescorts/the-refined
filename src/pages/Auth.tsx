@@ -20,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RoleSelectionModal, { UserRole } from "@/components/RoleSelectionModal";
+import PaymentFlow from "@/components/PaymentFlow";
 
 // Schema for login form
 const loginSchema = z.object({
@@ -50,6 +51,8 @@ const Auth = () => {
   const [formValues, setFormValues] = useState<SignupFormValues | null>(null);
   const [verificationSent, setVerificationSent] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
+  const [showPaymentFlow, setShowPaymentFlow] = useState(false);
+  const [newUserId, setNewUserId] = useState<string | null>(null);
 
   // Check for tab parameter in URL
   useEffect(() => {
@@ -125,7 +128,7 @@ const Auth = () => {
     }
   };
 
-  // After role selection, start the email verification process
+  // After role selection, handle the signup flow based on role
   const handleRoleSelect = async (role: UserRole) => {
     setSelectedRole(role);
     setShowRoleModal(false);
@@ -134,31 +137,70 @@ const Auth = () => {
     
     setIsLoading(true);
     try {
-      // Use signUp with email confirmation
-      const { data, error } = await supabase.auth.signUp({
-        email: formValues.email,
-        password: formValues.password,
-        options: {
-          data: { 
-            role: role,
-            username: formValues.username 
-          },
-          emailRedirectTo: window.location.origin
+      // For clients, create account and activate immediately
+      if (role === 'client') {
+        const { data, error } = await supabase.auth.signUp({
+          email: formValues.email,
+          password: formValues.password,
+          options: {
+            data: { 
+              role: role,
+              username: formValues.username 
+            },
+            emailRedirectTo: window.location.origin
+          }
+        });
+        
+        if (error) {
+          throw error;
         }
-      });
-      
-      if (error) {
-        throw error;
+        
+        setVerificationSent(true);
+        toast.success("Verification email sent! Please check your inbox.");
+      } else {
+        // For escorts and agencies, create account but don't activate until payment
+        const { data, error } = await supabase.auth.signUp({
+          email: formValues.email,
+          password: formValues.password,
+          options: {
+            data: { 
+              role: role,
+              username: formValues.username 
+            },
+            emailRedirectTo: window.location.origin
+          }
+        });
+        
+        if (error) {
+          throw error;
+        }
+        
+        // Store the user ID for payment flow
+        if (data.user) {
+          setNewUserId(data.user.id);
+          setShowPaymentFlow(true);
+          toast.success("Account created! Please complete your subscription to activate your account.");
+        }
       }
-      
-      setVerificationSent(true);
-      toast.success("Verification email sent! Please check your inbox.");
     } catch (error: any) {
       console.error("Signup error:", error);
       toast.error(error.message || "Failed to create account");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handlePaymentComplete = () => {
+    setShowPaymentFlow(false);
+    setVerificationSent(true);
+    toast.success("Payment successful! Your account is now active. Please check your email for verification.");
+  };
+
+  const handlePaymentCancel = () => {
+    setShowPaymentFlow(false);
+    setSelectedRole(null);
+    setNewUserId(null);
+    toast.info("Payment cancelled. You can try again or contact support if you need assistance.");
   };
 
   return (
@@ -183,12 +225,30 @@ const Auth = () => {
           </p>
         </div>
 
-        {verificationSent ? (
+        {showPaymentFlow ? (
+          <PaymentFlow 
+            userId={newUserId!}
+            onPaymentComplete={handlePaymentComplete}
+            onCancel={handlePaymentCancel}
+          />
+        ) : verificationSent ? (
           <div className="mt-8 bg-white p-6 shadow rounded-lg">
-            <h3 className="text-lg font-medium text-center mb-4">Verification Email Sent</h3>
+            <h3 className="text-lg font-medium text-center mb-4">
+              {selectedRole === 'client' ? 'Verification Email Sent' : 'Account Created Successfully'}
+            </h3>
             <p className="text-sm text-gray-600 mb-6">
-              We've sent a verification link to <strong>{formValues?.email}</strong>.
-              Please check your email and click the link to complete your registration.
+              {selectedRole === 'client' ? (
+                <>
+                  We've sent a verification link to <strong>{formValues?.email}</strong>.
+                  Please check your email and click the link to complete your registration.
+                </>
+              ) : (
+                <>
+                  Your {selectedRole} account has been created and activated! 
+                  We've sent a verification link to <strong>{formValues?.email}</strong>.
+                  Please check your email and click the link to complete your registration.
+                </>
+              )}
             </p>
             
             <div className="space-y-4">

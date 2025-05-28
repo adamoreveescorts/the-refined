@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -133,8 +132,13 @@ const UserProfilePage = () => {
                   </div>
                   <h3 className="text-xl font-medium">{profile?.display_name}</h3>
                   
-                  <Badge className={`${profile?.role === 'escort' ? 'bg-gold' : 'bg-navy'}`}>
-                    {profile?.role === 'escort' ? 'Escort' : 'Client'}
+                  <Badge className={`${
+                    profile?.role === 'escort' || profile?.role === 'agency' 
+                      ? 'bg-gold' 
+                      : 'bg-navy'
+                  }`}>
+                    {profile?.role === 'escort' ? 'Escort' : 
+                     profile?.role === 'agency' ? 'Agency' : 'Client'}
                   </Badge>
                 </div>
                 
@@ -190,7 +194,7 @@ const UserProfilePage = () => {
                 <TabsList className="mb-6">
                   <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                   <TabsTrigger value="settings">Settings</TabsTrigger>
-                  {profile.role === 'escort' && (
+                  {(profile?.role === 'escort' || profile?.role === 'agency') && (
                     <TabsTrigger value="profile-management">Profile Management</TabsTrigger>
                   )}
                 </TabsList>
@@ -201,7 +205,7 @@ const UserProfilePage = () => {
                       <CardTitle className="text-navy">Account Summary</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {profile.role === 'escort' ? (
+                      {(profile?.role === 'escort' || profile?.role === 'agency') ? (
                         <div className="space-y-6">
                           <div className="flex justify-between items-center">
                             <div>
@@ -281,38 +285,46 @@ const UserProfilePage = () => {
                   </Card>
                 </TabsContent>
                 
-                {profile.role === 'escort' && (
+                {(profile?.role === 'escort' || profile?.role === 'agency') && (
                   <TabsContent value="profile-management" className="space-y-6">
                     <Card className="bg-white shadow-sm">
                       <CardHeader>
-                        <CardTitle className="text-navy">Public Profile</CardTitle>
+                        <CardTitle className="text-navy">
+                          {profile?.role === 'agency' ? 'Agency Profile' : 'Public Profile'}
+                        </CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-6">
                           <div>
                             <h3 className="font-medium mb-3">Profile Visibility</h3>
-                            <Badge className={profile.is_active ? "bg-green-500" : "bg-red-500"}>
-                              {profile.is_active ? "Public" : "Not Visible"}
+                            <Badge className={profile?.is_active ? "bg-green-500" : "bg-red-500"}>
+                              {profile?.is_active ? "Public" : "Not Visible"}
                             </Badge>
                             <p className="text-sm text-gray-500 mt-1">
-                              {profile.is_active 
+                              {profile?.is_active 
                                 ? "Your profile is visible in the directory" 
-                                : "Your profile is not visible until approved by admin"}
+                                : "Your profile is not visible until subscription is active"}
                             </p>
                           </div>
                           
                           <Separator />
                           
                           <div>
-                            <h3 className="font-medium mb-3">Edit Public Profile</h3>
+                            <h3 className="font-medium mb-3">
+                              {profile?.role === 'agency' ? 'Manage Agency Profile' : 'Edit Public Profile'}
+                            </h3>
                             <Button className="btn-gold">Manage Profile</Button>
                           </div>
                           
                           <Separator />
                           
                           <div>
-                            <h3 className="font-medium mb-3">Upload Photos</h3>
-                            <Button variant="outline">Manage Photos</Button>
+                            <h3 className="font-medium mb-3">
+                              {profile?.role === 'agency' ? 'Manage Photos & Profiles' : 'Upload Photos'}
+                            </h3>
+                            <Button variant="outline">
+                              {profile?.role === 'agency' ? 'Manage Content' : 'Manage Photos'}
+                            </Button>
                           </div>
                         </div>
                       </CardContent>
