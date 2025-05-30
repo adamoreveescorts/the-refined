@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { UserRound, Calendar, MapPin, Mail, Phone, Shield, User } from "lucide-react";
+import { UserRound, Calendar, MapPin, Mail, Phone, Shield, User, CreditCard } from "lucide-react";
 
 interface UserProfile {
   id: string;
@@ -26,57 +26,123 @@ const UserProfilePage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [subscription, setSubscription] = useState<any>(null);
   
   useEffect(() => {
-    // Check if user is authenticated
-    const checkAuthAndFetchProfile = async () => {
-      try {
-        setLoading(true);
-        
-        // Get the current session
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) {
-          // If no session, redirect to login
-          toast.error("Please log in to view your profile");
-          navigate("/auth");
-          return;
-        }
-        
-        // Fetch user profile from the profiles table
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", session.user.id)
-          .single();
-          
-        if (error) {
-          console.error("Error fetching profile:", error);
-          toast.error("Failed to load profile");
-          return;
-        }
-        
-        // Set profile data
-        setProfile({
-          id: data.id,
-          email: data.email || session.user.email,
-          username: data.username || "User",
-          display_name: data.display_name || data.username || "User",
-          role: data.role || "client",
-          created_at: new Date(session.user.created_at || data.created_at).toLocaleDateString(),
-          payment_status: data.payment_status || "pending",
-          is_active: data.is_active || false
-        });
-      } catch (error) {
-        console.error("Profile error:", error);
-        toast.error("An error occurred while loading your profile");
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     checkAuthAndFetchProfile();
-  }, [navigate]);
+  }, []);
+
+  const checkAuthAndFetchProfile = async () => {
+    try {
+      setLoading(true);
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error("Please log in to view your profile");
+        navigate("/auth");
+        return;
+      }
+      
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", session.user.id)
+        .single();
+        
+      if (error) {
+        console.error("Error fetching profile:", error);
+        toast.error("Failed to load profile");
+        return;
+      }
+      
+      setProfile({
+        id: data.id,
+        email: data.email || session.user.email,
+        username: data.username || "User",
+        display_name: data.display_name || data.username || "User",
+        role: data.role || "client",
+        created_at: new Date(session.user.created_at || data.created_at).toLocaleDateString(),
+        payment_status: data.payment_status || "pending",
+        is_active: data.is_active || false
+      });
+
+      // Check subscription status for paid roles
+      if (data.role === 'escort' || data.role === 'agency') {
+        await checkSubscriptionStatus(session);
+      }
+    } catch (error) {
+      console.error("Profile error:", error);
+      toast.error("An error occurred while loading your profile");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const checkSubscriptionStatus = async (session: any) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('check-subscription', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+      
+      if (!error && data) {
+        setSubscription(data);
+      }
+    } catch (error) {
+      console.error("Error checking subscription:", error);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Please log in first");
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('customer-portal', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+
+      window.open(data.url, '_blank');
+      toast.success("Redirected to Stripe customer portal.");
+    } catch (error: any) {
+      console.error("Portal error:", error);
+      toast.error(error.message || "Failed to open customer portal");
+    }
+  };
+
+  const handleCompletePayment = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Please log in first");
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { role: profile?.role },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+
+      window.open(data.url, '_blank');
+      toast.success("Redirected to Stripe checkout.");
+    } catch (error: any) {
+      console.error("Payment error:", error);
+      toast.error(error.message || "Failed to create checkout session");
+    }
+  };
   
   if (loading) {
     return (
@@ -178,6 +244,24 @@ const UserProfilePage = () => {
                       </Badge>
                     </div>
                   </div>
+
+                  {/* Show subscription info for paid roles */}
+                  {(profile?.role === 'escort' || profile?.role === 'agency') && subscription && (
+                    <div className="flex items-start">
+                      <CreditCard className="h-5 w-5 mr-2 text-gray-400" />
+                      <div>
+                        <p className="text-sm text-gray-500">Subscription</p>
+                        <Badge variant={subscription.subscribed ? "default" : "outline"} className={subscription.subscribed ? "bg-green-500" : ""}>
+                          {subscription.subscribed ? "Active" : "Inactive"}
+                        </Badge>
+                        {subscription.subscription_end && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            Next billing: {new Date(subscription.subscription_end).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="mt-6">
@@ -209,16 +293,25 @@ const UserProfilePage = () => {
                         <div className="space-y-6">
                           <div className="flex justify-between items-center">
                             <div>
-                              <p className="text-sm text-gray-500">Payment Status</p>
+                              <p className="text-sm text-gray-500">Subscription Status</p>
                               <div className="mt-1">
-                                <Badge className={`${profile.payment_status === 'completed' ? 'bg-green-500' : 'bg-amber-500'}`}>
-                                  {profile.payment_status === 'completed' ? 'Paid' : 'Payment Required'}
+                                <Badge className={`${subscription?.subscribed ? 'bg-green-500' : 'bg-amber-500'}`}>
+                                  {subscription?.subscribed ? 'Active' : 'Payment Required'}
                                 </Badge>
                               </div>
                             </div>
-                            {profile.payment_status !== 'completed' && (
-                              <Button className="btn-gold">Complete Payment</Button>
-                            )}
+                            <div className="space-x-2">
+                              {!subscription?.subscribed ? (
+                                <Button className="btn-gold" onClick={handleCompletePayment}>
+                                  Complete Payment
+                                </Button>
+                              ) : (
+                                <Button variant="outline" onClick={handleManageSubscription}>
+                                  <CreditCard className="h-4 w-4 mr-2" />
+                                  Manage Subscription
+                                </Button>
+                              )}
+                            </div>
                           </div>
                           
                           <div>

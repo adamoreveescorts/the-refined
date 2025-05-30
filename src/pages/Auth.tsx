@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { z } from "zod";
@@ -20,7 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RoleSelectionModal, { UserRole } from "@/components/RoleSelectionModal";
-import PaymentFlow from "@/components/PaymentFlow";
+import StripePaymentFlow from "@/components/StripePaymentFlow";
 
 // Schema for login form
 const loginSchema = z.object({
@@ -54,14 +53,24 @@ const Auth = () => {
   const [showPaymentFlow, setShowPaymentFlow] = useState(false);
   const [newUserId, setNewUserId] = useState<string | null>(null);
 
-  // Check for tab parameter in URL
+  // Check for tab parameter in URL and payment status
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get("tab");
+    const payment = params.get("payment");
+    
     if (tab === "signup") {
       setActiveTab("signup");
     } else if (tab === "login") {
       setActiveTab("login");
+    }
+    
+    if (payment === "success") {
+      toast.success("Payment successful! Your account is now active.");
+      // Check subscription status after successful payment
+      checkSubscriptionStatus();
+    } else if (payment === "cancelled") {
+      toast.info("Payment was cancelled. You can try again anytime.");
     }
   }, [location]);
 
@@ -76,6 +85,21 @@ const Auth = () => {
     
     checkUser();
   }, [navigate]);
+
+  const checkSubscriptionStatus = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await supabase.functions.invoke('check-subscription', {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Error checking subscription:", error);
+    }
+  };
 
   // Login form
   const loginForm = useForm<LoginFormValues>({
@@ -193,7 +217,7 @@ const Auth = () => {
   const handlePaymentComplete = () => {
     setShowPaymentFlow(false);
     setVerificationSent(true);
-    toast.success("Payment successful! Your account is now active. Please check your email for verification.");
+    toast.success("Payment initiated! Please complete the checkout process in the new tab. Your account will be activated after successful payment.");
   };
 
   const handlePaymentCancel = () => {
@@ -226,8 +250,8 @@ const Auth = () => {
         </div>
 
         {showPaymentFlow ? (
-          <PaymentFlow 
-            userId={newUserId!}
+          <StripePaymentFlow 
+            role={selectedRole as "escort" | "agency"}
             onPaymentComplete={handlePaymentComplete}
             onCancel={handlePaymentCancel}
           />
@@ -244,9 +268,8 @@ const Auth = () => {
                 </>
               ) : (
                 <>
-                  Your {selectedRole} account has been created and activated! 
-                  We've sent a verification link to <strong>{formValues?.email}</strong>.
-                  Please check your email and click the link to complete your registration.
+                  Your {selectedRole} account has been created! Complete the payment process in the Stripe checkout tab to activate your account.
+                  We've also sent a verification link to <strong>{formValues?.email}</strong>.
                 </>
               )}
             </p>

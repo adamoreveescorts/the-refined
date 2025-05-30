@@ -6,16 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, CreditCard, User, Building2, Users } from "lucide-react";
-import PaymentFlow from "@/components/PaymentFlow";
+import { ArrowLeft, CreditCard, User, Building2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 const PaymentTest = () => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
-  const [showPaymentFlow, setShowPaymentFlow] = useState(false);
-  const [testRole, setTestRole] = useState<"escort" | "agency">("escort");
+  const [subscription, setSubscription] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     checkUser();
@@ -33,6 +32,9 @@ const PaymentTest = () => {
           .eq("id", user.id)
           .single();
         setProfile(profile);
+        
+        // Check subscription status
+        await checkSubscriptionStatus();
       }
     } catch (error) {
       console.error("Error checking user:", error);
@@ -41,24 +43,86 @@ const PaymentTest = () => {
     }
   };
 
-  const handleTestPayment = (role: "escort" | "agency") => {
+  const checkSubscriptionStatus = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data, error } = await supabase.functions.invoke('check-subscription', {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+        
+        if (!error && data) {
+          setSubscription(data);
+        }
+      }
+    } catch (error) {
+      console.error("Error checking subscription:", error);
+    }
+  };
+
+  const handleTestPayment = async (role: "escort" | "agency") => {
     if (!user) {
       toast.error("Please log in first to test the payment flow");
       return;
     }
-    setTestRole(role);
-    setShowPaymentFlow(true);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Please log in first");
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { role },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+
+      // Open Stripe checkout in a new tab
+      window.open(data.url, '_blank');
+      toast.success("Redirected to Stripe checkout. Complete your payment to test the flow.");
+    } catch (error: any) {
+      console.error("Payment error:", error);
+      toast.error(error.message || "Failed to create checkout session");
+    }
   };
 
-  const handlePaymentComplete = () => {
-    setShowPaymentFlow(false);
-    toast.success("Payment test completed successfully!");
-    checkUser(); // Refresh user data
+  const handleManageSubscription = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Please log in first");
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('customer-portal', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+
+      // Open Stripe customer portal in a new tab
+      window.open(data.url, '_blank');
+      toast.success("Redirected to Stripe customer portal.");
+    } catch (error: any) {
+      console.error("Portal error:", error);
+      toast.error(error.message || "Failed to open customer portal");
+    }
   };
 
-  const handlePaymentCancel = () => {
-    setShowPaymentFlow(false);
-    toast.info("Payment test cancelled");
+  const refreshSubscriptionStatus = async () => {
+    setRefreshing(true);
+    await checkSubscriptionStatus();
+    setRefreshing(false);
+    toast.success("Subscription status refreshed");
   };
 
   if (loading) {
@@ -72,18 +136,6 @@ const PaymentTest = () => {
     );
   }
 
-  if (showPaymentFlow) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <PaymentFlow
-          userId={user?.id}
-          onPaymentComplete={handlePaymentComplete}
-          onCancel={handlePaymentCancel}
-        />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
@@ -92,17 +144,28 @@ const PaymentTest = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Home
           </Link>
-          <h1 className="text-3xl font-serif text-gray-900 mb-2">Payment Testing</h1>
-          <p className="text-gray-600">Test the PayPal subscription flow for escorts and agencies</p>
+          <h1 className="text-3xl font-serif text-gray-900 mb-2">Stripe Payment Testing</h1>
+          <p className="text-gray-600">Test the Stripe subscription flow for escorts and agencies</p>
         </div>
 
         <div className="grid gap-6">
           {/* User Status Card */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <User className="h-5 w-5 mr-2" />
-                Current User Status
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <User className="h-5 w-5 mr-2" />
+                  Current User Status
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={refreshSubscriptionStatus}
+                  disabled={refreshing}
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -132,6 +195,28 @@ const PaymentTest = () => {
                       </div>
                     </>
                   )}
+                  {subscription && (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <span>Stripe Subscription:</span>
+                        <Badge variant={subscription.subscribed ? "default" : "secondary"}>
+                          {subscription.subscribed ? "Active" : "Inactive"}
+                        </Badge>
+                      </div>
+                      {subscription.subscription_tier && (
+                        <div className="flex items-center justify-between">
+                          <span>Subscription Tier:</span>
+                          <Badge variant="outline">{subscription.subscription_tier}</Badge>
+                        </div>
+                      )}
+                      {subscription.subscription_end && (
+                        <div className="flex items-center justify-between">
+                          <span>Next Billing:</span>
+                          <span className="text-sm">{new Date(subscription.subscription_end).toLocaleDateString()}</span>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               ) : (
                 <div className="text-center py-4">
@@ -158,7 +243,7 @@ const PaymentTest = () => {
                       Test Escort Payment
                     </CardTitle>
                     <CardDescription>
-                      Test the PayPal subscription flow for escort accounts
+                      Test the Stripe subscription flow for escort accounts
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -168,8 +253,8 @@ const PaymentTest = () => {
                           <strong>Test Details:</strong>
                         </p>
                         <ul className="text-sm text-gray-600 space-y-1">
-                          <li>• Monthly subscription: $0.01 USD</li>
-                          <li>• PayPal test environment</li>
+                          <li>• Monthly subscription: $0.50 USD</li>
+                          <li>• Stripe test environment</li>
                           <li>• Account activation on payment</li>
                         </ul>
                       </div>
@@ -192,7 +277,7 @@ const PaymentTest = () => {
                       Test Agency Payment
                     </CardTitle>
                     <CardDescription>
-                      Test the PayPal subscription flow for agency accounts
+                      Test the Stripe subscription flow for agency accounts
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -202,8 +287,8 @@ const PaymentTest = () => {
                           <strong>Test Details:</strong>
                         </p>
                         <ul className="text-sm text-gray-600 space-y-1">
-                          <li>• Monthly subscription: $0.01 USD</li>
-                          <li>• PayPal test environment</li>
+                          <li>• Monthly subscription: $0.50 USD</li>
+                          <li>• Stripe test environment</li>
                           <li>• Account activation on payment</li>
                         </ul>
                       </div>
@@ -219,6 +304,30 @@ const PaymentTest = () => {
                 </Card>
               </div>
 
+              {/* Subscription Management */}
+              {subscription?.subscribed && (
+                <>
+                  <Separator />
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Subscription Management</CardTitle>
+                      <CardDescription>
+                        Manage your active subscription through Stripe Customer Portal
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button 
+                        onClick={handleManageSubscription}
+                        className="btn-gold"
+                      >
+                        <CreditCard className="h-4 w-4 mr-2" />
+                        Manage Subscription
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+
               <Separator />
 
               {/* Instructions Card */}
@@ -232,18 +341,21 @@ const PaymentTest = () => {
                       <h4 className="font-medium mb-2">How to test:</h4>
                       <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
                         <li>Click one of the test payment buttons above</li>
-                        <li>You'll be redirected to the PayPal payment flow</li>
-                        <li>Complete the test payment process</li>
-                        <li>Return to see your updated account status</li>
+                        <li>You'll be redirected to Stripe checkout in a new tab</li>
+                        <li>Use test card number: 4242 4242 4242 4242</li>
+                        <li>Use any future expiry date and any CVC</li>
+                        <li>Complete the payment process</li>
+                        <li>Return here and click "Refresh" to see updated status</li>
                       </ol>
                     </div>
                     
                     <div>
-                      <h4 className="font-medium mb-2">PayPal Test Account:</h4>
-                      <p className="text-sm text-gray-600">
-                        You can use PayPal's test credit card numbers or create a test PayPal account for testing.
-                        This is using PayPal's sandbox environment, so no real money will be charged.
-                      </p>
+                      <h4 className="font-medium mb-2">Stripe Test Cards:</h4>
+                      <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
+                        <li>Success: 4242 4242 4242 4242</li>
+                        <li>Decline: 4000 0000 0000 0002</li>
+                        <li>Requires 3D Secure: 4000 0027 6000 3184</li>
+                      </ul>
                     </div>
 
                     <div>
@@ -251,6 +363,7 @@ const PaymentTest = () => {
                       <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
                         <li>Payment status should change to "completed"</li>
                         <li>Account should become active (is_active: true)</li>
+                        <li>Stripe subscription should show as "Active"</li>
                         <li>User should be able to access paid features</li>
                       </ul>
                     </div>
