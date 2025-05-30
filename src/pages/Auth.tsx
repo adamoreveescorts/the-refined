@@ -51,7 +51,7 @@ const Auth = () => {
   const [verificationSent, setVerificationSent] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [showPaymentFlow, setShowPaymentFlow] = useState(false);
-  const [newUserId, setNewUserId] = useState<string | null>(null);
+  const [newUserSession, setNewUserSession] = useState<any>(null);
 
   // Check for tab parameter in URL and payment status
   useEffect(() => {
@@ -161,7 +161,6 @@ const Auth = () => {
     
     setIsLoading(true);
     try {
-      // For clients, create account and activate immediately
       if (role === 'client') {
         const { data, error } = await supabase.auth.signUp({
           email: formValues.email,
@@ -182,7 +181,7 @@ const Auth = () => {
         setVerificationSent(true);
         toast.success("Verification email sent! Please check your inbox.");
       } else {
-        // For escorts and agencies, create account but don't activate until payment
+        // For escorts and agencies, create account and get session for payment
         const { data, error } = await supabase.auth.signUp({
           email: formValues.email,
           password: formValues.password,
@@ -199,9 +198,18 @@ const Auth = () => {
           throw error;
         }
         
-        // Store the user ID for payment flow
-        if (data.user) {
-          setNewUserId(data.user.id);
+        // Now sign them in to get a session for payment
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email: formValues.email,
+          password: formValues.password,
+        });
+        
+        if (signInError) {
+          throw signInError;
+        }
+        
+        if (signInData.session) {
+          setNewUserSession(signInData.session);
           setShowPaymentFlow(true);
           toast.success("Account created! Please complete your subscription to activate your account.");
         }
@@ -223,7 +231,7 @@ const Auth = () => {
   const handlePaymentCancel = () => {
     setShowPaymentFlow(false);
     setSelectedRole(null);
-    setNewUserId(null);
+    setNewUserSession(null);
     toast.info("Payment cancelled. You can try again or contact support if you need assistance.");
   };
 
@@ -254,6 +262,7 @@ const Auth = () => {
             role={selectedRole as "escort" | "agency"}
             onPaymentComplete={handlePaymentComplete}
             onCancel={handlePaymentCancel}
+            userSession={newUserSession}
           />
         ) : verificationSent ? (
           <div className="mt-8 bg-white p-6 shadow rounded-lg">

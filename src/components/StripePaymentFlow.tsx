@@ -10,24 +10,30 @@ interface StripePaymentFlowProps {
   role: "escort" | "agency";
   onPaymentComplete: () => void;
   onCancel: () => void;
+  userSession?: any; // Optional session for when user is already logged in
 }
 
-const StripePaymentFlow = ({ role, onPaymentComplete, onCancel }: StripePaymentFlowProps) => {
+const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: StripePaymentFlowProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handlePayment = async () => {
     setIsLoading(true);
     try {
+      // Get current session or use the passed userSession
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      const currentSession = userSession || session;
+      
+      if (!currentSession) {
         toast.error("Please log in to continue");
         return;
       }
 
+      console.log("Creating checkout with session:", currentSession.access_token);
+
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { role },
         headers: {
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${currentSession.access_token}`,
         },
       });
 
