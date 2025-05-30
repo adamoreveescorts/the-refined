@@ -42,7 +42,8 @@ serve(async (req) => {
       throw new Error("Invalid role specified");
     }
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
+    // Use the correct secret name that matches Supabase secrets
+    const stripe = new Stripe(Deno.env.get("Stripe Secret") || "", { 
       apiVersion: "2023-10-16" 
     });
 
