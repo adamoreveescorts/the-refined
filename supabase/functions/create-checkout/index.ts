@@ -67,7 +67,7 @@ serve(async (req) => {
           price_data: {
             currency: "usd",
             product_data: { 
-              name: `${role === 'escort' ? 'Escort' : 'Agency'} Monthly Subscription` 
+              name: "Eternal Security Monthly Subscription" 
             },
             unit_amount: 50, // $0.50 in cents
             recurring: { interval: "month" },
