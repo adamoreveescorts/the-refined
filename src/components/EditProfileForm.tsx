@@ -19,21 +19,30 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { X, Upload, User } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const profileSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters").max(30, "Username must be less than 30 characters"),
   display_name: z.string().min(2, "Display name must be at least 2 characters").max(50, "Display name must be less than 50 characters"),
   email: z.string().email("Please enter a valid email address"),
   bio: z.string().max(1000, "Bio must be less than 1000 characters").optional(),
-  age: z.string().optional(),
-  location: z.string().max(100, "Location must be less than 100 characters").optional(),
-  height: z.string().max(20, "Height must be less than 20 characters").optional(),
+  // Details fields
+  gender: z.string().optional(),
+  ethnicity: z.string().optional(),
+  height: z.string().optional(),
+  weight: z.string().optional(),
+  hair_color: z.string().optional(),
+  eye_color: z.string().optional(),
   languages: z.string().max(200, "Languages must be less than 200 characters").optional(),
   services: z.string().max(500, "Services must be less than 500 characters").optional(),
-  rates: z.string().max(300, "Rates must be less than 300 characters").optional(),
-  availability: z.string().max(300, "Availability must be less than 300 characters").optional(),
+  // Rates fields
+  hourly_rate: z.string().optional(),
+  two_hour_rate: z.string().optional(),
+  dinner_rate: z.string().optional(),
+  overnight_rate: z.string().optional(),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -46,13 +55,18 @@ interface EditProfileFormProps {
     email: string | null;
     role: string | null;
     bio?: string | null;
-    age?: string | null;
-    location?: string | null;
+    gender?: string | null;
+    ethnicity?: string | null;
     height?: string | null;
+    weight?: string | null;
+    hair_color?: string | null;
+    eye_color?: string | null;
     languages?: string | null;
     services?: string | null;
-    rates?: string | null;
-    availability?: string | null;
+    hourly_rate?: string | null;
+    two_hour_rate?: string | null;
+    dinner_rate?: string | null;
+    overnight_rate?: string | null;
     profile_picture?: string | null;
     tags?: string | null;
   };
@@ -77,13 +91,18 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
       display_name: profile.display_name || "",
       email: profile.email || "",
       bio: profile.bio || "",
-      age: profile.age || "",
-      location: profile.location || "",
+      gender: profile.gender || "",
+      ethnicity: profile.ethnicity || "",
       height: profile.height || "",
+      weight: profile.weight || "",
+      hair_color: profile.hair_color || "",
+      eye_color: profile.eye_color || "",
       languages: profile.languages || "",
       services: profile.services || "",
-      rates: profile.rates || "",
-      availability: profile.availability || "",
+      hourly_rate: profile.hourly_rate || "",
+      two_hour_rate: profile.two_hour_rate || "",
+      dinner_rate: profile.dinner_rate || "",
+      overnight_rate: profile.overnight_rate || "",
     },
   });
 
@@ -162,13 +181,18 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
       // Add escort-specific fields only if user is escort or agency
       if (isEscortOrAgency) {
         updateData.bio = data.bio;
-        updateData.age = data.age;
-        updateData.location = data.location;
+        updateData.gender = data.gender;
+        updateData.ethnicity = data.ethnicity;
         updateData.height = data.height;
+        updateData.weight = data.weight;
+        updateData.hair_color = data.hair_color;
+        updateData.eye_color = data.eye_color;
         updateData.languages = data.languages;
         updateData.services = data.services;
-        updateData.rates = data.rates;
-        updateData.availability = data.availability;
+        updateData.hourly_rate = data.hourly_rate;
+        updateData.two_hour_rate = data.two_hour_rate;
+        updateData.dinner_rate = data.dinner_rate;
+        updateData.overnight_rate = data.overnight_rate;
         updateData.profile_picture = profilePicture;
         updateData.tags = selectedTags.join(',');
       }
@@ -289,12 +313,16 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
               />
             </div>
 
-            {/* Escort/Agency Specific Fields */}
+            {/* Escort/Agency Specific Fields in Tabs */}
             {isEscortOrAgency && (
-              <>
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Profile Details</h3>
-                  
+              <Tabs defaultValue="about" className="w-full">
+                <TabsList className="grid grid-cols-3 mb-4">
+                  <TabsTrigger value="about">About</TabsTrigger>
+                  <TabsTrigger value="details">Details</TabsTrigger>
+                  <TabsTrigger value="rates">Rates</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="about" className="space-y-4">
                   <FormField
                     control={form.control}
                     name="bio"
@@ -304,7 +332,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                         <FormControl>
                           <Textarea 
                             placeholder="Tell us about yourself..." 
-                            className="min-h-24"
+                            className="min-h-32"
                             {...field} 
                           />
                         </FormControl>
@@ -316,68 +344,6 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                     )}
                   />
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="age"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Age</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., 25" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="height"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Height</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., 5'6 or 168cm" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="location"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Location</FormLabel>
-                        <FormControl>
-                          <Input placeholder="City, State/Country" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="languages"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Languages</FormLabel>
-                        <FormControl>
-                          <Input placeholder="English, Spanish, French..." {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Services & Availability</h3>
-                  
                   <FormField
                     control={form.control}
                     name="services"
@@ -395,68 +361,207 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                       </FormItem>
                     )}
                   />
+                </TabsContent>
+                
+                <TabsContent value="details" className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="gender"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Gender</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select gender" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Female">Female</SelectItem>
+                              <SelectItem value="Male">Male</SelectItem>
+                              <SelectItem value="Non-binary">Non-binary</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="rates"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Rates</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Your pricing structure..."
-                            className="min-h-16"
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    <FormField
+                      control={form.control}
+                      name="ethnicity"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Ethnicity</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Caucasian" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="availability"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Availability</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="When are you available? Days, hours, advance notice needed..."
-                            className="min-h-16"
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                    <FormField
+                      control={form.control}
+                      name="height"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Height</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., 172cm or 5'6" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Tags</h3>
-                  <p className="text-sm text-gray-500">Select tags that describe your services</p>
-                  <div className="flex flex-wrap gap-2">
-                    {commonTags.map((tag) => (
-                      <Badge
-                        key={tag}
-                        variant={selectedTags.includes(tag) ? "default" : "outline"}
-                        className={`cursor-pointer ${
-                          selectedTags.includes(tag) 
-                            ? "bg-gold text-white hover:bg-gold/80" 
-                            : "hover:bg-gray-100"
-                        }`}
-                        onClick={() => toggleTag(tag)}
-                      >
-                        {tag}
-                        {selectedTags.includes(tag) && (
-                          <X className="h-3 w-3 ml-1" />
-                        )}
-                      </Badge>
-                    ))}
+                    <FormField
+                      control={form.control}
+                      name="weight"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Weight</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., 55kg or 120lbs" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="hair_color"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Hair Color</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Blonde" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="eye_color"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Eye Color</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Blue" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
+
+                  <FormField
+                    control={form.control}
+                    name="languages"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Languages</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., English, French, Spanish" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="rates" className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="hourly_rate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>1 Hour Rate ($)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., 300" type="number" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="two_hour_rate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>2 Hours Rate ($)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., 550" type="number" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="dinner_rate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Dinner Date Rate ($)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., 800" type="number" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="overnight_rate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Overnight Rate ($)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., 2000" type="number" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
+            )}
+
+            {/* Tags Section */}
+            {isEscortOrAgency && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Tags</h3>
+                <p className="text-sm text-gray-500">Select tags that describe your services</p>
+                <div className="flex flex-wrap gap-2">
+                  {commonTags.map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant={selectedTags.includes(tag) ? "default" : "outline"}
+                      className={`cursor-pointer ${
+                        selectedTags.includes(tag) 
+                          ? "bg-gold text-white hover:bg-gold/80" 
+                          : "hover:bg-gray-100"
+                      }`}
+                      onClick={() => toggleTag(tag)}
+                    >
+                      {tag}
+                      {selectedTags.includes(tag) && (
+                        <X className="h-3 w-3 ml-1" />
+                      )}
+                    </Badge>
+                  ))}
                 </div>
-              </>
+              </div>
             )}
 
             <div className="flex space-x-4 pt-6">
