@@ -379,6 +379,7 @@ const UserProfilePage = () => {
                     <SubscriptionTierSelector 
                       onTierSelect={handleUpgrade}
                       selectedTier={subscription?.subscription_tier === 'Platinum' ? 'platinum_monthly' : 'basic'}
+                      currentTier={subscription?.subscription_tier}
                       role={profile?.role as "escort" | "agency"}
                     />
                     <div className="mt-4">

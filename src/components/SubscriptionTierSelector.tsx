@@ -90,13 +90,16 @@ const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
 interface SubscriptionTierSelectorProps {
   onTierSelect: (tier: SubscriptionTier) => void;
   selectedTier?: string;
+  currentTier?: string;
   role: "escort" | "agency";
 }
 
-const SubscriptionTierSelector = ({ onTierSelect, selectedTier, role }: SubscriptionTierSelectorProps) => {
+const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, role }: SubscriptionTierSelectorProps) => {
   const [loading, setLoading] = useState<string | null>(null);
 
   const handleSelectTier = async (tier: SubscriptionTier) => {
+    if (tier.id === currentTier) return; // Don't allow selecting current tier
+    
     setLoading(tier.id);
     try {
       onTierSelect(tier);
@@ -108,6 +111,12 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, role }: Subscrip
   const getTierIcon = (tierId: string) => {
     if (tierId === "basic") return <Shield className="h-6 w-6" />;
     return <Crown className="h-6 w-6 text-gold" />;
+  };
+
+  const isCurrentTier = (tierId: string) => {
+    if (currentTier === 'Basic' && tierId === 'basic') return true;
+    if (currentTier === 'Platinum' && tierId.startsWith('platinum_')) return true;
+    return false;
   };
 
   return (
@@ -122,60 +131,78 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, role }: Subscrip
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {SUBSCRIPTION_TIERS.map((tier) => (
-          <Card 
-            key={tier.id} 
-            className={`relative transition-all duration-200 hover:shadow-lg ${
-              selectedTier === tier.id ? 'ring-2 ring-gold' : ''
-            } ${tier.recommended ? 'border-gold' : ''}`}
-          >
-            {tier.recommended && (
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <Badge className="bg-gold text-white px-3 py-1">
-                  <Star className="h-3 w-3 mr-1" />
-                  Most Popular
-                </Badge>
-              </div>
-            )}
-            
-            <CardHeader className="text-center pb-4">
-              <div className="flex justify-center mb-2">
-                {getTierIcon(tier.id)}
-              </div>
-              <CardTitle className="text-navy">{tier.name}</CardTitle>
-              <CardDescription>
-                <div className="text-2xl font-bold text-navy">
-                  {tier.price === 0 ? "Free" : `$${tier.price}`}
+        {SUBSCRIPTION_TIERS.map((tier) => {
+          const isCurrent = isCurrentTier(tier.id);
+          
+          return (
+            <Card 
+              key={tier.id} 
+              className={`relative transition-all duration-200 hover:shadow-lg ${
+                selectedTier === tier.id ? 'ring-2 ring-gold' : ''
+              } ${tier.recommended ? 'border-gold' : ''} ${
+                isCurrent ? 'ring-2 ring-green-500 bg-green-50' : ''
+              }`}
+            >
+              {tier.recommended && !isCurrent && (
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                  <Badge className="bg-gold text-white px-3 py-1">
+                    <Star className="h-3 w-3 mr-1" />
+                    Most Popular
+                  </Badge>
                 </div>
-                <div className="text-sm text-gray-500">{tier.duration}</div>
-              </CardDescription>
-            </CardHeader>
-            
-            <CardContent className="space-y-4">
-              <ul className="space-y-2">
-                {tier.features.map((feature, index) => (
-                  <li key={index} className="flex items-start text-sm">
-                    <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
+              )}
               
-              <Button
-                onClick={() => handleSelectTier(tier)}
-                disabled={loading === tier.id}
-                className={`w-full ${
-                  tier.id === "basic" 
-                    ? "bg-gray-600 hover:bg-gray-700" 
-                    : "btn-gold"
-                }`}
-              >
-                {loading === tier.id ? "Processing..." : 
-                 tier.price === 0 ? "Select Free Plan" : "Upgrade to Platinum"}
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+              {isCurrent && (
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                  <Badge className="bg-green-500 text-white px-3 py-1">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    Current Plan
+                  </Badge>
+                </div>
+              )}
+              
+              <CardHeader className="text-center pb-4">
+                <div className="flex justify-center mb-2">
+                  {getTierIcon(tier.id)}
+                </div>
+                <CardTitle className="text-navy">{tier.name}</CardTitle>
+                <CardDescription>
+                  <div className="text-2xl font-bold text-navy">
+                    {tier.price === 0 ? "Free" : `$${tier.price}`}
+                  </div>
+                  <div className="text-sm text-gray-500">{tier.duration}</div>
+                </CardDescription>
+              </CardHeader>
+              
+              <CardContent className="space-y-4">
+                <ul className="space-y-2">
+                  {tier.features.map((feature, index) => (
+                    <li key={index} className="flex items-start text-sm">
+                      <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                
+                <Button
+                  onClick={() => handleSelectTier(tier)}
+                  disabled={loading === tier.id || isCurrent}
+                  className={`w-full ${
+                    isCurrent 
+                      ? "bg-green-500 hover:bg-green-500 cursor-not-allowed" 
+                      : tier.id === "basic" 
+                        ? "bg-gray-600 hover:bg-gray-700" 
+                        : "btn-gold"
+                  }`}
+                >
+                  {loading === tier.id ? "Processing..." : 
+                   isCurrent ? "Your Current Plan" :
+                   tier.price === 0 ? "Select Free Plan" : "Upgrade to Platinum"}
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );
