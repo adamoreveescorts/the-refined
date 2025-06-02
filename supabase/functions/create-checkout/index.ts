@@ -123,7 +123,7 @@ serve(async (req) => {
       ],
       mode: "payment", // One-time payment for platinum tiers
       success_url: `${req.headers.get("origin")}/auth?payment=success&tier=${tier}`,
-      cancel_url: `${req.headers.get("origin")}/auth?payment=cancelled`,
+      cancel_url: `${req.headers.get("origin")}/payment-cancelled`,
       metadata: {
         user_id: user.id,
         role: role,
