@@ -26,10 +26,10 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { name, email, subject, message }: ContactFormData = await req.json();
 
-    // Send notification email to the business
+    // Send notification email to both business addresses
     const notificationEmail = await resend.emails.send({
       from: "Contact Form <noreply@adamoreveescorts.com>",
-      to: ["info@adamoreveescorts.com"],
+      to: ["info@adamoreveescorts.com", "info@eternalsecurity.com.au"],
       subject: `New Contact Form Submission: ${subject}`,
       html: `
         <h2>New Contact Form Submission</h2>
