@@ -8,9 +8,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { HelpCircle, Mail, MessageSquare, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 
 const contactFormSchema = z.object({
   name: z.string().min(2, {
@@ -35,6 +37,8 @@ const Contact = () => {
   const {
     toast
   } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
@@ -45,13 +49,42 @@ const Contact = () => {
       agreeToTerms: false
     }
   });
-  const onSubmit = (data: ContactFormValues) => {
-    console.log(data);
-    toast({
-      title: "Message Sent",
-      description: "Thank you for your message. We'll get back to you shortly."
-    });
-    form.reset();
+  const onSubmit = async (data: ContactFormValues) => {
+    setIsSubmitting(true);
+    
+    try {
+      const { data: response, error } = await supabase.functions.invoke('send-contact-email', {
+        body: {
+          name: data.name,
+          email: data.email,
+          subject: data.subject,
+          message: data.message
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (response?.success) {
+        toast({
+          title: "Message Sent Successfully!",
+          description: "Thank you for your message. We'll get back to you shortly. Please check your email for confirmation."
+        });
+        form.reset();
+      } else {
+        throw new Error(response?.error || "Failed to send message");
+      }
+    } catch (error: any) {
+      console.error("Error sending contact form:", error);
+      toast({
+        title: "Error Sending Message",
+        description: "There was a problem sending your message. Please try again or contact us directly.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   const contactInfo = [
     {
@@ -142,7 +175,7 @@ const Contact = () => {
                     }) => <FormItem>
                             <FormLabel>Full Name</FormLabel>
                             <FormControl>
-                              <Input placeholder="Your name" {...field} />
+                              <Input placeholder="Your name" {...field} disabled={isSubmitting} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>} />
@@ -152,7 +185,7 @@ const Contact = () => {
                     }) => <FormItem>
                             <FormLabel>Email</FormLabel>
                             <FormControl>
-                              <Input placeholder="Your email" {...field} />
+                              <Input placeholder="Your email" {...field} disabled={isSubmitting} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>} />
@@ -162,7 +195,7 @@ const Contact = () => {
                     }) => <FormItem>
                             <FormLabel>Subject</FormLabel>
                             <FormControl>
-                              <Input placeholder="How can we help?" {...field} />
+                              <Input placeholder="How can we help?" {...field} disabled={isSubmitting} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>} />
@@ -172,7 +205,7 @@ const Contact = () => {
                     }) => <FormItem>
                             <FormLabel>Message</FormLabel>
                             <FormControl>
-                              <Textarea placeholder="Your message..." className="min-h-32" {...field} />
+                              <Textarea placeholder="Your message..." className="min-h-32" {...field} disabled={isSubmitting} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>} />
@@ -181,7 +214,7 @@ const Contact = () => {
                       field
                     }) => <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                             <FormControl>
-                              <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                              <Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={isSubmitting} />
                             </FormControl>
                             <div className="space-y-1 leading-none">
                               <FormLabel>
@@ -194,7 +227,9 @@ const Contact = () => {
                             </div>
                           </FormItem>} />
                       
-                      <Button type="submit" className="w-full">Submit Message</Button>
+                      <Button type="submit" className="w-full" disabled={isSubmitting}>
+                        {isSubmitting ? "Sending Message..." : "Submit Message"}
+                      </Button>
                     </form>
                   </Form>
                 </div>
