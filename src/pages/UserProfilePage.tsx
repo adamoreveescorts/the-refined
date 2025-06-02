@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
+import EditProfileForm from "@/components/EditProfileForm";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +30,7 @@ const UserProfilePage = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [subscription, setSubscription] = useState<any>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
   
   useEffect(() => {
     checkAuthAndFetchProfile();
@@ -212,6 +213,11 @@ const UserProfilePage = () => {
     return subscription?.subscription_tier === 'Basic' || subscription?.subscription_tier === 'Platinum';
   };
 
+  const handleProfileUpdate = (updatedProfile: any) => {
+    setProfile(prev => prev ? { ...prev, ...updatedProfile } : null);
+    setShowEditProfile(false);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -359,7 +365,11 @@ const UserProfilePage = () => {
                 </div>
                 
                 <div className="mt-6 space-y-2">
-                  <Button className="w-full" variant="outline">
+                  <Button 
+                    className="w-full" 
+                    variant="outline"
+                    onClick={() => setShowEditProfile(true)}
+                  >
                     Edit Profile
                   </Button>
                   {(profile?.role === 'escort' || profile?.role === 'agency') && (
@@ -376,7 +386,13 @@ const UserProfilePage = () => {
             
             {/* Content Section */}
             <div className="md:col-span-2">
-              {showUpgrade && (profile?.role === 'escort' || profile?.role === 'agency') ? (
+              {showEditProfile ? (
+                <EditProfileForm 
+                  profile={profile!}
+                  onProfileUpdate={handleProfileUpdate}
+                  onCancel={() => setShowEditProfile(false)}
+                />
+              ) : showUpgrade && (profile?.role === 'escort' || profile?.role === 'agency') ? (
                 <Card className="bg-white shadow-sm">
                   <CardHeader>
                     <CardTitle className="text-navy">Choose Your Plan</CardTitle>
