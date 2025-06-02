@@ -54,6 +54,7 @@ interface EditProfileFormProps {
     rates?: string | null;
     availability?: string | null;
     profile_picture?: string | null;
+    tags?: string | null;
   };
   onProfileUpdate: (updatedProfile: any) => void;
   onCancel: () => void;
@@ -64,7 +65,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
   const [uploadingImage, setUploadingImage] = useState(false);
   const [profilePicture, setProfilePicture] = useState(profile.profile_picture || "");
   const [selectedTags, setSelectedTags] = useState<string[]>(
-    profile.profile_picture ? profile.profile_picture.split(',').filter(Boolean) : []
+    profile.tags ? profile.tags.split(',').filter(Boolean) : []
   );
 
   const isEscortOrAgency = profile.role === 'escort' || profile.role === 'agency';
@@ -337,7 +338,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                         <FormItem>
                           <FormLabel>Height</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., 5'6\" or 168cm" {...field} />
+                            <Input placeholder="e.g., 5'6 or 168cm" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
