@@ -235,6 +235,14 @@ const Auth = () => {
     toast.info("Registration cancelled. You can try again anytime.");
   };
 
+  const handleBackToLogin = () => {
+    setVerificationSent(false);
+    setActiveTab("login");
+    setFormValues(null);
+    setSelectedRole(null);
+    setNewUserSession(null);
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       {/* Back to Home Button positioned correctly in the top-left */}
@@ -287,7 +295,7 @@ const Auth = () => {
               <Button 
                 type="button" 
                 className="w-full" 
-                onClick={() => setActiveTab("login")}
+                onClick={handleBackToLogin}
               >
                 Back to Login
               </Button>
