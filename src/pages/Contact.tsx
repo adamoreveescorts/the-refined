@@ -132,18 +132,6 @@ const Contact = () => {
                   <p className="text-charcoal mb-6">
                     Whether you have a question about our services, membership, or anything else, our team is ready to answer all your questions.
                   </p>
-                  <div className="bg-white p-6 rounded-xl border border-gray-100">
-                    <div className="flex items-center gap-4 mb-6">
-                      <div className="w-10 h-10 rounded-full bg-navy/10 flex items-center justify-center">
-                        <MessageSquare className="h-5 w-5 text-navy" />
-                      </div>
-                      <div>
-                        <h3 className="font-serif text-lg font-bold text-navy">Live Chat</h3>
-                        <p className="text-sm text-gray-500">Our average response time is under 5 minutes</p>
-                      </div>
-                    </div>
-                    <Button className="w-full">Start Live Chat</Button>
-                  </div>
                 </div>
                 
                 <div className="bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-gray-100">
