@@ -63,7 +63,9 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [profilePicture, setProfilePicture] = useState(profile.profile_picture || "");
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>(
+    profile.profile_picture ? profile.profile_picture.split(',').filter(Boolean) : []
+  );
 
   const isEscortOrAgency = profile.role === 'escort' || profile.role === 'agency';
 
@@ -103,17 +105,28 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
     try {
       setUploadingImage(true);
       
-      // Create a unique filename
+      // Create a unique filename with user folder structure
       const fileExt = file.name.split('.').pop();
-      const fileName = `${profile.id}-${Date.now()}.${fileExt}`;
+      const fileName = `${profile.id}/profile-${Date.now()}.${fileExt}`;
 
-      // For now, we'll use a data URL since we don't have storage configured
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setProfilePicture(e.target?.result as string);
-        toast.success("Image uploaded successfully");
-      };
-      reader.readAsDataURL(file);
+      // Upload to Supabase storage
+      const { data, error } = await supabase.storage
+        .from('profile-pictures')
+        .upload(fileName, file);
+
+      if (error) {
+        console.error("Storage upload error:", error);
+        toast.error("Failed to upload image");
+        return;
+      }
+
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('profile-pictures')
+        .getPublicUrl(fileName);
+
+      setProfilePicture(publicUrl);
+      toast.success("Image uploaded successfully");
     } catch (error) {
       console.error("Error uploading image:", error);
       toast.error("Failed to upload image");

@@ -11,35 +11,65 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
+          age: string | null
+          availability: string | null
+          bio: string | null
           created_at: string
           display_name: string | null
           email: string | null
+          height: string | null
           id: string
           is_active: boolean | null
+          languages: string | null
+          location: string | null
           payment_status: string | null
+          profile_picture: string | null
+          rates: string | null
           role: Database["public"]["Enums"]["user_role"] | null
+          services: string | null
+          tags: string | null
           updated_at: string
           username: string | null
         }
         Insert: {
+          age?: string | null
+          availability?: string | null
+          bio?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
+          height?: string | null
           id: string
           is_active?: boolean | null
+          languages?: string | null
+          location?: string | null
           payment_status?: string | null
+          profile_picture?: string | null
+          rates?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
+          services?: string | null
+          tags?: string | null
           updated_at?: string
           username?: string | null
         }
         Update: {
+          age?: string | null
+          availability?: string | null
+          bio?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
+          height?: string | null
           id?: string
           is_active?: boolean | null
+          languages?: string | null
+          location?: string | null
           payment_status?: string | null
+          profile_picture?: string | null
+          rates?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
+          services?: string | null
+          tags?: string | null
           updated_at?: string
           username?: string | null
         }
