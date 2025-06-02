@@ -105,19 +105,33 @@ const UserProfilePage = () => {
         return;
       }
 
+      // Check if user has a Stripe customer ID first
+      if (!subscription?.stripe_customer_id) {
+        toast.error("No payment method found. Please upgrade to a paid plan first.");
+        setShowUpgrade(true);
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('customer-portal', {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Portal error:", error);
+        // If customer portal fails, offer alternative
+        toast.error("Subscription management is not available at the moment. Please contact support or use the upgrade options below.");
+        setShowUpgrade(true);
+        return;
+      }
 
       window.open(data.url, '_blank');
-      toast.success("Redirected to Stripe customer portal.");
+      toast.success("Redirected to subscription management portal.");
     } catch (error: any) {
       console.error("Portal error:", error);
-      toast.error(error.message || "Failed to open customer portal");
+      toast.error("Unable to access subscription management. Please use the upgrade options below.");
+      setShowUpgrade(true);
     }
   };
 
@@ -141,6 +155,7 @@ const UserProfilePage = () => {
       if (tier.id === 'basic') {
         toast.success("Downgraded to Basic plan");
         await checkSubscriptionStatus(session);
+        setShowUpgrade(false);
       } else {
         window.open(data.url, '_blank');
         toast.success("Redirected to Stripe checkout.");
@@ -385,14 +400,14 @@ const UserProfilePage = () => {
                                 </div>
                               </div>
                               <div className="space-x-2">
-                                {!subscription?.subscribed ? (
-                                  <Button className="btn-gold" onClick={handleCompletePayment}>
-                                    Complete Payment
-                                  </Button>
-                                ) : (
+                                {subscription?.subscription_tier === 'Platinum' && subscription?.stripe_customer_id ? (
                                   <Button variant="outline" onClick={handleManageSubscription}>
                                     <CreditCard className="h-4 w-4 mr-2" />
                                     Manage Subscription
+                                  </Button>
+                                ) : (
+                                  <Button className="btn-gold" onClick={() => setShowUpgrade(true)}>
+                                    Upgrade Plan
                                   </Button>
                                 )}
                               </div>
