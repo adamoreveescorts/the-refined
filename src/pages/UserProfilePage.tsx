@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -204,6 +205,11 @@ const UserProfilePage = () => {
       return 'Forever';
     }
     return null;
+  };
+
+  const isProfilePublic = () => {
+    // Profile is public if user has any subscription tier (Basic or Platinum)
+    return subscription?.subscription_tier === 'Basic' || subscription?.subscription_tier === 'Platinum';
   };
 
   if (loading) {
@@ -537,13 +543,13 @@ const UserProfilePage = () => {
                           <div className="space-y-6">
                             <div>
                               <h3 className="font-medium mb-3">Profile Visibility</h3>
-                              <Badge className={subscription?.subscription_tier === 'Platinum' ? "bg-green-500" : "bg-red-500"}>
-                                {subscription?.subscription_tier === 'Platinum' ? "Public" : "Not Visible"}
+                              <Badge className={isProfilePublic() ? "bg-green-500" : "bg-red-500"}>
+                                {isProfilePublic() ? "Public" : "Not Visible"}
                               </Badge>
                               <p className="text-sm text-gray-500 mt-1">
-                                {subscription?.subscription_tier === 'Platinum'
+                                {isProfilePublic()
                                   ? "Your profile is visible in the directory" 
-                                  : "Your profile is not visible until you have an active Platinum subscription"}
+                                  : "Your profile is not visible until you have an active subscription"}
                               </p>
                             </div>
                             
