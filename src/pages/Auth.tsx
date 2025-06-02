@@ -181,7 +181,7 @@ const Auth = () => {
         setVerificationSent(true);
         toast.success("Verification email sent! Please check your inbox.");
       } else {
-        // For escorts and agencies, create account and get session for payment
+        // For escorts and agencies, create account and show subscription selection
         const { data, error } = await supabase.auth.signUp({
           email: formValues.email,
           password: formValues.password,
@@ -198,7 +198,7 @@ const Auth = () => {
           throw error;
         }
         
-        // Now sign them in to get a session for payment
+        // Now sign them in to get a session for subscription selection
         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
           email: formValues.email,
           password: formValues.password,
@@ -211,7 +211,7 @@ const Auth = () => {
         if (signInData.session) {
           setNewUserSession(signInData.session);
           setShowPaymentFlow(true);
-          toast.success("Account created! Please complete your subscription to activate your account.");
+          toast.success("Account created! Please select your subscription plan.");
         }
       }
     } catch (error: any) {
@@ -225,14 +225,14 @@ const Auth = () => {
   const handlePaymentComplete = () => {
     setShowPaymentFlow(false);
     setVerificationSent(true);
-    toast.success("Payment initiated! Please complete the checkout process in the new tab. Your account will be activated after successful payment.");
+    toast.success("Subscription selected! Please check your email for verification and complete any pending payment.");
   };
 
   const handlePaymentCancel = () => {
     setShowPaymentFlow(false);
     setSelectedRole(null);
     setNewUserSession(null);
-    toast.info("Payment cancelled. You can try again or contact support if you need assistance.");
+    toast.info("Registration cancelled. You can try again anytime.");
   };
 
   return (
@@ -247,7 +247,7 @@ const Auth = () => {
         </Link>
       </div>
       
-      <div className="w-full max-w-md space-y-8">
+      <div className="w-full max-w-4xl space-y-8">
         <div className="text-center">
           <h2 className="mt-6 text-3xl font-serif font-bold text-navy">
             The Refined Escort

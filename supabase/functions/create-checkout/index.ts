@@ -13,6 +13,15 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
+// Define subscription tiers
+const SUBSCRIPTION_TIERS = {
+  basic: { name: "Basic Plan", price: 0, duration: "Forever", durationDays: 0 },
+  platinum_weekly: { name: "Platinum Weekly", price: 1500, duration: "1 Week", durationDays: 7 },
+  platinum_monthly: { name: "Platinum Monthly", price: 7900, duration: "1 Month", durationDays: 30 },
+  platinum_quarterly: { name: "Platinum Quarterly", price: 18900, duration: "3 Months", durationDays: 90 },
+  platinum_yearly: { name: "Platinum Yearly", price: 39900, duration: "1 Year", durationDays: 365 }
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -20,7 +29,8 @@ serve(async (req) => {
 
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    { auth: { persistSession: false } }
   );
 
   try {
@@ -37,12 +47,49 @@ serve(async (req) => {
     
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { role } = await req.json();
+    const { role, tier } = await req.json();
+    
     if (!role || !['escort', 'agency'].includes(role)) {
       throw new Error("Invalid role specified");
     }
+    
+    if (!tier || !SUBSCRIPTION_TIERS[tier as keyof typeof SUBSCRIPTION_TIERS]) {
+      throw new Error("Invalid subscription tier specified");
+    }
 
-    // Use the correct secret name that matches Supabase secrets
+    const selectedTier = SUBSCRIPTION_TIERS[tier as keyof typeof SUBSCRIPTION_TIERS];
+    logStep("Tier selected", { tier, selectedTier });
+
+    // Handle free Basic tier
+    if (tier === 'basic') {
+      // Update user to Basic tier directly
+      await supabaseClient.from("subscribers").upsert({
+        email: user.email,
+        user_id: user.id,
+        stripe_customer_id: null,
+        subscribed: false,
+        subscription_tier: 'Basic',
+        subscription_type: 'free',
+        plan_duration: selectedTier.duration,
+        plan_price: 0,
+        expires_at: null,
+        is_featured: false,
+        photo_verified: false,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'email' });
+
+      logStep("Basic tier assigned", { userId: user.id });
+      return new Response(JSON.stringify({ 
+        success: true, 
+        message: "Basic tier activated",
+        tier: 'Basic'
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    // Handle paid Platinum tiers
     const stripe = new Stripe(Deno.env.get("Stripe Secret") || "", { 
       apiVersion: "2023-10-16" 
     });
@@ -67,20 +114,21 @@ serve(async (req) => {
           price_data: {
             currency: "usd",
             product_data: { 
-              name: "Eternal Security Monthly Subscription" 
+              name: `Eternal Security ${selectedTier.name}` 
             },
-            unit_amount: 50, // $0.50 in cents
-            recurring: { interval: "month" },
+            unit_amount: selectedTier.price,
           },
           quantity: 1,
         },
       ],
-      mode: "subscription",
-      success_url: `${req.headers.get("origin")}/auth?payment=success`,
+      mode: "payment", // One-time payment for platinum tiers
+      success_url: `${req.headers.get("origin")}/auth?payment=success&tier=${tier}`,
       cancel_url: `${req.headers.get("origin")}/auth?payment=cancelled`,
       metadata: {
         user_id: user.id,
-        role: role
+        role: role,
+        tier: tier,
+        duration_days: selectedTier.durationDays.toString()
       }
     });
 

@@ -49,33 +49,51 @@ export type Database = {
         Row: {
           created_at: string
           email: string
+          expires_at: string | null
           id: string
+          is_featured: boolean | null
+          photo_verified: boolean | null
+          plan_duration: string | null
+          plan_price: number | null
           stripe_customer_id: string | null
           subscribed: boolean
           subscription_end: string | null
           subscription_tier: string | null
+          subscription_type: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
           created_at?: string
           email: string
+          expires_at?: string | null
           id?: string
+          is_featured?: boolean | null
+          photo_verified?: boolean | null
+          plan_duration?: string | null
+          plan_price?: number | null
           stripe_customer_id?: string | null
           subscribed?: boolean
           subscription_end?: string | null
           subscription_tier?: string | null
+          subscription_type?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           created_at?: string
           email?: string
+          expires_at?: string | null
           id?: string
+          is_featured?: boolean | null
+          photo_verified?: boolean | null
+          plan_duration?: string | null
+          plan_price?: number | null
           stripe_customer_id?: string | null
           subscribed?: boolean
           subscription_end?: string | null
           subscription_tier?: string | null
+          subscription_type?: string | null
           updated_at?: string
           user_id?: string | null
         }
