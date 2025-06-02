@@ -8,9 +8,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { HelpCircle, Mail, MessageSquare, Phone } from "lucide-react";
+import { HelpCircle, Mail, MessageSquare, Phone, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+
 const contactFormSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters."
@@ -29,6 +30,7 @@ const contactFormSchema = z.object({
   })
 });
 type ContactFormValues = z.infer<typeof contactFormSchema>;
+
 const Contact = () => {
   const {
     toast
@@ -51,22 +53,26 @@ const Contact = () => {
     });
     form.reset();
   };
-  const contactInfo = [{
-    icon: <Mail className="h-6 w-6" />,
-    title: "Email Us",
-    description: "Our friendly team is here to help.",
-    contact: "contact@therefinedescort.com"
-  }, {
-    icon: <Phone className="h-6 w-6" />,
-    title: "Call Us",
-    description: "Mon-Fri from 9am to 5pm.",
-    contact: "+1 (555) 123-4567"
-  }, {
-    icon: <HelpCircle className="h-6 w-6" />,
-    title: "Support",
-    description: "Get support from our team.",
-    contact: "support@therefinedescort.com"
-  }];
+  const contactInfo = [
+    {
+      icon: <Mail className="h-6 w-6" />,
+      title: "Email Us",
+      description: "Our friendly team is here to help.",
+      contact: "info@adamoreveescorts.com"
+    },
+    {
+      icon: <Phone className="h-6 w-6" />,
+      title: "Call Us",
+      description: "Available for your inquiries.",
+      contact: "+61 411 828 184"
+    },
+    {
+      icon: <MapPin className="h-6 w-6" />,
+      title: "Address",
+      description: "Our mailing address.",
+      contact: "PO Box 55 Liverpool NSW 1871"
+    }
+  ];
   const fadeIn = {
     hidden: {
       opacity: 0,
