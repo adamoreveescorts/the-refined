@@ -1,3 +1,4 @@
+
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import { Input } from "@/components/ui/input";
@@ -31,12 +32,11 @@ const contactFormSchema = z.object({
     message: "You must agree to our terms and privacy policy."
   })
 });
+
 type ContactFormValues = z.infer<typeof contactFormSchema>;
 
 const Contact = () => {
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<ContactFormValues>({
@@ -49,6 +49,7 @@ const Contact = () => {
       agreeToTerms: false
     }
   });
+
   const onSubmit = async (data: ContactFormValues) => {
     setIsSubmitting(true);
     
@@ -86,6 +87,7 @@ const Contact = () => {
       setIsSubmitting(false);
     }
   };
+
   const contactInfo = [
     {
       icon: <Mail className="h-6 w-6" />,
@@ -106,25 +108,26 @@ const Contact = () => {
       contact: "PO Box 55 Liverpool NSW 1871"
     }
   ];
+
   const fadeIn = {
-    hidden: {
-      opacity: 0,
-      y: 20
-    },
-    visible: {
-      opacity: 1,
-      y: 0
-    }
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
   };
-  return <div className="min-h-screen flex flex-col">
+
+  return (
+    <div className="min-h-screen flex flex-col">
       <NavBar />
       <main className="flex-grow">
         {/* Hero Section */}
         <section className="bg-navy py-16 lg:py-24 text-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div className="max-w-3xl mx-auto text-center" initial="hidden" animate="visible" variants={fadeIn} transition={{
-            duration: 0.5
-          }}>
+            <motion.div 
+              className="max-w-3xl mx-auto text-center" 
+              initial="hidden" 
+              animate="visible" 
+              variants={fadeIn} 
+              transition={{ duration: 0.5 }}
+            >
               <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold mb-6">Get in Touch</h1>
               <p className="text-xl text-gray-300 mb-8">
                 We'd love to hear from you. Our team is always here to help.
@@ -137,17 +140,23 @@ const Contact = () => {
         <section className="py-12 bg-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid md:grid-cols-3 gap-8">
-              {contactInfo.map((item, index) => <motion.div key={index} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center" initial="hidden" animate="visible" variants={fadeIn} transition={{
-              duration: 0.3,
-              delay: index * 0.1
-            }}>
+              {contactInfo.map((item, index) => (
+                <motion.div 
+                  key={index} 
+                  className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center" 
+                  initial="hidden" 
+                  animate="visible" 
+                  variants={fadeIn} 
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                >
                   <div className="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center mx-auto mb-4">
                     <span className="text-gold">{item.icon}</span>
                   </div>
                   <h3 className="font-serif text-xl font-bold text-navy mb-2">{item.title}</h3>
                   <p className="text-gray-500 mb-3">{item.description}</p>
                   <p className="text-navy font-medium">{item.contact}</p>
-                </motion.div>)}
+                </motion.div>
+              ))}
             </div>
           </div>
         </section>
@@ -156,10 +165,13 @@ const Contact = () => {
         <section className="py-16 lg:py-20 bg-gray-50">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
-              <motion.div className="grid md:grid-cols-2 gap-8 items-center" initial="hidden" animate="visible" variants={fadeIn} transition={{
-              duration: 0.5,
-              delay: 0.3
-            }}>
+              <motion.div 
+                className="grid md:grid-cols-2 gap-8 items-center" 
+                initial="hidden" 
+                animate="visible" 
+                variants={fadeIn} 
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
                 <div>
                   <h2 className="font-serif text-3xl font-bold text-navy mb-6">Send Us a Message</h2>
                   <p className="text-charcoal mb-6">
@@ -170,51 +182,78 @@ const Contact = () => {
                 <div className="bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-gray-100">
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                      <FormField control={form.control} name="name" render={({
-                      field
-                    }) => <FormItem>
+                      <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
                             <FormLabel>Full Name</FormLabel>
                             <FormControl>
                               <Input placeholder="Your name" {...field} disabled={isSubmitting} />
                             </FormControl>
                             <FormMessage />
-                          </FormItem>} />
+                          </FormItem>
+                        )}
+                      />
                       
-                      <FormField control={form.control} name="email" render={({
-                      field
-                    }) => <FormItem>
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
                             <FormLabel>Email</FormLabel>
                             <FormControl>
                               <Input placeholder="Your email" {...field} disabled={isSubmitting} />
                             </FormControl>
                             <FormMessage />
-                          </FormItem>} />
+                          </FormItem>
+                        )}
+                      />
                       
-                      <FormField control={form.control} name="subject" render={({
-                      field
-                    }) => <FormItem>
+                      <FormField
+                        control={form.control}
+                        name="subject"
+                        render={({ field }) => (
+                          <FormItem>
                             <FormLabel>Subject</FormLabel>
                             <FormControl>
                               <Input placeholder="How can we help?" {...field} disabled={isSubmitting} />
                             </FormControl>
                             <FormMessage />
-                          </FormItem>} />
+                          </FormItem>
+                        )}
+                      />
                       
-                      <FormField control={form.control} name="message" render={({
-                      field
-                    }) => <FormItem>
+                      <FormField
+                        control={form.control}
+                        name="message"
+                        render={({ field }) => (
+                          <FormItem>
                             <FormLabel>Message</FormLabel>
                             <FormControl>
-                              <Textarea placeholder="Your message..." className="min-h-32" {...field} disabled={isSubmitting} />
+                              <Textarea 
+                                placeholder="Your message..." 
+                                className="min-h-32" 
+                                {...field} 
+                                disabled={isSubmitting} 
+                              />
                             </FormControl>
                             <FormMessage />
-                          </FormItem>} />
+                          </FormItem>
+                        )}
+                      />
                       
-                      <FormField control={form.control} name="agreeToTerms" render={({
-                      field
-                    }) => <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormField
+                        control={form.control}
+                        name="agreeToTerms"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                             <FormControl>
-                              <Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={isSubmitting} />
+                              <Checkbox 
+                                checked={field.value} 
+                                onCheckedChange={field.onChange} 
+                                disabled={isSubmitting} 
+                              />
                             </FormControl>
                             <div className="space-y-1 leading-none">
                               <FormLabel>
@@ -225,7 +264,9 @@ const Contact = () => {
                               </FormDescription>
                               <FormMessage />
                             </div>
-                          </FormItem>} />
+                          </FormItem>
+                        )}
+                      />
                       
                       <Button type="submit" className="w-full" disabled={isSubmitting}>
                         {isSubmitting ? "Sending Message..." : "Submit Message"}
@@ -237,11 +278,10 @@ const Contact = () => {
             </div>
           </div>
         </section>
-
-        {/* Map Section */}
-        
       </main>
       <Footer />
-    </div>;
+    </div>
+  );
 };
+
 export default Contact;
