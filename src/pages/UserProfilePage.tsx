@@ -191,6 +191,21 @@ const UserProfilePage = () => {
     }
   };
 
+  const getPlanDurationDisplay = () => {
+    if (!subscription) return null;
+    
+    if (subscription.subscription_type === 'recurring') {
+      return subscription.subscription_end ? 
+        `Renews on ${new Date(subscription.subscription_end).toLocaleDateString()}` :
+        'Active subscription';
+    } else if (subscription.subscription_type === 'one_time' && subscription.expires_at) {
+      return `Valid until ${new Date(subscription.expires_at).toLocaleDateString()}`;
+    } else if (subscription.subscription_tier === 'Basic') {
+      return 'Forever';
+    }
+    return null;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -293,19 +308,24 @@ const UserProfilePage = () => {
                   </div>
 
                   {/* Show subscription info for paid roles */}
-                  {(profile?.role === 'escort' || profile?.role === 'agency') && subscription && (
+                  {(profile?.role === 'escort' || profile?.role === 'agency') && (
                     <>
                       <div className="flex items-start">
                         <Crown className="h-5 w-5 mr-2 text-gray-400" />
-                        <div>
-                          <p className="text-sm text-gray-500">Subscription Plan</p>
-                          {getSubscriptionStatusBadge()}
-                          {subscription?.expires_at && (
-                            <div className="flex items-center mt-1">
-                              <Clock className="h-3 w-3 mr-1 text-gray-400" />
-                              <span className="text-xs">{getExpirationInfo()}</span>
-                            </div>
-                          )}
+                        <div className="w-full">
+                          <p className="text-sm text-gray-500">Current Plan</p>
+                          <div className="flex flex-col gap-1">
+                            {getSubscriptionStatusBadge()}
+                            {getPlanDurationDisplay() && (
+                              <span className="text-xs text-gray-600">{getPlanDurationDisplay()}</span>
+                            )}
+                            {subscription?.expires_at && (
+                              <div className="flex items-center">
+                                <Clock className="h-3 w-3 mr-1 text-gray-400" />
+                                <span className="text-xs">{getExpirationInfo()}</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
 
@@ -314,7 +334,7 @@ const UserProfilePage = () => {
                           <Crown className="h-5 w-5 mr-2 text-gold" />
                           <div>
                             <p className="text-sm text-gray-500">Featured Status</p>
-                            <Badge className="bg-gold text-white">Featured</Badge>
+                            <Badge className="bg-gold text-white">Featured Profile</Badge>
                           </div>
                         </div>
                       )}
@@ -394,9 +414,13 @@ const UserProfilePage = () => {
                               <div>
                                 <p className="text-sm text-gray-500">Subscription Status</p>
                                 <div className="mt-1">
-                                  <Badge className={`${subscription?.subscribed ? 'bg-green-500' : 'bg-amber-500'}`}>
-                                    {subscription?.subscribed ? 'Active' : 'Payment Required'}
-                                  </Badge>
+                                  {subscription?.subscription_tier === 'Platinum' ? (
+                                    <Badge className="bg-green-500">
+                                      {subscription?.subscription_type === 'recurring' ? 'Active Subscription' : 'Active (One-time)'}
+                                    </Badge>
+                                  ) : (
+                                    <Badge className="bg-amber-500">Basic Plan</Badge>
+                                  )}
                                 </div>
                               </div>
                               <div className="space-x-2">
@@ -426,6 +450,29 @@ const UserProfilePage = () => {
                                 <p className="mt-2 text-sm text-gray-500">Complete your profile to increase visibility</p>
                               </div>
                             </div>
+
+                            {/* Show subscription benefits */}
+                            {subscription?.subscription_tier === 'Platinum' && (
+                              <div>
+                                <p className="text-sm text-gray-500 mb-2">Platinum Benefits</p>
+                                <div className="p-4 bg-gold/10 rounded-md border border-gold/20">
+                                  <div className="grid grid-cols-2 gap-2 text-sm">
+                                    <div className="flex items-center">
+                                      <Crown className="h-4 w-4 mr-2 text-gold" />
+                                      <span className={subscription?.is_featured ? "text-green-600" : "text-gray-500"}>
+                                        Featured Profile {subscription?.is_featured ? "✓" : ""}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center">
+                                      <Shield className="h-4 w-4 mr-2 text-green-500" />
+                                      <span className={subscription?.photo_verified ? "text-green-600" : "text-gray-500"}>
+                                        Photo Verified {subscription?.photo_verified ? "✓" : ""}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <div className="space-y-6">
