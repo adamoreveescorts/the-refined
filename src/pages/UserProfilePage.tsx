@@ -537,13 +537,13 @@ const UserProfilePage = () => {
                           <div className="space-y-6">
                             <div>
                               <h3 className="font-medium mb-3">Profile Visibility</h3>
-                              <Badge className={profile?.is_active ? "bg-green-500" : "bg-red-500"}>
-                                {profile?.is_active ? "Public" : "Not Visible"}
+                              <Badge className={subscription?.subscription_tier === 'Platinum' ? "bg-green-500" : "bg-red-500"}>
+                                {subscription?.subscription_tier === 'Platinum' ? "Public" : "Not Visible"}
                               </Badge>
                               <p className="text-sm text-gray-500 mt-1">
-                                {profile?.is_active 
+                                {subscription?.subscription_tier === 'Platinum'
                                   ? "Your profile is visible in the directory" 
-                                  : "Your profile is not visible until subscription is active"}
+                                  : "Your profile is not visible until you have an active Platinum subscription"}
                               </p>
                             </div>
                             
