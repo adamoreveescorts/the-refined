@@ -9,7 +9,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* About Section */}
           <div>
-            <h3 className="font-serif text-xl mb-4">The Refined Escort</h3>
+            <h3 className="font-serif text-xl mb-4">Adam or Eve Escorts</h3>
             <p className="text-sm text-gray-300 mb-4">
               Premium escort directory connecting sophisticated companions with discerning clients worldwide.
             </p>
@@ -96,7 +96,7 @@ const Footer = () => {
         
         {/* Bottom Footer */}
         <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-          <p>© {new Date().getFullYear()} The Refined Escort. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Adam or Eve Escorts. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link to="/privacy" className="hover:text-gold transition-colors">Privacy</Link>
             <Link to="/terms" className="hover:text-gold transition-colors">Terms</Link>

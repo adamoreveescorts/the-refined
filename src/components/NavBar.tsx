@@ -43,7 +43,7 @@ const NavBar = () => {
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <span className="font-serif text-2xl font-bold text-navy">The Refined Escort</span>
+              <span className="font-serif text-2xl font-bold text-navy">Adam or Eve Escorts</span>
             </Link>
           </div>
           
