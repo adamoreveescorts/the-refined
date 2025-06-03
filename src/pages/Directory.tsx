@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Check, Heart, Search, Filter, Star } from 'lucide-react';
 import {
   Pagination,
@@ -20,7 +22,18 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 
-const EscortCard = ({ escort }: { escort: any }) => {
+const EscortCard = ({ escort, index }: { escort: any, index: number }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, index * 100); // Stagger animation by 100ms per card
+
+    return () => clearTimeout(timer);
+  }, [index]);
+
   // Parse rates to get hourly rate if available
   const getHourlyRate = () => {
     if (!escort.rates) return 'Rates available';
@@ -35,19 +48,28 @@ const EscortCard = ({ escort }: { escort: any }) => {
   };
 
   return (
-    <div className="group relative bg-white rounded-lg overflow-hidden shadow-md card-hover">
+    <div className={`group relative bg-white rounded-lg overflow-hidden shadow-md card-hover transition-all duration-500 ${
+      isVisible ? 'animate-fade-in opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+    }`}>
       <Link to={`/profile/${escort.id}`}>
         <div className="aspect-[3/4] relative overflow-hidden">
+          {!imageLoaded && (
+            <Skeleton className="w-full h-full absolute inset-0" />
+          )}
           <img 
             src={escort.profile_picture || "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"} 
             alt={escort.display_name || escort.username} 
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            onLoad={() => setImageLoaded(true)}
+            loading="lazy"
           />
           {/* Favorites button */}
           <Button 
             variant="ghost" 
             size="icon" 
-            className="absolute top-2 right-2 bg-white/50 backdrop-blur-md hover:bg-white/80 rounded-full p-1.5"
+            className="absolute top-2 right-2 bg-white/50 backdrop-blur-md hover:bg-white/80 rounded-full p-1.5 transition-all duration-300"
           >
             <Heart className="h-5 w-5 text-red-500" />
           </Button>
@@ -104,7 +126,16 @@ const EscortCard = ({ escort }: { escort: any }) => {
 const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filters: any }) => {
   const [ageRange, setAgeRange] = useState<number[]>([18, 50]);
   const [priceRange, setPriceRange] = useState<number[]>([100, 1000]);
+  const [isVisible, setIsVisible] = useState(false);
   
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleAgeChange = (value: number[]) => {
     setAgeRange(value);
     onFilterChange({ ...filters, ageMin: value[0], ageMax: value[1] });
@@ -117,10 +148,10 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
   
   return (
     <>
-      {/* Mobile Filter Button - Keep it for mobile users to hide/show filters if needed */}
+      {/* Mobile Filter Button */}
       <div className="md:hidden mb-4">
         <Button 
-          onClick={() => {}} // We'll keep this button but it won't toggle anything now
+          onClick={() => {}}
           variant="outline"
           className="w-full flex items-center justify-center gap-2"
         >
@@ -129,8 +160,9 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
         </Button>
       </div>
       
-      {/* Always show the filters regardless of screen size */}
-      <div className="md:block bg-white rounded-lg shadow-md p-4 sticky top-20">
+      <div className={`md:block bg-white rounded-lg shadow-md p-4 sticky top-20 transition-all duration-500 ${
+        isVisible ? 'animate-fade-in opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
+      }`}>
         <h3 className="font-medium text-lg mb-4">Filters</h3>
         
         {/* Location */}
@@ -265,6 +297,8 @@ const Directory = () => {
   const [escorts, setEscorts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [headerVisible, setHeaderVisible] = useState(false);
+  const [searchVisible, setSearchVisible] = useState(false);
   const [filters, setFilters] = useState({
     location: initialLocation,
     gender: '',
@@ -279,6 +313,16 @@ const Directory = () => {
   
   const [sortBy, setSortBy] = useState('featured');
   const itemsPerPage = 30;
+
+  useEffect(() => {
+    const timer1 = setTimeout(() => setHeaderVisible(true), 100);
+    const timer2 = setTimeout(() => setSearchVisible(true), 300);
+
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, []);
 
   // Function to scroll to top
   const scrollToTop = () => {
@@ -390,7 +434,9 @@ const Directory = () => {
       {/* Page Content */}
       <main className="flex-grow bg-gray-50 py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <header className="mb-8">
+          <header className={`mb-8 transition-all duration-500 ${
+            headerVisible ? 'animate-fade-in opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          }`}>
             <h1 className="text-3xl sm:text-4xl font-bold text-navy">Escort Directory</h1>
             <p className="text-charcoal mt-2">
               Discover premium companions tailored to your preferences
@@ -398,7 +444,9 @@ const Directory = () => {
           </header>
           
           {/* Search Bar */}
-          <div className="mb-8 flex items-center bg-white rounded-lg shadow-sm p-2 max-w-2xl">
+          <div className={`mb-8 flex items-center bg-white rounded-lg shadow-sm p-2 max-w-2xl transition-all duration-500 ${
+            searchVisible ? 'animate-fade-in opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          }`}>
             <Search className="h-5 w-5 text-gray-400 mx-2" />
             <Input 
               type="text" 
@@ -437,12 +485,12 @@ const Directory = () => {
               
               {currentEscorts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {currentEscorts.map(escort => (
-                    <EscortCard key={escort.id} escort={escort} />
+                  {currentEscorts.map((escort, index) => (
+                    <EscortCard key={escort.id} escort={escort} index={index} />
                   ))}
                 </div>
               ) : (
-                <div className="bg-white rounded-lg p-8 text-center">
+                <div className="bg-white rounded-lg p-8 text-center animate-fade-in">
                   <h3 className="text-lg font-medium mb-2">No escorts found</h3>
                   <p className="text-charcoal">Try adjusting your filters or search query</p>
                 </div>
