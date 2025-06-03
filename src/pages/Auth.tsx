@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { z } from "zod";
@@ -51,8 +50,6 @@ const Auth = () => {
   const [formValues, setFormValues] = useState<SignupFormValues | null>(null);
   const [verificationSent, setVerificationSent] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
-  const [showPaymentFlow, setShowPaymentFlow] = useState(false);
-  const [newUserSession, setNewUserSession] = useState<any>(null);
 
   // Check for tab parameter in URL and payment status
   useEffect(() => {
@@ -75,12 +72,23 @@ const Auth = () => {
     }
   }, [location]);
 
-  // Check if user is already logged in
+  // Check if user is already logged in and redirect appropriately
   useEffect(() => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate('/');
+        // Check if user needs to choose a plan
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role, payment_status')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (profile && (profile.role === 'escort' || profile.role === 'agency') && profile.payment_status === 'pending') {
+          navigate('/choose-plan');
+        } else {
+          navigate('/');
+        }
       }
     };
     
@@ -210,7 +218,7 @@ const Auth = () => {
         setVerificationSent(true);
         toast.success("Verification email sent! Please check your inbox.");
       } else {
-        // For escorts and agencies, create account and show subscription selection
+        // For escorts and agencies, create account and redirect to choose-plan after verification
         const { data, error } = await supabase.auth.signUp({
           email: formValues.email,
           password: formValues.password,
@@ -219,7 +227,7 @@ const Auth = () => {
               role: role,
               username: formValues.username 
             },
-            emailRedirectTo: "https://adamoreveescorts.com/"
+            emailRedirectTo: "https://adamoreveescorts.com/choose-plan"
           }
         });
         
@@ -227,10 +235,8 @@ const Auth = () => {
           throw error;
         }
         
-        // For escorts/agencies, we need to show payment flow but handle email confirmation
-        // Don't try to sign in automatically - let them verify email first
         setVerificationSent(true);
-        toast.success("Account created! Please check your email for verification, then you can complete your subscription setup.");
+        toast.success("Account created! Please check your email for verification, then you'll be able to choose your subscription plan.");
       }
     } catch (error: any) {
       handleSignupError(error);
@@ -257,7 +263,6 @@ const Auth = () => {
     setActiveTab("login");
     setFormValues(null);
     setSelectedRole(null);
-    setNewUserSession(null);
     // Clear any form errors
     signupForm.clearErrors();
   };

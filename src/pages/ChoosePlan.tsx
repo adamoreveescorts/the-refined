@@ -1,0 +1,140 @@
+
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
+
+import { Button } from "@/components/ui/button";
+import StripePaymentFlow from "@/components/StripePaymentFlow";
+import { UserRole } from "@/components/RoleSelectionModal";
+
+const ChoosePlan = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [showPaymentFlow, setShowPaymentFlow] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const checkUserAndRole = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          toast.error("Please log in first");
+          navigate("/auth");
+          return;
+        }
+
+        setUser(session.user);
+
+        // Get user profile to check role
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('role, payment_status')
+          .eq('id', session.user.id)
+          .single();
+
+        if (error) {
+          console.error("Error fetching profile:", error);
+          toast.error("Error loading profile");
+          return;
+        }
+
+        if (!profile) {
+          toast.error("Profile not found");
+          navigate("/auth");
+          return;
+        }
+
+        // If user is a client or already has completed payment, redirect to home
+        if (profile.role === 'client' || profile.payment_status === 'completed') {
+          navigate("/");
+          return;
+        }
+
+        setUserRole(profile.role as UserRole);
+        
+        // For escorts and agencies, show the payment flow
+        if (profile.role === 'escort' || profile.role === 'agency') {
+          setShowPaymentFlow(true);
+        }
+
+      } catch (error) {
+        console.error("Error checking user:", error);
+        toast.error("Error loading page");
+        navigate("/auth");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkUserAndRole();
+  }, [navigate]);
+
+  const handlePaymentComplete = async () => {
+    setShowPaymentFlow(false);
+    toast.success("Plan selected successfully! Welcome to Adam or Eve Escorts.");
+    navigate("/");
+  };
+
+  const handlePaymentCancel = () => {
+    setShowPaymentFlow(false);
+    toast.info("Plan selection cancelled. You can choose a plan anytime from your profile.");
+    navigate("/");
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      {/* Back to Home Button */}
+      <div className="fixed top-4 left-4 z-10">
+        <Link to="/">
+          <Button variant="ghost" size="sm" className="flex items-center gap-1 text-navy hover:text-gold">
+            <ArrowLeft size={16} />
+            Back to Home
+          </Button>
+        </Link>
+      </div>
+      
+      <div className="w-full max-w-4xl space-y-8">
+        <div className="text-center">
+          <h2 className="mt-6 text-3xl font-serif font-bold text-navy">
+            Welcome to Adam or Eve Escorts!
+          </h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Your email has been verified. Now choose your subscription plan to get started.
+          </p>
+        </div>
+
+        {showPaymentFlow && userRole && (userRole === 'escort' || userRole === 'agency') ? (
+          <StripePaymentFlow 
+            role={userRole as "escort" | "agency"}
+            onPaymentComplete={handlePaymentComplete}
+            onCancel={handlePaymentCancel}
+            userSession={user}
+          />
+        ) : (
+          <div className="text-center">
+            <p className="text-gray-600 mb-4">Setting up your account...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold mx-auto"></div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ChoosePlan;
