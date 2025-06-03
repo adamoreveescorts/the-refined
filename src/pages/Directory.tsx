@@ -10,6 +10,15 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Check, Heart, Search, Filter, Star } from 'lucide-react';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 
 const EscortCard = ({ escort }: { escort: any }) => {
   // Parse rates to get hourly rate if available
@@ -255,6 +264,7 @@ const Directory = () => {
   
   const [escorts, setEscorts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState({
     location: initialLocation,
     gender: '',
@@ -268,6 +278,7 @@ const Directory = () => {
   });
   
   const [sortBy, setSortBy] = useState('featured');
+  const itemsPerPage = 30;
 
   useEffect(() => {
     fetchEscorts();
@@ -334,6 +345,17 @@ const Directory = () => {
     }
   });
 
+  // Pagination calculations
+  const totalPages = Math.ceil(sortedEscorts.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentEscorts = sortedEscorts.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, sortBy]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -386,7 +408,7 @@ const Directory = () => {
             <div className="flex-1">
               <div className="flex items-center justify-between mb-6">
                 <p className="text-sm text-charcoal">
-                  {filteredEscorts.length} escorts found
+                  {filteredEscorts.length} escorts found - Page {currentPage} of {totalPages}
                 </p>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-charcoal">Sort by:</span>
@@ -402,9 +424,9 @@ const Directory = () => {
                 </div>
               </div>
               
-              {filteredEscorts.length > 0 ? (
+              {currentEscorts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {sortedEscorts.map(escort => (
+                  {currentEscorts.map(escort => (
                     <EscortCard key={escort.id} escort={escort} />
                   ))}
                 </div>
@@ -416,15 +438,77 @@ const Directory = () => {
               )}
               
               {/* Pagination */}
-              <div className="flex justify-center mt-10">
-                <div className="flex space-x-1">
-                  <Button variant="outline" size="sm" disabled>Previous</Button>
-                  <Button variant="outline" size="sm" className="bg-navy text-white">1</Button>
-                  <Button variant="outline" size="sm">2</Button>
-                  <Button variant="outline" size="sm">3</Button>
-                  <Button variant="outline" size="sm">Next</Button>
+              {totalPages > 1 && (
+                <div className="flex justify-center mt-10">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious 
+                          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                          className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                      </PaginationItem>
+                      
+                      {/* Show first page */}
+                      {currentPage > 3 && (
+                        <>
+                          <PaginationItem>
+                            <PaginationLink onClick={() => setCurrentPage(1)} className="cursor-pointer">
+                              1
+                            </PaginationLink>
+                          </PaginationItem>
+                          {currentPage > 4 && (
+                            <PaginationItem>
+                              <PaginationEllipsis />
+                            </PaginationItem>
+                          )}
+                        </>
+                      )}
+                      
+                      {/* Show current page and surrounding pages */}
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        const pageNumber = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
+                        if (pageNumber > totalPages) return null;
+                        
+                        return (
+                          <PaginationItem key={pageNumber}>
+                            <PaginationLink 
+                              onClick={() => setCurrentPage(pageNumber)}
+                              isActive={currentPage === pageNumber}
+                              className="cursor-pointer"
+                            >
+                              {pageNumber}
+                            </PaginationLink>
+                          </PaginationItem>
+                        );
+                      })}
+                      
+                      {/* Show last page */}
+                      {currentPage < totalPages - 2 && (
+                        <>
+                          {currentPage < totalPages - 3 && (
+                            <PaginationItem>
+                              <PaginationEllipsis />
+                            </PaginationItem>
+                          )}
+                          <PaginationItem>
+                            <PaginationLink onClick={() => setCurrentPage(totalPages)} className="cursor-pointer">
+                              {totalPages}
+                            </PaginationLink>
+                          </PaginationItem>
+                        </>
+                      )}
+                      
+                      <PaginationItem>
+                        <PaginationNext 
+                          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                          className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
