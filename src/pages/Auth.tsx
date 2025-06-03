@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { z } from "zod";
@@ -152,6 +153,30 @@ const Auth = () => {
     }
   };
 
+  // Function to handle signup errors with specific messages
+  const handleSignupError = (error: any) => {
+    console.error("Signup error:", error);
+    
+    // Check for specific error messages
+    if (error.message?.includes("duplicate key value violates unique constraint") || 
+        error.message?.includes("profiles_username_key") ||
+        error.message?.includes("Database error saving new user")) {
+      toast.error("This username is already taken. Please choose a different username.");
+      signupForm.setError("username", { message: "This username is already taken" });
+    } else if (error.message?.includes("User already registered")) {
+      toast.error("An account with this email already exists. Please try logging in instead.");
+      signupForm.setError("email", { message: "Email already in use" });
+    } else if (error.message?.includes("Invalid email")) {
+      toast.error("Please enter a valid email address.");
+      signupForm.setError("email", { message: "Invalid email format" });
+    } else if (error.message?.includes("Password should be at least")) {
+      toast.error("Password must be at least 6 characters long.");
+      signupForm.setError("password", { message: "Password too short" });
+    } else {
+      toast.error(error.message || "Failed to create account. Please try again.");
+    }
+  };
+
   // After role selection, handle the signup flow based on role
   const handleRoleSelect = async (role: UserRole) => {
     setSelectedRole(role);
@@ -215,8 +240,7 @@ const Auth = () => {
         }
       }
     } catch (error: any) {
-      console.error("Signup error:", error);
-      toast.error(error.message || "Failed to create account");
+      handleSignupError(error);
     } finally {
       setIsLoading(false);
     }
@@ -241,6 +265,8 @@ const Auth = () => {
     setFormValues(null);
     setSelectedRole(null);
     setNewUserSession(null);
+    // Clear any form errors
+    signupForm.clearErrors();
   };
 
   return (
