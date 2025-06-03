@@ -12,6 +12,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Check, Clock, Heart, MapPin, MessageSquare, Star, User } from 'lucide-react';
 
+interface RatesData {
+  hourly?: string;
+  twoHours?: string;
+  dinner?: string;
+  overnight?: string;
+}
+
 const ProfilePage = () => {
   const { id } = useParams();
   const [escort, setEscort] = useState<any>(null);
@@ -99,7 +106,7 @@ const ProfilePage = () => {
   const languages = escort.languages ? escort.languages.split(',').map((l: string) => l.trim()) : [];
   
   // Safe JSON parsing with error handling
-  let rates = {};
+  let rates: RatesData = {};
   if (escort.rates) {
     try {
       rates = JSON.parse(escort.rates);
