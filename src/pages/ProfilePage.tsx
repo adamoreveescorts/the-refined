@@ -88,7 +88,7 @@ const ProfilePage = () => {
     );
   }
 
-  // Parse data from database
+  // Parse data from database with error handling
   const images = escort.gallery_images && escort.gallery_images.length > 0 
     ? escort.gallery_images 
     : escort.profile_picture 
@@ -97,7 +97,18 @@ const ProfilePage = () => {
   
   const services = escort.services ? escort.services.split(',').map((s: string) => s.trim()) : [];
   const languages = escort.languages ? escort.languages.split(',').map((l: string) => l.trim()) : [];
-  const rates = escort.rates ? JSON.parse(escort.rates) : {};
+  
+  // Safe JSON parsing with error handling
+  let rates = {};
+  if (escort.rates) {
+    try {
+      rates = JSON.parse(escort.rates);
+    } catch (error) {
+      console.error('Error parsing rates JSON:', error);
+      console.log('Invalid rates data:', escort.rates);
+      rates = {};
+    }
+  }
   
   return (
     <div className="min-h-screen flex flex-col">
