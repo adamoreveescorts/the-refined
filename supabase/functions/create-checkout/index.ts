@@ -167,8 +167,6 @@ serve(async (req) => {
       customerId = customers.data[0].id;
       logStep("Found existing customer", { customerId });
     }
-
-    const origin = req.headers.get("origin") || "https://adamoreveescorts.com";
     
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -186,8 +184,8 @@ serve(async (req) => {
         },
       ],
       mode: "payment", // One-time payment for platinum tiers
-      success_url: `${origin}/auth?payment=success&tier=${tier}`,
-      cancel_url: `${origin}/choose-plan`,
+      success_url: `https://adamoreveescorts.com/auth?payment=success&tier=${tier}`,
+      cancel_url: `https://adamoreveescorts.com/user-profile`,
       metadata: {
         user_id: user.id,
         role: role,
