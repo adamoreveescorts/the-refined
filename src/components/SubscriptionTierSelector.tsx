@@ -31,7 +31,7 @@ const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
   {
     id: "platinum_weekly",
     name: "Platinum Weekly",
-    price: 22,
+    price: 15,
     duration: "1 Week",
     durationDays: 7,
     features: [
@@ -45,7 +45,7 @@ const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
   {
     id: "platinum_monthly",
     name: "Platinum Monthly",
-    price: 119,
+    price: 79,
     duration: "1 Month",
     durationDays: 30,
     features: [
@@ -60,7 +60,7 @@ const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
   {
     id: "platinum_quarterly",
     name: "Platinum Quarterly",
-    price: 289,
+    price: 189,
     duration: "3 Months",
     durationDays: 90,
     features: [
@@ -74,7 +74,7 @@ const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
   {
     id: "platinum_yearly",
     name: "Platinum Yearly",
-    price: 599,
+    price: 399,
     duration: "1 Year",
     durationDays: 365,
     features: [
