@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -96,12 +96,6 @@ const Contact = () => {
       contact: "info@adamoreveescorts.com"
     },
     {
-      icon: <Phone className="h-6 w-6" />,
-      title: "Call Us",
-      description: "Available for your inquiries.",
-      contact: "+61 411 828 184"
-    },
-    {
       icon: <MapPin className="h-6 w-6" />,
       title: "Address",
       description: "Our mailing address.",
@@ -139,7 +133,7 @@ const Contact = () => {
         {/* Contact Info Cards */}
         <section className="py-12 bg-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
               {contactInfo.map((item, index) => (
                 <motion.div 
                   key={index} 
