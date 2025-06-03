@@ -17,19 +17,26 @@ export type Database = {
           created_at: string
           display_name: string | null
           email: string | null
+          featured: boolean | null
+          gallery_images: string[] | null
           height: string | null
           id: string
           is_active: boolean | null
           languages: string | null
+          last_active: string | null
           location: string | null
           payment_status: string | null
           profile_picture: string | null
           rates: string | null
+          rating: number | null
           role: Database["public"]["Enums"]["user_role"] | null
           services: string | null
+          status: string | null
           tags: string | null
           updated_at: string
           username: string | null
+          verified: boolean | null
+          view_count: number | null
         }
         Insert: {
           age?: string | null
@@ -38,19 +45,26 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           email?: string | null
+          featured?: boolean | null
+          gallery_images?: string[] | null
           height?: string | null
           id: string
           is_active?: boolean | null
           languages?: string | null
+          last_active?: string | null
           location?: string | null
           payment_status?: string | null
           profile_picture?: string | null
           rates?: string | null
+          rating?: number | null
           role?: Database["public"]["Enums"]["user_role"] | null
           services?: string | null
+          status?: string | null
           tags?: string | null
           updated_at?: string
           username?: string | null
+          verified?: boolean | null
+          view_count?: number | null
         }
         Update: {
           age?: string | null
@@ -59,19 +73,26 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           email?: string | null
+          featured?: boolean | null
+          gallery_images?: string[] | null
           height?: string | null
           id?: string
           is_active?: boolean | null
           languages?: string | null
+          last_active?: string | null
           location?: string | null
           payment_status?: string | null
           profile_picture?: string | null
           rates?: string | null
+          rating?: number | null
           role?: Database["public"]["Enums"]["user_role"] | null
           services?: string | null
+          status?: string | null
           tags?: string | null
           updated_at?: string
           username?: string | null
+          verified?: boolean | null
+          view_count?: number | null
         }
         Relationships: []
       }
@@ -134,10 +155,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      user_role: "escort" | "client" | "agency"
+      user_role: "escort" | "client" | "agency" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -253,7 +277,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      user_role: ["escort", "client", "agency"],
+      user_role: ["escort", "client", "agency", "admin"],
     },
   },
 } as const
