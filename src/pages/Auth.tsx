@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { z } from "zod";
@@ -198,7 +199,7 @@ const Auth = () => {
               role: role,
               username: formValues.username 
             },
-            emailRedirectTo: window.location.origin
+            emailRedirectTo: "https://adamoreveescorts.com/"
           }
         });
         
@@ -218,7 +219,7 @@ const Auth = () => {
               role: role,
               username: formValues.username 
             },
-            emailRedirectTo: window.location.origin
+            emailRedirectTo: "https://adamoreveescorts.com/"
           }
         });
         
