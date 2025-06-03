@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -587,7 +588,12 @@ const UserProfilePage = () => {
                               <h3 className="font-medium mb-3">
                                 {profile?.role === 'agency' ? 'Manage Agency Profile' : 'Edit Public Profile'}
                               </h3>
-                              <Button className="btn-gold">Manage Profile</Button>
+                              <Button 
+                                className="btn-gold"
+                                onClick={() => setShowEditProfile(true)}
+                              >
+                                Manage Profile
+                              </Button>
                             </div>
                             
                             <Separator />
