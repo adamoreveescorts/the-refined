@@ -26,10 +26,10 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { name, email, subject, message }: ContactFormData = await req.json();
 
-    // Send notification email to both business addresses
+    // Send notification email to both business addresses using a verified sender
     const notificationEmail = await resend.emails.send({
-      from: "Contact Form <noreply@adamoreveescorts.com>",
-      to: ["info@adamoreveescorts.com", "info@eternalsecurity.com.au"],
+      from: "Contact Form <onboarding@resend.dev>",
+      to: ["info@eternalsecurity.com.au", "info@adamoreveescorts.com"],
       subject: `New Contact Form Submission: ${subject}`,
       html: `
         <h2>New Contact Form Submission</h2>
@@ -47,7 +47,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send confirmation email to the person who submitted the form
     const confirmationEmail = await resend.emails.send({
-      from: "Adam or Eve Escorts <noreply@adamoreveescorts.com>",
+      from: "Adam or Eve Escorts <onboarding@resend.dev>",
       to: [email],
       subject: "Thank you for contacting us",
       html: `
@@ -64,7 +64,7 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
           </div>
           
-          <p>If you have any urgent inquiries, please don't hesitate to call us at +61 411 828 184.</p>
+          <p>We will respond to your inquiry as soon as possible.</p>
           
           <p>Best regards,<br>The Adam or Eve Escorts Team</p>
           
@@ -72,7 +72,6 @@ const handler = async (req: Request): Promise<Response> => {
           <p style="color: #666; font-size: 12px;">
             Adam or Eve Escorts<br>
             Email: info@adamoreveescorts.com<br>
-            Phone: +61 411 828 184<br>
             Address: PO Box 55 Liverpool NSW 1871
           </p>
         </div>
