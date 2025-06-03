@@ -60,6 +60,10 @@ const UserProfilePage = () => {
         return;
       }
       
+      // For authenticated users, if email is confirmed, they should be considered active
+      const isEmailConfirmed = session.user.email_confirmed_at != null;
+      const shouldBeActive = data.role === 'client' || isEmailConfirmed;
+      
       setProfile({
         id: data.id,
         email: data.email || session.user.email,
@@ -68,8 +72,16 @@ const UserProfilePage = () => {
         role: data.role || "client",
         created_at: new Date(session.user.created_at || data.created_at).toLocaleDateString(),
         payment_status: data.payment_status || "pending",
-        is_active: data.is_active || false
+        is_active: shouldBeActive
       });
+
+      // If profile should be active but isn't marked as such in the database, update it
+      if (shouldBeActive && !data.is_active) {
+        await supabase
+          .from('profiles')
+          .update({ is_active: true })
+          .eq('id', session.user.id);
+      }
 
       // Check subscription status for paid roles
       if (data.role === 'escort' || data.role === 'agency') {
