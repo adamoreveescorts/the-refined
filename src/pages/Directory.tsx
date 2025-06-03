@@ -280,6 +280,17 @@ const Directory = () => {
   const [sortBy, setSortBy] = useState('featured');
   const itemsPerPage = 30;
 
+  // Function to scroll to top
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Function to handle page changes
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    scrollToTop();
+  };
+
   useEffect(() => {
     fetchEscorts();
   }, []);
@@ -444,7 +455,7 @@ const Directory = () => {
                     <PaginationContent>
                       <PaginationItem>
                         <PaginationPrevious 
-                          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                          onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                           className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                         />
                       </PaginationItem>
@@ -453,7 +464,7 @@ const Directory = () => {
                       {currentPage > 3 && (
                         <>
                           <PaginationItem>
-                            <PaginationLink onClick={() => setCurrentPage(1)} className="cursor-pointer">
+                            <PaginationLink onClick={() => handlePageChange(1)} className="cursor-pointer">
                               1
                             </PaginationLink>
                           </PaginationItem>
@@ -473,7 +484,7 @@ const Directory = () => {
                         return (
                           <PaginationItem key={pageNumber}>
                             <PaginationLink 
-                              onClick={() => setCurrentPage(pageNumber)}
+                              onClick={() => handlePageChange(pageNumber)}
                               isActive={currentPage === pageNumber}
                               className="cursor-pointer"
                             >
@@ -492,7 +503,7 @@ const Directory = () => {
                             </PaginationItem>
                           )}
                           <PaginationItem>
-                            <PaginationLink onClick={() => setCurrentPage(totalPages)} className="cursor-pointer">
+                            <PaginationLink onClick={() => handlePageChange(totalPages)} className="cursor-pointer">
                               {totalPages}
                             </PaginationLink>
                           </PaginationItem>
@@ -501,7 +512,7 @@ const Directory = () => {
                       
                       <PaginationItem>
                         <PaginationNext 
-                          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                          onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                           className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                         />
                       </PaginationItem>
