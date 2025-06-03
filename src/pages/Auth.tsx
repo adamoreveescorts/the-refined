@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { z } from "zod";
@@ -19,7 +20,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RoleSelectionModal, { UserRole } from "@/components/RoleSelectionModal";
-import StripePaymentFlow from "@/components/StripePaymentFlow";
 
 // Schema for login form
 const loginSchema = z.object({
@@ -245,19 +245,6 @@ const Auth = () => {
     }
   };
 
-  const handlePaymentComplete = () => {
-    setShowPaymentFlow(false);
-    setVerificationSent(true);
-    toast.success("Subscription selected! Please check your email for verification and complete any pending payment.");
-  };
-
-  const handlePaymentCancel = () => {
-    setShowPaymentFlow(false);
-    setSelectedRole(null);
-    setNewUserSession(null);
-    toast.info("Registration cancelled. You can try again anytime.");
-  };
-
   const handleBackToLogin = () => {
     setVerificationSent(false);
     setActiveTab("login");
@@ -289,14 +276,7 @@ const Auth = () => {
           </p>
         </div>
 
-        {showPaymentFlow ? (
-          <StripePaymentFlow 
-            role={selectedRole as "escort" | "agency"}
-            onPaymentComplete={handlePaymentComplete}
-            onCancel={handlePaymentCancel}
-            userSession={newUserSession}
-          />
-        ) : verificationSent ? (
+        {verificationSent ? (
           <div className="mt-8 bg-white p-6 shadow rounded-lg">
             <h3 className="text-lg font-medium text-center mb-4">
               {selectedRole === 'client' ? 'Verification Email Sent' : 'Account Created Successfully'}
@@ -309,8 +289,9 @@ const Auth = () => {
                 </>
               ) : (
                 <>
-                  Your {selectedRole} account has been created! Complete the payment process in the Stripe checkout tab to activate your account.
-                  We've also sent a verification link to <strong>{formValues?.email}</strong>.
+                  Your {selectedRole} account has been created! Please check your email and click the verification link.
+                  After verification, you'll be redirected to choose your subscription plan.
+                  We've sent a verification link to <strong>{formValues?.email}</strong>.
                 </>
               )}
             </p>
