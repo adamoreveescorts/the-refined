@@ -36,25 +36,66 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const authHeader = req.headers.get("Authorization")!;
+    // Check if Stripe secret is available
+    const stripeSecret = Deno.env.get("Stripe Secret");
+    if (!stripeSecret) {
+      logStep("ERROR: Stripe Secret not found");
+      return new Response(JSON.stringify({ error: "Stripe configuration missing" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
+    }
+
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      logStep("ERROR: No authorization header");
+      return new Response(JSON.stringify({ error: "Authorization required" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+
     const token = authHeader.replace("Bearer ", "");
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
     
     if (!user?.email) {
-      throw new Error("User not authenticated or email not available");
+      logStep("ERROR: User not authenticated");
+      return new Response(JSON.stringify({ error: "User not authenticated or email not available" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
     }
     
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { role, tier } = await req.json();
+    let requestBody;
+    try {
+      requestBody = await req.json();
+    } catch (error) {
+      logStep("ERROR: Invalid JSON in request body", { error: error.message });
+      return new Response(JSON.stringify({ error: "Invalid request body" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
+    }
+
+    const { role, tier } = requestBody;
     
     if (!role || !['escort', 'agency'].includes(role)) {
-      throw new Error("Invalid role specified");
+      logStep("ERROR: Invalid role", { role });
+      return new Response(JSON.stringify({ error: "Invalid role specified" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
     }
     
     if (!tier || !SUBSCRIPTION_TIERS[tier as keyof typeof SUBSCRIPTION_TIERS]) {
-      throw new Error("Invalid subscription tier specified");
+      logStep("ERROR: Invalid tier", { tier });
+      return new Response(JSON.stringify({ error: "Invalid subscription tier specified" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
     }
 
     const selectedTier = SUBSCRIPTION_TIERS[tier as keyof typeof SUBSCRIPTION_TIERS];
@@ -63,7 +104,7 @@ serve(async (req) => {
     // Handle free Basic tier
     if (tier === 'basic') {
       // Update user to Basic tier directly
-      await supabaseClient.from("subscribers").upsert({
+      const { error: updateError } = await supabaseClient.from("subscribers").upsert({
         email: user.email,
         user_id: user.id,
         stripe_customer_id: null,
@@ -78,6 +119,27 @@ serve(async (req) => {
         updated_at: new Date().toISOString(),
       }, { onConflict: 'email' });
 
+      if (updateError) {
+        logStep("ERROR: Failed to update subscriber record", { error: updateError });
+        return new Response(JSON.stringify({ error: "Failed to update subscription" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500,
+        });
+      }
+
+      // Update user profile payment status
+      const { error: profileError } = await supabaseClient
+        .from('profiles')
+        .update({ 
+          payment_status: 'completed',
+          is_active: true 
+        })
+        .eq('id', user.id);
+
+      if (profileError) {
+        logStep("ERROR: Failed to update profile", { error: profileError });
+      }
+
       logStep("Basic tier assigned", { userId: user.id });
       return new Response(JSON.stringify({ 
         success: true, 
@@ -90,7 +152,7 @@ serve(async (req) => {
     }
 
     // Handle paid Platinum tiers
-    const stripe = new Stripe(Deno.env.get("Stripe Secret") || "", { 
+    const stripe = new Stripe(stripeSecret, { 
       apiVersion: "2023-10-16" 
     });
 
@@ -106,6 +168,8 @@ serve(async (req) => {
       logStep("Found existing customer", { customerId });
     }
 
+    const origin = req.headers.get("origin") || "https://adamoreveescorts.com";
+    
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
@@ -114,7 +178,7 @@ serve(async (req) => {
           price_data: {
             currency: "usd",
             product_data: { 
-              name: `Eternal Security ${selectedTier.name}` 
+              name: `Adam or Eve Escorts ${selectedTier.name}` 
             },
             unit_amount: selectedTier.price,
           },
@@ -122,8 +186,8 @@ serve(async (req) => {
         },
       ],
       mode: "payment", // One-time payment for platinum tiers
-      success_url: `${req.headers.get("origin")}/auth?payment=success&tier=${tier}`,
-      cancel_url: `${req.headers.get("origin")}/payment-cancelled`,
+      success_url: `${origin}/auth?payment=success&tier=${tier}`,
+      cancel_url: `${origin}/choose-plan`,
       metadata: {
         user_id: user.id,
         role: role,
@@ -139,8 +203,8 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error: any) {
-    logStep("ERROR", { message: error.message });
-    return new Response(JSON.stringify({ error: error.message }), {
+    logStep("ERROR", { message: error.message, stack: error.stack });
+    return new Response(JSON.stringify({ error: error.message || "An unexpected error occurred" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
