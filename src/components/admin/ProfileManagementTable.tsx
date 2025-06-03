@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { 
   Table, 
   TableBody, 
@@ -24,7 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { MoreHorizontal, Eye, Edit, Star, StarOff, Check, X, Shield } from 'lucide-react';
+import { MoreHorizontal, Eye, Edit, Star, StarOff, Check, X, Shield, User } from 'lucide-react';
 import ProfileDetailsModal from './ProfileDetailsModal';
 import ProfileEditModal from './ProfileEditModal';
 
@@ -153,6 +154,7 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-16">Photo</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
@@ -167,6 +169,17 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
           <TableBody>
             {profiles.map((profile) => (
               <TableRow key={profile.id} className={isAdminUser(profile) ? 'bg-gold/5' : ''}>
+                <TableCell>
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage 
+                      src={profile.profile_picture} 
+                      alt={profile.display_name || profile.username || 'Profile'} 
+                    />
+                    <AvatarFallback>
+                      <User className="h-4 w-4" />
+                    </AvatarFallback>
+                  </Avatar>
+                </TableCell>
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
                     {profile.display_name || profile.username || 'N/A'}
