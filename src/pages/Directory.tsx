@@ -12,6 +12,19 @@ import { Badge } from '@/components/ui/badge';
 import { Check, Heart, Search, Filter, Star } from 'lucide-react';
 
 const EscortCard = ({ escort }: { escort: any }) => {
+  // Parse rates to get hourly rate if available
+  const getHourlyRate = () => {
+    if (!escort.rates) return 'Rates available';
+    
+    // Try to extract hourly rate from the rates string
+    const hourlyMatch = escort.rates.match(/\$(\d+)\/hour/);
+    if (hourlyMatch) {
+      return `$${hourlyMatch[1]}/hour`;
+    }
+    
+    return 'Rates available';
+  };
+
   return (
     <div className="group relative bg-white rounded-lg overflow-hidden shadow-md card-hover">
       <Link to={`/profile/${escort.id}`}>
@@ -69,7 +82,7 @@ const EscortCard = ({ escort }: { escort: any }) => {
           
           <div className="mt-4 pt-2 border-t border-gray-100 flex items-center justify-between">
             <span className="text-gold font-medium">
-              {escort.rates ? escort.rates.split('\n')[0] : 'Rates available'}
+              {getHourlyRate()}
             </span>
             <Button size="sm" variant="link" className="text-navy">View Profile</Button>
           </div>
