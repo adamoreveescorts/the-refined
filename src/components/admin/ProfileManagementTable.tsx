@@ -24,7 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { MoreHorizontal, Eye, Edit, Star, StarOff, Check, X } from 'lucide-react';
+import { MoreHorizontal, Eye, Edit, Star, StarOff, Check, X, Shield } from 'lucide-react';
 import ProfileDetailsModal from './ProfileDetailsModal';
 import ProfileEditModal from './ProfileEditModal';
 
@@ -37,6 +37,10 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+
+  const isAdminUser = (profile: any) => {
+    return profile.role === 'admin' || profile.email === 'info@eternalsecurity.com.au';
+  };
 
   const getStatusBadge = (status: string) => {
     const statusColors = {
@@ -119,6 +123,30 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
     }
   };
 
+  const handleActionClick = (profile: any, action: string) => {
+    if (isAdminUser(profile)) {
+      toast.error('Cannot perform actions on admin users');
+      return;
+    }
+
+    switch (action) {
+      case 'featured':
+        toggleFeatured(profile.id, profile.featured);
+        break;
+      case 'verified':
+        toggleVerified(profile.id, profile.verified);
+        break;
+    }
+  };
+
+  const handleStatusUpdate = (profile: any, status: string) => {
+    if (isAdminUser(profile)) {
+      toast.error('Cannot modify admin user status');
+      return;
+    }
+    updateProfileStatus(profile.id, status);
+  };
+
   return (
     <>
       <div className="rounded-md border">
@@ -138,9 +166,14 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
           </TableHeader>
           <TableBody>
             {profiles.map((profile) => (
-              <TableRow key={profile.id}>
+              <TableRow key={profile.id} className={isAdminUser(profile) ? 'bg-gold/5' : ''}>
                 <TableCell className="font-medium">
-                  {profile.display_name || profile.username || 'N/A'}
+                  <div className="flex items-center gap-2">
+                    {profile.display_name || profile.username || 'N/A'}
+                    {isAdminUser(profile) && (
+                      <Shield className="h-4 w-4 text-gold" title="Protected Admin User" />
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell>{profile.email}</TableCell>
                 <TableCell>{getRoleBadge(profile.role)}</TableCell>
@@ -150,8 +183,9 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => toggleFeatured(profile.id, profile.featured)}
+                    onClick={() => handleActionClick(profile, 'featured')}
                     className={profile.featured ? 'text-gold' : 'text-gray-400'}
+                    disabled={isAdminUser(profile)}
                   >
                     <Star className={`h-4 w-4 ${profile.featured ? 'fill-current' : ''}`} />
                   </Button>
@@ -160,8 +194,9 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => toggleVerified(profile.id, profile.verified)}
+                    onClick={() => handleActionClick(profile, 'verified')}
                     className={profile.verified ? 'text-green-600' : 'text-gray-400'}
+                    disabled={isAdminUser(profile)}
                   >
                     <Check className={`h-4 w-4 ${profile.verified ? 'fill-current' : ''}`} />
                   </Button>
@@ -187,40 +222,50 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
                         <Eye className="mr-2 h-4 w-4" />
                         View Details
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => {
-                          setSelectedProfile(profile);
-                          setShowEditModal(true);
-                        }}
-                      >
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit Profile
-                      </DropdownMenuItem>
-                      {profile.status === 'pending' && (
+                      {!isAdminUser(profile) && (
                         <>
                           <DropdownMenuItem
-                            onClick={() => updateProfileStatus(profile.id, 'approved')}
-                            className="text-green-600"
+                            onClick={() => {
+                              setSelectedProfile(profile);
+                              setShowEditModal(true);
+                            }}
                           >
-                            <Check className="mr-2 h-4 w-4" />
-                            Approve
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit Profile
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => updateProfileStatus(profile.id, 'rejected')}
-                            className="text-red-600"
-                          >
-                            <X className="mr-2 h-4 w-4" />
-                            Reject
-                          </DropdownMenuItem>
+                          {profile.status === 'pending' && (
+                            <>
+                              <DropdownMenuItem
+                                onClick={() => handleStatusUpdate(profile, 'approved')}
+                                className="text-green-600"
+                              >
+                                <Check className="mr-2 h-4 w-4" />
+                                Approve
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleStatusUpdate(profile, 'rejected')}
+                                className="text-red-600"
+                              >
+                                <X className="mr-2 h-4 w-4" />
+                                Reject
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                          {profile.status === 'approved' && (
+                            <DropdownMenuItem
+                              onClick={() => handleStatusUpdate(profile, 'inactive')}
+                              className="text-orange-600"
+                            >
+                              <X className="mr-2 h-4 w-4" />
+                              Deactivate
+                            </DropdownMenuItem>
+                          )}
                         </>
                       )}
-                      {profile.status === 'approved' && (
-                        <DropdownMenuItem
-                          onClick={() => updateProfileStatus(profile.id, 'inactive')}
-                          className="text-orange-600"
-                        >
-                          <X className="mr-2 h-4 w-4" />
-                          Deactivate
+                      {isAdminUser(profile) && (
+                        <DropdownMenuItem disabled className="text-gray-400">
+                          <Shield className="mr-2 h-4 w-4" />
+                          Admin Protected
                         </DropdownMenuItem>
                       )}
                     </DropdownMenuContent>
@@ -239,12 +284,14 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
             open={showDetailsModal}
             onOpenChange={setShowDetailsModal}
           />
-          <ProfileEditModal
-            profile={selectedProfile}
-            open={showEditModal}
-            onOpenChange={setShowEditModal}
-            onProfileUpdate={onProfileUpdate}
-          />
+          {!isAdminUser(selectedProfile) && (
+            <ProfileEditModal
+              profile={selectedProfile}
+              open={showEditModal}
+              onOpenChange={setShowEditModal}
+              onProfileUpdate={onProfileUpdate}
+            />
+          )}
         </>
       )}
     </>
