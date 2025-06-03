@@ -31,7 +31,7 @@ const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
   {
     id: "platinum_weekly",
     name: "Platinum Weekly",
-    price: 15,
+    price: 22,
     duration: "1 Week",
     durationDays: 7,
     features: [
@@ -45,7 +45,7 @@ const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
   {
     id: "platinum_monthly",
     name: "Platinum Monthly",
-    price: 79,
+    price: 119,
     duration: "1 Month",
     durationDays: 30,
     features: [
@@ -60,7 +60,7 @@ const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
   {
     id: "platinum_quarterly",
     name: "Platinum Quarterly",
-    price: 189,
+    price: 289,
     duration: "3 Months",
     durationDays: 90,
     features: [
@@ -74,7 +74,7 @@ const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
   {
     id: "platinum_yearly",
     name: "Platinum Yearly",
-    price: 399,
+    price: 599,
     duration: "1 Year",
     durationDays: 365,
     features: [
@@ -168,7 +168,7 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, rol
                 <CardTitle className="text-navy">{tier.name}</CardTitle>
                 <CardDescription>
                   <div className="text-2xl font-bold text-navy">
-                    {tier.price === 0 ? "Free" : `$${tier.price}`}
+                    {tier.price === 0 ? "Free" : `$${tier.price} AUD`}
                   </div>
                   <div className="text-sm text-gray-500">{tier.duration}</div>
                 </CardDescription>

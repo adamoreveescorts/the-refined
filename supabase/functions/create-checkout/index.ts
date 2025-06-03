@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
@@ -16,10 +15,10 @@ const logStep = (step: string, details?: any) => {
 // Define subscription tiers
 const SUBSCRIPTION_TIERS = {
   basic: { name: "Basic Plan", price: 0, duration: "Forever", durationDays: 0 },
-  platinum_weekly: { name: "Platinum Weekly", price: 1500, duration: "1 Week", durationDays: 7 },
-  platinum_monthly: { name: "Platinum Monthly", price: 7900, duration: "1 Month", durationDays: 30 },
-  platinum_quarterly: { name: "Platinum Quarterly", price: 18900, duration: "3 Months", durationDays: 90 },
-  platinum_yearly: { name: "Platinum Yearly", price: 39900, duration: "1 Year", durationDays: 365 }
+  platinum_weekly: { name: "Platinum Weekly", price: 2200, duration: "1 Week", durationDays: 7 },
+  platinum_monthly: { name: "Platinum Monthly", price: 11900, duration: "1 Month", durationDays: 30 },
+  platinum_quarterly: { name: "Platinum Quarterly", price: 28900, duration: "3 Months", durationDays: 90 },
+  platinum_yearly: { name: "Platinum Yearly", price: 59900, duration: "1 Year", durationDays: 365 }
 };
 
 serve(async (req) => {
@@ -174,7 +173,7 @@ serve(async (req) => {
       line_items: [
         {
           price_data: {
-            currency: "usd",
+            currency: "aud",
             product_data: { 
               name: `Adam or Eve Escorts ${selectedTier.name}` 
             },
