@@ -171,7 +171,7 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
                   <div className="flex items-center gap-2">
                     {profile.display_name || profile.username || 'N/A'}
                     {isAdminUser(profile) && (
-                      <Shield className="h-4 w-4 text-gold" title="Protected Admin User" />
+                      <Shield className="h-4 w-4 text-gold" />
                     )}
                   </div>
                 </TableCell>
