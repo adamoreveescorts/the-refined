@@ -71,6 +71,39 @@ const ProfilePage = () => {
     return baseCount + randomVariation;
   };
 
+  // Parse rates from text format like "$420/hour, $2100/overnight"
+  const parseRatesFromText = (ratesText: string): RatesData => {
+    if (!ratesText) return {};
+    
+    const rates: RatesData = {};
+    
+    // Extract hourly rate
+    const hourlyMatch = ratesText.match(/\$(\d+)\/hour/i);
+    if (hourlyMatch) {
+      rates.hourly = hourlyMatch[1];
+    }
+    
+    // Extract overnight rate
+    const overnightMatch = ratesText.match(/\$(\d+)\/overnight/i);
+    if (overnightMatch) {
+      rates.overnight = overnightMatch[1];
+    }
+    
+    // Extract dinner rate (if mentioned)
+    const dinnerMatch = ratesText.match(/\$(\d+)\/dinner/i);
+    if (dinnerMatch) {
+      rates.dinner = dinnerMatch[1];
+    }
+    
+    // Extract 2-hour rate (if mentioned)
+    const twoHourMatch = ratesText.match(/\$(\d+)\/2\s*hours?/i);
+    if (twoHourMatch) {
+      rates.twoHours = twoHourMatch[1];
+    }
+    
+    return rates;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -112,17 +145,8 @@ const ProfilePage = () => {
   const services = escort.services ? escort.services.split(',').map((s: string) => s.trim()) : [];
   const languages = escort.languages ? escort.languages.split(',').map((l: string) => l.trim()) : [];
   
-  // Safe JSON parsing with error handling
-  let rates: RatesData = {};
-  if (escort.rates) {
-    try {
-      rates = JSON.parse(escort.rates);
-    } catch (error) {
-      console.error('Error parsing rates JSON:', error);
-      console.log('Invalid rates data:', escort.rates);
-      rates = {};
-    }
-  }
+  // Parse rates from text format instead of JSON
+  const rates = parseRatesFromText(escort.rates || '');
 
   const ratingCount = generateRatingCount(escort.rating || 4.5);
   
