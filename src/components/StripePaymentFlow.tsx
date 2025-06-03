@@ -19,10 +19,18 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
   const handleTierSelect = async (tier: SubscriptionTier) => {
     setIsLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const currentSession = userSession || session;
+      // Get the current session more reliably
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      if (!currentSession) {
+      if (sessionError) {
+        console.error("Session error:", sessionError);
+        throw new Error("Failed to get authentication session");
+      }
+      
+      const currentSession = session || userSession;
+      
+      if (!currentSession?.access_token) {
+        console.error("No session or access token found");
         toast.error("Please log in to continue");
         return;
       }
@@ -36,7 +44,10 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Edge function error:", error);
+        throw error;
+      }
 
       if (tier.id === 'basic') {
         // Free tier, no payment needed
@@ -44,9 +55,13 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
         onPaymentComplete();
       } else {
         // Paid tier, redirect to Stripe
-        window.open(data.url, '_blank');
-        toast.success("Redirected to Stripe checkout. Complete your payment to activate your plan.");
-        onPaymentComplete();
+        if (data?.url) {
+          window.open(data.url, '_blank');
+          toast.success("Redirected to Stripe checkout. Complete your payment to activate your plan.");
+          onPaymentComplete();
+        } else {
+          throw new Error("No checkout URL received");
+        }
       }
     } catch (error: any) {
       console.error("Payment error:", error);
