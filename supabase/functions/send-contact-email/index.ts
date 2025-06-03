@@ -26,7 +26,7 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { name, email, subject, message }: ContactFormData = await req.json();
 
-    // Send notification email to both business addresses using a verified sender
+    // Send notification email to both business addresses
     const notificationEmail = await resend.emails.send({
       from: "Contact Form <onboarding@resend.dev>",
       to: ["info@eternalsecurity.com.au", "info@adamoreveescorts.com"],
@@ -45,40 +45,7 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
-    // Send confirmation email to the person who submitted the form
-    const confirmationEmail = await resend.emails.send({
-      from: "Adam or Eve Escorts <onboarding@resend.dev>",
-      to: [email],
-      subject: "Thank you for contacting us",
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #2c3e50;">Thank you for contacting us, ${name}!</h1>
-          <p>We have received your message and will get back to you as soon as possible.</p>
-          
-          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
-            <h3>Your Message:</h3>
-            <p><strong>Subject:</strong> ${subject}</p>
-            <p><strong>Message:</strong></p>
-            <div style="background-color: white; padding: 15px; border-radius: 3px;">
-              ${message.replace(/\n/g, '<br>')}
-            </div>
-          </div>
-          
-          <p>We will respond to your inquiry as soon as possible.</p>
-          
-          <p>Best regards,<br>The Adam or Eve Escorts Team</p>
-          
-          <hr style="margin: 30px 0;">
-          <p style="color: #666; font-size: 12px;">
-            Adam or Eve Escorts<br>
-            Email: info@adamoreveescorts.com<br>
-            Address: PO Box 55 Liverpool NSW 1871
-          </p>
-        </div>
-      `,
-    });
-
-    console.log("Emails sent successfully:", { notificationEmail, confirmationEmail });
+    console.log("Notification email sent successfully:", notificationEmail);
 
     return new Response(
       JSON.stringify({ 
