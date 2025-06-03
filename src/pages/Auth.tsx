@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { z } from "zod";
@@ -172,6 +171,10 @@ const Auth = () => {
     } else if (error.message?.includes("Password should be at least")) {
       toast.error("Password must be at least 6 characters long.");
       signupForm.setError("password", { message: "Password too short" });
+    } else if (error.message?.includes("Email not confirmed")) {
+      // Handle email not confirmed error - this means signup was successful but email needs verification
+      setVerificationSent(true);
+      toast.success("Account created successfully! Please check your email for verification.");
     } else {
       toast.error(error.message || "Failed to create account. Please try again.");
     }
@@ -223,21 +226,10 @@ const Auth = () => {
           throw error;
         }
         
-        // Now sign them in to get a session for subscription selection
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email: formValues.email,
-          password: formValues.password,
-        });
-        
-        if (signInError) {
-          throw signInError;
-        }
-        
-        if (signInData.session) {
-          setNewUserSession(signInData.session);
-          setShowPaymentFlow(true);
-          toast.success("Account created! Please select your subscription plan.");
-        }
+        // For escorts/agencies, we need to show payment flow but handle email confirmation
+        // Don't try to sign in automatically - let them verify email first
+        setVerificationSent(true);
+        toast.success("Account created! Please check your email for verification, then you can complete your subscription setup.");
       }
     } catch (error: any) {
       handleSignupError(error);
