@@ -2,7 +2,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Search, UserRound } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Menu, X, Search, UserRound, Inbox } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -10,21 +11,60 @@ const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // Check for user session on component mount
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user || null);
+      if (session?.user) {
+        fetchUnreadCount(session.user.id);
+      }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setUser(session?.user || null);
+        if (session?.user) {
+          fetchUnreadCount(session.user.id);
+        } else {
+          setUnreadCount(0);
+        }
       }
     );
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const fetchUnreadCount = async (userId: string) => {
+    try {
+      // Get conversations where user is either client or escort
+      const { data: conversations } = await supabase
+        .from('conversations')
+        .select('id')
+        .or(`client_id.eq.${userId},escort_id.eq.${userId}`);
+
+      if (!conversations) return;
+
+      let totalUnread = 0;
+      
+      // Get unread count for each conversation
+      for (const conv of conversations) {
+        const { count } = await supabase
+          .from('messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('conversation_id', conv.id)
+          .neq('sender_id', userId)
+          .is('read_at', null);
+        
+        totalUnread += count || 0;
+      }
+
+      setUnreadCount(totalUnread);
+    } catch (error) {
+      console.error('Error fetching unread count:', error);
+    }
+  };
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -78,6 +118,16 @@ const NavBar = () => {
             
             {user ? (
               <>
+                <Link to="/messages">
+                  <Button variant="ghost" size="icon" className="relative">
+                    <Inbox className="h-5 w-5" />
+                    {unreadCount > 0 && (
+                      <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-xs h-5 w-5 rounded-full flex items-center justify-center">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </Badge>
+                    )}
+                  </Button>
+                </Link>
                 <Link to="/user-profile">
                   <Button variant="outline" size="sm" className="flex items-center">
                     <UserRound className="h-4 w-4 mr-2" />
@@ -134,6 +184,19 @@ const NavBar = () => {
           <div className="pt-4 pb-3 border-t border-border">
             {user ? (
               <>
+                <div className="flex items-center px-3 mb-3">
+                  <Link to="/messages" className="w-full">
+                    <Button variant="outline" className="w-full relative">
+                      <Inbox className="h-4 w-4 mr-2" />
+                      Messages
+                      {unreadCount > 0 && (
+                        <Badge className="ml-2 bg-red-500 text-white">
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </Badge>
+                      )}
+                    </Button>
+                  </Link>
+                </div>
                 <div className="flex items-center px-3">
                   <Link to="/user-profile" className="w-full">
                     <Button variant="outline" className="w-full">
