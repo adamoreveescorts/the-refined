@@ -33,6 +33,7 @@ const MessagesPage = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
   const [selectedConversation, setSelectedConversation] = useState<{
     userId: string;
     userName: string;
@@ -47,6 +48,17 @@ const MessagesPage = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       setCurrentUserId(user.id);
+      
+      // Get user role
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      
+      if (profile) {
+        setCurrentUserRole(profile.role);
+      }
     }
   };
 
@@ -58,19 +70,14 @@ const MessagesPage = () => {
         return;
       }
 
-      // Fetch conversations with the other user's profile info
+      // Fetch conversations where user is either client or escort
       const { data: conversationsData, error } = await supabase
         .from('conversations')
         .select(`
           id,
           client_id,
           escort_id,
-          updated_at,
-          messages!inner (
-            content,
-            created_at,
-            sender_id
-          )
+          updated_at
         `)
         .or(`client_id.eq.${user.id},escort_id.eq.${user.id}`)
         .order('updated_at', { ascending: false });
@@ -104,7 +111,7 @@ const MessagesPage = () => {
             .limit(1)
             .single();
 
-          // Get unread count
+          // Get unread count (messages not sent by current user and not read)
           const { count: unreadCount } = await supabase
             .from('messages')
             .select('*', { count: 'exact', head: true })
@@ -114,7 +121,12 @@ const MessagesPage = () => {
 
           return {
             ...conv,
-            other_user: profile || { id: otherUserId, display_name: 'Unknown User', profile_picture: '', role: 'client' },
+            other_user: profile || { 
+              id: otherUserId, 
+              display_name: 'Unknown User', 
+              profile_picture: '', 
+              role: 'client' 
+            },
             last_message: lastMessage,
             unread_count: unreadCount || 0
           };
@@ -171,7 +183,14 @@ const MessagesPage = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-6">
             <h1 className="text-3xl font-serif font-bold text-navy mb-2">Messages</h1>
-            <p className="text-charcoal">Your conversations</p>
+            <p className="text-charcoal">
+              Your conversations
+              {currentUserRole && (
+                <Badge variant="outline" className="ml-2 capitalize">
+                  {currentUserRole}
+                </Badge>
+              )}
+            </p>
           </div>
 
           {conversations.length === 0 ? (
@@ -179,7 +198,12 @@ const MessagesPage = () => {
               <CardContent className="p-8 text-center">
                 <MessageSquare className="h-12 w-12 mx-auto text-gray-400 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No messages yet</h3>
-                <p className="text-gray-600">Start a conversation by messaging someone from their profile.</p>
+                <p className="text-gray-600">
+                  {currentUserRole === 'client' 
+                    ? 'Start a conversation by messaging an escort from their profile.'
+                    : 'Conversations will appear here when clients message you.'
+                  }
+                </p>
               </CardContent>
             </Card>
           ) : (
@@ -208,7 +232,7 @@ const MessagesPage = () => {
                             <h3 className="text-sm font-medium text-gray-900 truncate">
                               {conversation.other_user.display_name || 'Unknown User'}
                             </h3>
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs capitalize">
                               {conversation.other_user.role}
                             </Badge>
                           </div>

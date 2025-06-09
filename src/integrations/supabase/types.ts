@@ -50,6 +50,7 @@ export type Database = {
       }
       messages: {
         Row: {
+          admin_reply: boolean | null
           content: string
           conversation_id: string
           created_at: string
@@ -58,6 +59,7 @@ export type Database = {
           sender_id: string
         }
         Insert: {
+          admin_reply?: boolean | null
           content: string
           conversation_id: string
           created_at?: string
@@ -66,6 +68,7 @@ export type Database = {
           sender_id: string
         }
         Update: {
+          admin_reply?: boolean | null
           content?: string
           conversation_id?: string
           created_at?: string

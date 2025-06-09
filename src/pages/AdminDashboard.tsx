@@ -10,9 +10,10 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Users, UserCheck, UserX, Star, Eye } from 'lucide-react';
+import { Search, Users, UserCheck, UserX, Star, Eye, MessageSquare } from 'lucide-react';
 import ProfileManagementTable from '@/components/admin/ProfileManagementTable';
 import AdminStats from '@/components/admin/AdminStats';
+import AdminMessagingTab from '@/components/admin/AdminMessagingTab';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -110,8 +111,9 @@ const AdminDashboard = () => {
           <AdminStats profiles={profiles} />
 
           <Tabs defaultValue="profiles" className="mt-8">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="profiles">Profile Management</TabsTrigger>
+              <TabsTrigger value="messaging">Messaging</TabsTrigger>
               <TabsTrigger value="content">Content Management</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
             </TabsList>
@@ -150,6 +152,23 @@ const AdminDashboard = () => {
                     profiles={filteredProfiles}
                     onProfileUpdate={fetchProfiles}
                   />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="messaging" className="mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <MessageSquare className="h-5 w-5 mr-2" />
+                    Message Management
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    View and respond to conversations as escorts
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <AdminMessagingTab />
                 </CardContent>
               </Card>
             </TabsContent>
