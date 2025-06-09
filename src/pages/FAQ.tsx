@@ -32,8 +32,8 @@ const FAQItem = ({ question, answer }: { question: string; answer: string }) => 
 const FAQ = () => {
   const faqItems = [
     {
-      question: "What is The Refined Escort platform?",
-      answer: "The Refined Escort is a premium directory connecting sophisticated companions with discerning clients. Our platform prioritizes quality, discretion, and safety for all users while offering a refined experience unlike any other in the industry."
+      question: "What is the Adam or Eve Escorts platform?",
+      answer: "Adam or Eve Escorts is a premium directory connecting sophisticated companions with discerning clients. Our platform prioritizes quality, discretion, and safety for all users while offering a refined experience unlike any other in the industry."
     },
     {
       question: "How do I join as a companion?",
@@ -48,8 +48,8 @@ const FAQ = () => {
       answer: "Absolutely. Privacy and discretion are foundational to our platform. We employ advanced encryption for all communications, never share your personal information with third parties, and offer confidential payment processing options. Your personal information remains secure and private."
     },
     {
-      question: "What sets The Refined Escort apart from other platforms?",
-      answer: "Our commitment to quality, sophisticated design, and ethical practices distinguishes us. We curate our directory carefully, maintain high verification standards, and foster a community of respect. The Refined Escort focuses on meaningful connections that transcend traditional escort experiences."
+      question: "What sets Adam or Eve Escorts apart from other platforms?",
+      answer: "Our commitment to quality, sophisticated design, and ethical practices distinguishes us. We curate our directory carefully, maintain high verification standards, and foster a community of respect. Adam or Eve Escorts focuses on meaningful connections that transcend traditional escort experiences."
     },
     {
       question: "Are there membership fees?",
