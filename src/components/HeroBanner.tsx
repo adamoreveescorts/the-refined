@@ -134,11 +134,11 @@ const HeroBanner = () => {
       {/* Content */}
       <div className="relative h-full flex flex-col justify-center px-4 sm:px-6 lg:px-8 z-10">
         {/* Main Hero Content */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <h1 className={`text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4 transition-all duration-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
             Discover Elite Companionship
           </h1>
-          <p className={`text-lg sm:text-xl text-gray-100 max-w-3xl mx-auto mb-8 transition-all duration-700 delay-100 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+          <p className={`text-lg sm:text-xl text-gray-100 max-w-3xl mx-auto mb-6 transition-all duration-700 delay-100 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
             Connect with sophisticated escorts worldwide through our premium directory
           </p>
           
@@ -161,7 +161,7 @@ const HeroBanner = () => {
           </div>
           
           {/* CTA Buttons */}
-          <div className={`flex flex-col sm:flex-row gap-4 mt-10 justify-center transition-all duration-700 delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+          <div className={`flex flex-col sm:flex-row gap-4 mt-8 justify-center transition-all duration-700 delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
             <Link to="/directory">
               <Button variant="outline" className="text-white border-white bg-zinc-500 hover:bg-zinc-400">
                 Browse Escorts
