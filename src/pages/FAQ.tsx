@@ -13,17 +13,17 @@ const FAQItem = ({ question, answer }: { question: string; answer: string }) => 
     <Collapsible 
       open={isOpen} 
       onOpenChange={setIsOpen}
-      className="border border-gray-200 rounded-lg mb-4 overflow-hidden"
+      className="border border-border rounded-lg mb-4 overflow-hidden"
     >
-      <CollapsibleTrigger className="w-full p-4 flex justify-between items-center bg-white hover:bg-gray-50 transition-colors text-left">
-        <span className="font-serif text-lg text-navy font-medium">{question}</span>
+      <CollapsibleTrigger className="w-full p-4 flex justify-between items-center bg-card hover:bg-accent transition-colors text-left">
+        <span className="font-serif text-lg text-foreground font-medium">{question}</span>
         {isOpen ? 
           <ChevronUp className="h-5 w-5 text-gold" /> : 
-          <ChevronDown className="h-5 w-5 text-navy" />
+          <ChevronDown className="h-5 w-5 text-foreground" />
         }
       </CollapsibleTrigger>
-      <CollapsibleContent className="p-4 bg-gray-50 border-t border-gray-200">
-        <p className="text-charcoal">{answer}</p>
+      <CollapsibleContent className="p-4 bg-accent border-t border-border">
+        <p className="text-muted-foreground">{answer}</p>
       </CollapsibleContent>
     </Collapsible>
   );
@@ -93,15 +93,15 @@ const FAQ = () => {
         </section>
 
         {/* FAQ Content */}
-        <section className="py-16 lg:py-20 bg-gray-50">
+        <section className="py-16 lg:py-20 bg-background">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto">
-              <div className="bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-gray-100 mb-8">
+              <div className="bg-card p-6 sm:p-8 rounded-xl shadow-sm border border-border mb-8">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 rounded-full bg-navy/10 flex items-center justify-center">
                     <HelpCircle className="h-6 w-6 text-navy" />
                   </div>
-                  <h2 className="font-serif text-2xl font-bold text-navy">Common Questions</h2>
+                  <h2 className="font-serif text-2xl font-bold text-foreground">Common Questions</h2>
                 </div>
                 
                 {faqItems.map((item, index) => (
@@ -117,9 +117,9 @@ const FAQ = () => {
                 ))}
               </div>
               
-              <div className="bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-gray-100">
-                <h2 className="font-serif text-2xl font-bold text-navy mb-4">Still Have Questions?</h2>
-                <p className="text-charcoal mb-6">
+              <div className="bg-card p-6 sm:p-8 rounded-xl shadow-sm border border-border">
+                <h2 className="font-serif text-2xl font-bold text-foreground mb-4">Still Have Questions?</h2>
+                <p className="text-muted-foreground mb-6">
                   Our support team is here to help. Feel free to reach out for personalized assistance.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
@@ -131,7 +131,7 @@ const FAQ = () => {
                   </a>
                   <a 
                     href="/blog" 
-                    className="bg-white hover:bg-gray-50 text-navy border border-gray-300 font-medium py-3 px-6 rounded-md text-center transition-colors"
+                    className="bg-background hover:bg-accent text-foreground border border-border font-medium py-3 px-6 rounded-md text-center transition-colors"
                   >
                     Read Our Blog
                   </a>

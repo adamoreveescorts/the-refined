@@ -37,32 +37,32 @@ const NavBar = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md shadow-sm">
+    <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <span className="font-serif text-2xl font-bold text-navy">Adam or Eve Escorts</span>
+              <span className="font-serif text-2xl font-bold text-foreground">Adam or Eve Escorts</span>
             </Link>
           </div>
           
           {/* Desktop Navigation */}
           <div className="hidden md:block">
             <div className="flex items-center space-x-4">
-              <Link to="/directory" className="px-3 py-2 text-sm font-medium text-charcoal hover:text-gold transition-colors">
+              <Link to="/directory" className="px-3 py-2 text-sm font-medium text-foreground hover:text-gold transition-colors">
                 Directory
               </Link>
-              <Link to="/about" className="px-3 py-2 text-sm font-medium text-charcoal hover:text-gold transition-colors">
+              <Link to="/about" className="px-3 py-2 text-sm font-medium text-foreground hover:text-gold transition-colors">
                 About
               </Link>
-              <Link to="/faq" className="px-3 py-2 text-sm font-medium text-charcoal hover:text-gold transition-colors">
+              <Link to="/faq" className="px-3 py-2 text-sm font-medium text-foreground hover:text-gold transition-colors">
                 FAQ
               </Link>
-              <Link to="/blog" className="px-3 py-2 text-sm font-medium text-charcoal hover:text-gold transition-colors">
+              <Link to="/blog" className="px-3 py-2 text-sm font-medium text-foreground hover:text-gold transition-colors">
                 Blog
               </Link>
-              <Link to="/contact" className="px-3 py-2 text-sm font-medium text-charcoal hover:text-gold transition-colors">
+              <Link to="/contact" className="px-3 py-2 text-sm font-medium text-foreground hover:text-gold transition-colors">
                 Contact
               </Link>
             </div>
@@ -112,27 +112,27 @@ const NavBar = () => {
       
       {/* Mobile Menu with animation */}
       <div 
-        className={`md:hidden bg-white shadow-lg overflow-hidden transition-all duration-300 ease-in-out ${
+        className={`md:hidden bg-background border-t border-border overflow-hidden transition-all duration-300 ease-in-out ${
           isMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-          <Link to="/directory" className="block px-3 py-2 text-base font-medium text-charcoal hover:text-gold transition-colors">
+          <Link to="/directory" className="block px-3 py-2 text-base font-medium text-foreground hover:text-gold transition-colors">
             Directory
           </Link>
-          <Link to="/about" className="block px-3 py-2 text-base font-medium text-charcoal hover:text-gold transition-colors">
+          <Link to="/about" className="block px-3 py-2 text-base font-medium text-foreground hover:text-gold transition-colors">
             About
           </Link>
-          <Link to="/faq" className="block px-3 py-2 text-base font-medium text-charcoal hover:text-gold transition-colors">
+          <Link to="/faq" className="block px-3 py-2 text-base font-medium text-foreground hover:text-gold transition-colors">
             FAQ
           </Link>
-          <Link to="/blog" className="block px-3 py-2 text-base font-medium text-charcoal hover:text-gold transition-colors">
+          <Link to="/blog" className="block px-3 py-2 text-base font-medium text-foreground hover:text-gold transition-colors">
             Blog
           </Link>
-          <Link to="/contact" className="block px-3 py-2 text-base font-medium text-charcoal hover:text-gold transition-colors">
+          <Link to="/contact" className="block px-3 py-2 text-base font-medium text-foreground hover:text-gold transition-colors">
             Contact
           </Link>
-          <div className="pt-4 pb-3 border-t border-gray-200">
+          <div className="pt-4 pb-3 border-t border-border">
             {user ? (
               <>
                 <div className="flex items-center px-3">

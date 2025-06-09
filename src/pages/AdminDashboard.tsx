@@ -100,11 +100,11 @@ const AdminDashboard = () => {
     <div className="min-h-screen flex flex-col">
       <NavBar />
       
-      <main className="flex-grow bg-gray-50 py-8">
+      <main className="flex-grow bg-background py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-navy mb-2">Admin Dashboard</h1>
-            <p className="text-charcoal">Manage escort profiles and platform content</p>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Admin Dashboard</h1>
+            <p className="text-muted-foreground">Manage escort profiles and platform content</p>
           </div>
 
           <AdminStats profiles={profiles} />
@@ -123,7 +123,7 @@ const AdminDashboard = () => {
                     <span>Profile Management</span>
                     <div className="flex gap-2">
                       <div className="relative">
-                        <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                        <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
                         <Input
                           placeholder="Search profiles..."
                           value={searchTerm}
@@ -134,7 +134,7 @@ const AdminDashboard = () => {
                       <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="px-3 py-2 border rounded-md bg-white"
+                        className="px-3 py-2 border border-border rounded-md bg-background"
                       >
                         <option value="all">All Status</option>
                         <option value="pending">Pending</option>
@@ -161,7 +161,7 @@ const AdminDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-center py-8">
-                    <p className="text-gray-500">Content management features coming soon...</p>
+                    <p className="text-muted-foreground">Content management features coming soon...</p>
                   </div>
                 </CardContent>
               </Card>
@@ -174,7 +174,7 @@ const AdminDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-center py-8">
-                    <p className="text-gray-500">Analytics dashboard coming soon...</p>
+                    <p className="text-muted-foreground">Analytics dashboard coming soon...</p>
                   </div>
                 </CardContent>
               </Card>

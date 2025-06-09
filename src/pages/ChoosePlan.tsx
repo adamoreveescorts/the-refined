@@ -91,7 +91,7 @@ const ChoosePlan = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold mx-auto mb-4"></div>
-          <p>Loading...</p>
+          <p className="text-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -102,7 +102,7 @@ const ChoosePlan = () => {
       {/* Back to Home Button */}
       <div className="fixed top-4 left-4 z-10">
         <Link to="/">
-          <Button variant="ghost" size="sm" className="flex items-center gap-1 text-navy hover:text-gold">
+          <Button variant="ghost" size="sm" className="flex items-center gap-1 text-foreground hover:text-gold">
             <ArrowLeft size={16} />
             Back to Home
           </Button>
@@ -111,10 +111,10 @@ const ChoosePlan = () => {
       
       <div className="w-full max-w-4xl space-y-8">
         <div className="text-center">
-          <h2 className="mt-6 text-3xl font-serif font-bold text-navy">
+          <h2 className="mt-6 text-3xl font-serif font-bold text-foreground">
             Welcome to Adam or Eve Escorts!
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-muted-foreground">
             Your email has been verified. Now choose your subscription plan to get started.
           </p>
         </div>
@@ -128,7 +128,7 @@ const ChoosePlan = () => {
           />
         ) : (
           <div className="text-center">
-            <p className="text-gray-600 mb-4">Setting up your account...</p>
+            <p className="text-muted-foreground mb-4">Setting up your account...</p>
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold mx-auto"></div>
           </div>
         )}

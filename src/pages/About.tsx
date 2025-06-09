@@ -44,22 +44,22 @@ const About = () => {
         </section>
 
         {/* Our Story */}
-        <section className={`py-16 lg:py-20 bg-white transition-all duration-700 ${
+        <section className={`py-16 lg:py-20 bg-background transition-all duration-700 ${
           storyVisible ? 'animate-fade-in opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
         }`}>
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="font-serif text-3xl md:text-4xl font-bold text-navy mb-6">Our Story</h2>
-                <p className="text-charcoal mb-4">
+                <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-6">Our Story</h2>
+                <p className="text-muted-foreground mb-4">
                   Founded in 2020, The Refined Escort emerged from a vision to elevate the standards of escort services worldwide. 
                   We recognized a gap in the market for a platform that truly values sophistication, safety, and mutual respect.
                 </p>
-                <p className="text-charcoal mb-4">
+                <p className="text-muted-foreground mb-4">
                   What began as a boutique service in select metropolitan areas has now expanded into a global network, 
                   connecting discerning clients with exceptional companions who share our commitment to refinement and discretion.
                 </p>
-                <p className="text-charcoal">
+                <p className="text-muted-foreground">
                   Today, we pride ourselves on being the premier destination for those seeking meaningful connections 
                   that transcend the ordinary, fostering experiences that are as intellectually stimulating as they are personally fulfilling.
                 </p>
@@ -77,13 +77,13 @@ const About = () => {
         </section>
 
         {/* Our Mission & Values */}
-        <section className={`py-16 lg:py-20 bg-gray-50 transition-all duration-700 ${
+        <section className={`py-16 lg:py-20 bg-card transition-all duration-700 ${
           missionVisible ? 'animate-fade-in opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
         }`}>
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto text-center mb-12">
-              <h2 className="font-serif text-3xl md:text-4xl font-bold text-navy mb-6">Our Mission & Values</h2>
-              <p className="text-charcoal">
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-6">Our Mission & Values</h2>
+              <p className="text-muted-foreground">
                 We're committed to creating a safe, respectful environment where genuine connections can flourish.
               </p>
             </div>
@@ -108,7 +108,7 @@ const About = () => {
               ].map((value, index) => (
                 <div 
                   key={value.number}
-                  className={`bg-white p-8 rounded-xl shadow-sm border border-gray-100 transition-all duration-500 ${
+                  className={`bg-background p-8 rounded-xl shadow-sm border border-border transition-all duration-500 ${
                     missionVisible ? 'animate-fade-in opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                   }`}
                   style={{ animationDelay: `${index * 200}ms` }}
@@ -116,8 +116,8 @@ const About = () => {
                   <div className="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center mb-6">
                     <span className="text-gold text-2xl font-serif">{value.number}</span>
                   </div>
-                  <h3 className="font-serif text-xl font-bold text-navy mb-4">{value.title}</h3>
-                  <p className="text-charcoal">{value.description}</p>
+                  <h3 className="font-serif text-xl font-bold text-foreground mb-4">{value.title}</h3>
+                  <p className="text-muted-foreground">{value.description}</p>
                 </div>
               ))}
             </div>
@@ -125,13 +125,13 @@ const About = () => {
         </section>
 
         {/* Testimonials */}
-        <section className={`py-16 lg:py-20 bg-gray-50 transition-all duration-700 ${
+        <section className={`py-16 lg:py-20 bg-card transition-all duration-700 ${
           testimonialsVisible ? 'animate-fade-in opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
         }`}>
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto text-center mb-12">
-              <h2 className="font-serif text-3xl md:text-4xl font-bold text-navy mb-6">What People Say</h2>
-              <p className="text-charcoal">
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-6">What People Say</h2>
+              <p className="text-muted-foreground">
                 Feedback from our community of companions and clients.
               </p>
             </div>
@@ -151,20 +151,20 @@ const About = () => {
               ].map((testimonial, index) => (
                 <div 
                   key={index}
-                  className={`bg-white p-8 rounded-xl shadow-sm border border-gray-100 transition-all duration-500 ${
+                  className={`bg-background p-8 rounded-xl shadow-sm border border-border transition-all duration-500 ${
                     testimonialsVisible ? 'animate-fade-in opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                   }`}
                   style={{ animationDelay: `${index * 200}ms` }}
                 >
                   <div className="flex items-center mb-6">
                     <div className="ml-4">
-                      <p className="text-navy font-bold">{testimonial.name}</p>
+                      <p className="text-foreground font-bold">{testimonial.name}</p>
                       <div className="flex text-gold">
                         <span>{testimonial.rating}</span>
                       </div>
                     </div>
                   </div>
-                  <blockquote className="text-charcoal italic">
+                  <blockquote className="text-muted-foreground italic">
                     "{testimonial.testimonial}"
                   </blockquote>
                 </div>
