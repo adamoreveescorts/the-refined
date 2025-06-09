@@ -312,7 +312,7 @@ const Directory = () => {
   });
   
   const [sortBy, setSortBy] = useState('featured');
-  const itemsPerPage = 30;
+  const itemsPerPage = 28;
 
   useEffect(() => {
     const timer1 = setTimeout(() => setHeaderVisible(true), 100);
