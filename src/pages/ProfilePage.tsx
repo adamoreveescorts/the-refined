@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Check, Clock, Heart, MapPin, MessageSquare, Star, User } from 'lucide-react';
+import { MessageButton } from '@/components/messaging/MessageButton';
 
 interface RatesData {
   hourly?: string;
@@ -366,10 +366,10 @@ const ProfilePage = () => {
               </Tabs>
               
               <div className="mt-6 flex flex-col gap-4">
-                <Button className="btn-gold" size="lg">
-                  <MessageSquare className="h-5 w-5 mr-2" />
-                  Contact {escort.display_name || escort.username}
-                </Button>
+                <MessageButton 
+                  escortId={escort.id}
+                  escortName={escort.display_name || escort.username}
+                />
                 <Button variant="outline" size="lg">
                   <Calendar className="h-5 w-5 mr-2" />
                   Check Availability

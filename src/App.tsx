@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Directory from "./pages/Directory";
 import ProfilePage from "./pages/ProfilePage";
 import UserProfilePage from "./pages/UserProfilePage";
+import MessagesPage from "./pages/MessagesPage";
 import About from "./pages/About";
 import FAQ from "./pages/FAQ";
 import Blog from "./pages/Blog";
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/directory" element={<Directory />} />
           <Route path="/profile/:id" element={<ProfilePage />} />
           <Route path="/user-profile" element={<UserProfilePage />} />
+          <Route path="/messages" element={<MessagesPage />} />
           <Route path="/about" element={<About />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/blog" element={<Blog />} />
