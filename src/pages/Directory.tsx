@@ -191,12 +191,12 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
         {/* Ethnicity */}
         <div className="mb-6">
           <label className="block text-sm font-medium mb-2 text-foreground">Ethnicity</label>
-          <Select value={filters.ethnicity || ''} onValueChange={(value) => onFilterChange({ ...filters, ethnicity: value })}>
+          <Select value={filters.ethnicity || 'all'} onValueChange={(value) => onFilterChange({ ...filters, ethnicity: value === 'all' ? '' : value })}>
             <SelectTrigger>
               <SelectValue placeholder="Select ethnicity" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All</SelectItem>
+              <SelectItem value="all">All</SelectItem>
               <SelectItem value="Asian">Asian</SelectItem>
               <SelectItem value="Black">Black</SelectItem>
               <SelectItem value="Caucasian">Caucasian</SelectItem>
@@ -212,12 +212,12 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
         {/* Body Type */}
         <div className="mb-6">
           <label className="block text-sm font-medium mb-2 text-foreground">Body Type</label>
-          <Select value={filters.body_type || ''} onValueChange={(value) => onFilterChange({ ...filters, body_type: value })}>
+          <Select value={filters.body_type || 'all'} onValueChange={(value) => onFilterChange({ ...filters, body_type: value === 'all' ? '' : value })}>
             <SelectTrigger>
               <SelectValue placeholder="Select body type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All</SelectItem>
+              <SelectItem value="all">All</SelectItem>
               <SelectItem value="Petite">Petite</SelectItem>
               <SelectItem value="Slim">Slim</SelectItem>
               <SelectItem value="Athletic">Athletic</SelectItem>
@@ -232,12 +232,12 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
         {/* Hair Color */}
         <div className="mb-6">
           <label className="block text-sm font-medium mb-2 text-foreground">Hair Color</label>
-          <Select value={filters.hair_color || ''} onValueChange={(value) => onFilterChange({ ...filters, hair_color: value })}>
+          <Select value={filters.hair_color || 'all'} onValueChange={(value) => onFilterChange({ ...filters, hair_color: value === 'all' ? '' : value })}>
             <SelectTrigger>
               <SelectValue placeholder="Select hair color" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All</SelectItem>
+              <SelectItem value="all">All</SelectItem>
               <SelectItem value="Blonde">Blonde</SelectItem>
               <SelectItem value="Brunette">Brunette</SelectItem>
               <SelectItem value="Black">Black</SelectItem>
@@ -252,12 +252,12 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
         {/* Eye Color */}
         <div className="mb-6">
           <label className="block text-sm font-medium mb-2 text-foreground">Eye Color</label>
-          <Select value={filters.eye_color || ''} onValueChange={(value) => onFilterChange({ ...filters, eye_color: value })}>
+          <Select value={filters.eye_color || 'all'} onValueChange={(value) => onFilterChange({ ...filters, eye_color: value === 'all' ? '' : value })}>
             <SelectTrigger>
               <SelectValue placeholder="Select eye color" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All</SelectItem>
+              <SelectItem value="all">All</SelectItem>
               <SelectItem value="Blue">Blue</SelectItem>
               <SelectItem value="Brown">Brown</SelectItem>
               <SelectItem value="Green">Green</SelectItem>
@@ -271,12 +271,12 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
         {/* Cup Size */}
         <div className="mb-6">
           <label className="block text-sm font-medium mb-2 text-foreground">Cup Size</label>
-          <Select value={filters.cup_size || ''} onValueChange={(value) => onFilterChange({ ...filters, cup_size: value })}>
+          <Select value={filters.cup_size || 'all'} onValueChange={(value) => onFilterChange({ ...filters, cup_size: value === 'all' ? '' : value })}>
             <SelectTrigger>
               <SelectValue placeholder="Select cup size" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All</SelectItem>
+              <SelectItem value="all">All</SelectItem>
               <SelectItem value="A">A</SelectItem>
               <SelectItem value="B">B</SelectItem>
               <SelectItem value="C">C</SelectItem>
@@ -331,7 +331,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
                   checked={filters.services?.includes(service)}
                   onCheckedChange={(checked) => {
                     const services = filters.services || [];
-                    const newServices = checked 
+                    const newServices = checked === true
                       ? [...services, service]
                       : services.filter((s: string) => s !== service);
                     onFilterChange({ ...filters, services: newServices });
@@ -356,7 +356,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
               <Checkbox 
                 id="verified"
                 checked={filters.verifiedOnly}
-                onCheckedChange={(checked) => onFilterChange({ ...filters, verifiedOnly: !!checked })}
+                onCheckedChange={(checked) => onFilterChange({ ...filters, verifiedOnly: checked === true })}
               />
               <label htmlFor="verified" className="ml-2 text-sm text-foreground">Verified Only</label>
             </div>
@@ -364,7 +364,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
               <Checkbox 
                 id="tattoos"
                 checked={filters.tattoos}
-                onCheckedChange={(checked) => onFilterChange({ ...filters, tattoos: !!checked })}
+                onCheckedChange={(checked) => onFilterChange({ ...filters, tattoos: checked === true })}
               />
               <label htmlFor="tattoos" className="ml-2 text-sm text-foreground">Has Tattoos</label>
             </div>
@@ -372,7 +372,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
               <Checkbox 
                 id="piercings"
                 checked={filters.piercings}
-                onCheckedChange={(checked) => onFilterChange({ ...filters, piercings: !!checked })}
+                onCheckedChange={(checked) => onFilterChange({ ...filters, piercings: checked === true })}
               />
               <label htmlFor="piercings" className="ml-2 text-sm text-foreground">Has Piercings</label>
             </div>

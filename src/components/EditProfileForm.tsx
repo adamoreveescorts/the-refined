@@ -564,7 +564,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                       <Checkbox 
                         id="tattoos"
                         checked={tattoos}
-                        onCheckedChange={setTattoos}
+                        onCheckedChange={(checked) => setTattoos(checked === true)}
                       />
                       <label htmlFor="tattoos" className="text-sm font-medium">Has Tattoos</label>
                     </div>
@@ -573,7 +573,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                       <Checkbox 
                         id="piercings"
                         checked={piercings}
-                        onCheckedChange={setPiercings}
+                        onCheckedChange={(checked) => setPiercings(checked === true)}
                       />
                       <label htmlFor="piercings" className="text-sm font-medium">Has Piercings</label>
                     </div>
