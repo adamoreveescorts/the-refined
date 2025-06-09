@@ -269,12 +269,12 @@ const ProfilePage = () => {
                 <TabsContent value="details">
                   <div className="grid grid-cols-2 gap-y-4 gap-x-8 mb-6">
                     <div>
-                      <p className="text-sm text-gray-500">Height</p>
-                      <p className="font-medium">{escort.height || 'Not specified'}</p>
+                      <p className="text-sm text-gray-600 font-medium">Height</p>
+                      <p className="text-gray-900 font-medium">{escort.height || 'Not specified'}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Age</p>
-                      <p className="font-medium">{escort.age || 'Not specified'}</p>
+                      <p className="text-sm text-gray-600 font-medium">Age</p>
+                      <p className="text-gray-900 font-medium">{escort.age || 'Not specified'}</p>
                     </div>
                   </div>
                   
@@ -282,7 +282,7 @@ const ProfilePage = () => {
                     <>
                       <Separator className="my-4" />
                       <div className="mb-6">
-                        <p className="text-sm text-gray-500 mb-2">Languages</p>
+                        <p className="text-sm text-gray-600 font-medium mb-2">Languages</p>
                         <div className="flex flex-wrap gap-2">
                           {languages.map((language, index) => (
                             <Badge key={index} variant="outline">{language}</Badge>
@@ -294,7 +294,7 @@ const ProfilePage = () => {
                   
                   {services.length > 0 && (
                     <div>
-                      <p className="text-sm text-gray-500 mb-2">Services Offered</p>
+                      <p className="text-sm text-gray-600 font-medium mb-2">Services Offered</p>
                       <div className="flex flex-wrap gap-2">
                         {services.map((service, index) => (
                           <Badge key={index} variant="secondary">{service}</Badge>
@@ -307,8 +307,8 @@ const ProfilePage = () => {
                     <>
                       <Separator className="my-4" />
                       <div>
-                        <p className="text-sm text-gray-500 mb-2">Availability</p>
-                        <p className="text-sm">{escort.availability}</p>
+                        <p className="text-sm text-gray-600 font-medium mb-2">Availability</p>
+                        <p className="text-gray-900">{escort.availability}</p>
                       </div>
                     </>
                   )}
