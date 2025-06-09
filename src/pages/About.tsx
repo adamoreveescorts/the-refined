@@ -35,7 +35,7 @@ const About = () => {
         }`}>
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto text-center">
-              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold mb-6">About The Refined Escort</h1>
+              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold mb-6">About Adam or Eve Escorts</h1>
               <p className="text-xl text-gray-300 mb-8">
                 Redefining connection with elegance, sophistication, and discretion.
               </p>
@@ -52,7 +52,7 @@ const About = () => {
               <div>
                 <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-6">Our Story</h2>
                 <p className="text-muted-foreground mb-4">
-                  Founded in 2020, The Refined Escort emerged from a vision to elevate the standards of escort services worldwide. 
+                  Founded in 2020, Adam or Eve Escorts emerged from a vision to elevate the standards of escort services worldwide. 
                   We recognized a gap in the market for a platform that truly values sophistication, safety, and mutual respect.
                 </p>
                 <p className="text-muted-foreground mb-4">
@@ -146,7 +146,7 @@ const About = () => {
                 {
                   name: "Verified Companion", 
                   rating: "★★★★★",
-                  testimonial: "The Refined Escort has transformed my professional experience. The platform attracts respectful clients, handles administrative tasks efficiently, and provides a supportive community."
+                  testimonial: "Adam or Eve Escorts has transformed my professional experience. The platform attracts respectful clients, handles administrative tasks efficiently, and provides a supportive community."
                 }
               ].map((testimonial, index) => (
                 <div 
