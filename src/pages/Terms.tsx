@@ -1,11 +1,8 @@
-
 import { Link } from 'react-router-dom';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
-
 const Terms = () => {
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       <NavBar />
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -135,24 +132,12 @@ const Terms = () => {
               </p>
             </section>
 
-            <section>
-              <h2 className="text-2xl font-semibold text-foreground mb-4">Contact Information</h2>
-              <p className="mb-4">
-                If you have questions about these Terms, please contact us at:
-              </p>
-              <div className="bg-card p-6 rounded-lg">
-                <p>Email: legal@adamoreveescorts.com</p>
-                <p>Address: [Your Business Address]</p>
-                <p>Phone: [Your Phone Number]</p>
-              </div>
-            </section>
+            
           </div>
         </div>
       </div>
       
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default Terms;
