@@ -9,14 +9,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Check, Clock, Heart, MapPin, MessageSquare, Star, User } from 'lucide-react';
+import { Calendar, Check, Clock, Heart, MapPin, MessageSquare, Star, User, Mail, Phone } from 'lucide-react';
 import { MessageButton } from '@/components/messaging/MessageButton';
+
 interface RatesData {
   hourly?: string;
   twoHours?: string;
   dinner?: string;
   overnight?: string;
 }
+
 const ProfilePage = () => {
   const {
     id
@@ -25,6 +27,8 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [requestingContact, setRequestingContact] = useState<'email' | 'phone' | null>(null);
+
   useEffect(() => {
     const fetchProfile = async () => {
       if (!id) return;
@@ -53,6 +57,70 @@ const ProfilePage = () => {
     };
     fetchProfile();
   }, [id]);
+
+  const handleContactRequest = async (type: 'email' | 'phone') => {
+    setRequestingContact(type);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error('Please log in to request contact information');
+        return;
+      }
+
+      // Get or create conversation
+      let { data: conversation } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('client_id', user.id)
+        .eq('escort_id', escort.id)
+        .single();
+
+      if (!conversation) {
+        const { data: newConversation, error } = await supabase
+          .from('conversations')
+          .insert({
+            client_id: user.id,
+            escort_id: escort.id
+          })
+          .select('id')
+          .single();
+
+        if (error) {
+          console.error('Error creating conversation:', error);
+          toast.error('Failed to send request');
+          return;
+        }
+        conversation = newConversation;
+      }
+
+      // Send the contact request message
+      const message = type === 'email' 
+        ? `Hi ${escort.display_name || escort.username}, I would like to request your email address for further communication. Thank you!`
+        : `Hi ${escort.display_name || escort.username}, I would like to request your phone number for further communication. Thank you!`;
+
+      const { error } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversation.id,
+          sender_id: user.id,
+          content: message
+        });
+
+      if (error) {
+        console.error('Error sending contact request:', error);
+        toast.error('Failed to send request');
+        return;
+      }
+
+      toast.success(`${type === 'email' ? 'Email' : 'Phone number'} request sent successfully!`);
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Failed to send request');
+    } finally {
+      setRequestingContact(null);
+    }
+  };
 
   // Generate rating count based on rating and some randomness
   const generateRatingCount = (rating: number) => {
@@ -291,10 +359,30 @@ const ProfilePage = () => {
               
               <div className="mt-6 flex flex-col gap-4">
                 <MessageButton escortId={escort.id} escortName={escort.display_name || escort.username} />
-                <Button variant="outline" size="lg">
-                  <Calendar className="h-5 w-5 mr-2" />
-                  Check Availability
-                </Button>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <Button 
+                    variant="outline" 
+                    size="lg"
+                    onClick={() => handleContactRequest('email')}
+                    disabled={requestingContact === 'email'}
+                    className="flex items-center justify-center"
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    {requestingContact === 'email' ? 'Sending...' : 'Request Email'}
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    size="lg"
+                    onClick={() => handleContactRequest('phone')}
+                    disabled={requestingContact === 'phone'}
+                    className="flex items-center justify-center"
+                  >
+                    <Phone className="h-4 w-4 mr-2" />
+                    {requestingContact === 'phone' ? 'Sending...' : 'Request Phone'}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
