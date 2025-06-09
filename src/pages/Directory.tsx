@@ -10,7 +10,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Check, Heart, Search, Filter, Star } from 'lucide-react';
+import { Check, Heart, Search, Filter, Star, X } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Select,
   SelectContent,
@@ -27,6 +28,13 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 
 const EscortCard = ({ escort, index }: { escort: any, index: number }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -157,253 +165,267 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
     onFilterChange({ ...filters, priceMin: value[0], priceMax: value[1] });
   };
   
-  return (
-    <>
-      {/* Mobile Filter Button */}
-      <div className="md:hidden mb-4">
-        <Button 
-          onClick={() => {}}
-          variant="outline"
-          className="w-full flex items-center justify-center gap-2"
-        >
-          <Filter className="h-4 w-4" />
-          Hide Filters
-        </Button>
+  const FilterContent = () => (
+    <div className={`bg-card rounded-lg shadow-md p-4 sticky top-20 transition-all duration-500 max-h-[80vh] overflow-y-auto ${
+      isVisible ? 'animate-fade-in opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
+    }`}>
+      <h3 className="font-medium text-lg mb-4 text-foreground">Filters</h3>
+      
+      {/* Location */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-2 text-foreground">Location</label>
+        <Input 
+          type="text" 
+          placeholder="Enter city or region"
+          value={filters.location || ''}
+          onChange={(e) => onFilterChange({ ...filters, location: e.target.value })}
+          className="bg-background border-border text-foreground"
+        />
       </div>
       
-      <div className={`md:block bg-card rounded-lg shadow-md p-4 sticky top-20 transition-all duration-500 max-h-[80vh] overflow-y-auto ${
-        isVisible ? 'animate-fade-in opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
-      }`}>
-        <h3 className="font-medium text-lg mb-4 text-foreground">Filters</h3>
-        
-        {/* Location */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-2 text-foreground">Location</label>
-          <Input 
-            type="text" 
-            placeholder="Enter city or region"
-            value={filters.location || ''}
-            onChange={(e) => onFilterChange({ ...filters, location: e.target.value })}
-            className="bg-background border-border text-foreground"
-          />
-        </div>
-        
-        {/* Ethnicity */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-2 text-foreground">Ethnicity</label>
-          <Select value={filters.ethnicity || 'all'} onValueChange={(value) => onFilterChange({ ...filters, ethnicity: value === 'all' ? '' : value })}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select ethnicity" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="Asian">Asian</SelectItem>
-              <SelectItem value="Black">Black</SelectItem>
-              <SelectItem value="Caucasian">Caucasian</SelectItem>
-              <SelectItem value="Hispanic">Hispanic</SelectItem>
-              <SelectItem value="Indian">Indian</SelectItem>
-              <SelectItem value="Middle Eastern">Middle Eastern</SelectItem>
-              <SelectItem value="Mixed">Mixed</SelectItem>
-              <SelectItem value="Other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Body Type */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-2 text-foreground">Body Type</label>
-          <Select value={filters.body_type || 'all'} onValueChange={(value) => onFilterChange({ ...filters, body_type: value === 'all' ? '' : value })}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select body type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="Petite">Petite</SelectItem>
-              <SelectItem value="Slim">Slim</SelectItem>
-              <SelectItem value="Athletic">Athletic</SelectItem>
-              <SelectItem value="Average">Average</SelectItem>
-              <SelectItem value="Curvy">Curvy</SelectItem>
-              <SelectItem value="Full Figured">Full Figured</SelectItem>
-              <SelectItem value="BBW">BBW</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Hair Color */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-2 text-foreground">Hair Color</label>
-          <Select value={filters.hair_color || 'all'} onValueChange={(value) => onFilterChange({ ...filters, hair_color: value === 'all' ? '' : value })}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select hair color" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="Blonde">Blonde</SelectItem>
-              <SelectItem value="Brunette">Brunette</SelectItem>
-              <SelectItem value="Black">Black</SelectItem>
-              <SelectItem value="Red">Red</SelectItem>
-              <SelectItem value="Auburn">Auburn</SelectItem>
-              <SelectItem value="Grey">Grey</SelectItem>
-              <SelectItem value="Other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Eye Color */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-2 text-foreground">Eye Color</label>
-          <Select value={filters.eye_color || 'all'} onValueChange={(value) => onFilterChange({ ...filters, eye_color: value === 'all' ? '' : value })}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select eye color" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="Blue">Blue</SelectItem>
-              <SelectItem value="Brown">Brown</SelectItem>
-              <SelectItem value="Green">Green</SelectItem>
-              <SelectItem value="Hazel">Hazel</SelectItem>
-              <SelectItem value="Grey">Grey</SelectItem>
-              <SelectItem value="Other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Cup Size */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-2 text-foreground">Cup Size</label>
-          <Select value={filters.cup_size || 'all'} onValueChange={(value) => onFilterChange({ ...filters, cup_size: value === 'all' ? '' : value })}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select cup size" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="A">A</SelectItem>
-              <SelectItem value="B">B</SelectItem>
-              <SelectItem value="C">C</SelectItem>
-              <SelectItem value="D">D</SelectItem>
-              <SelectItem value="DD">DD</SelectItem>
-              <SelectItem value="E">E</SelectItem>
-              <SelectItem value="F">F+</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        
-        {/* Age Range */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-2 text-foreground">
-            Age Range: {ageRange[0]} - {ageRange[1]}
-          </label>
-          <Slider 
-            defaultValue={[18, 50]} 
-            min={18} 
-            max={60} 
-            step={1}
-            value={ageRange}
-            onValueChange={handleAgeChange}
-            className="mt-2"
-          />
-        </div>
-        
-        {/* Price Range */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-2 text-foreground">
-            Price Range: ${priceRange[0]} - ${priceRange[1]}
-          </label>
-          <Slider 
-            defaultValue={[100, 1000]} 
-            min={100} 
-            max={2000} 
-            step={50}
-            value={priceRange}
-            onValueChange={handlePriceChange}
-            className="mt-2"
-          />
-        </div>
-        
-        {/* Services */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-2 text-foreground">Services</label>
-          <div className="space-y-2">
-            {['Dinner Date', 'Travel Companion', 'Event Escort', 'Overnight'].map((service) => (
-              <div key={service} className="flex items-center">
-                <Checkbox 
-                  id={`service-${service}`}
-                  checked={filters.services?.includes(service)}
-                  onCheckedChange={(checked) => {
-                    const services = filters.services || [];
-                    const newServices = checked === true
-                      ? [...services, service]
-                      : services.filter((s: string) => s !== service);
-                    onFilterChange({ ...filters, services: newServices });
-                  }}
-                />
-                <label 
-                  htmlFor={`service-${service}`} 
-                  className="ml-2 text-sm text-foreground"
-                >
-                  {service}
-                </label>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Additional Attributes */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-2 text-foreground">Additional</label>
-          <div className="space-y-2">
-            <div className="flex items-center">
-              <Checkbox 
-                id="verified"
-                checked={filters.verifiedOnly}
-                onCheckedChange={(checked) => onFilterChange({ ...filters, verifiedOnly: checked === true })}
-              />
-              <label htmlFor="verified" className="ml-2 text-sm text-foreground">Verified Only</label>
-            </div>
-            <div className="flex items-center">
-              <Checkbox 
-                id="tattoos"
-                checked={filters.tattoos}
-                onCheckedChange={(checked) => onFilterChange({ ...filters, tattoos: checked === true })}
-              />
-              <label htmlFor="tattoos" className="ml-2 text-sm text-foreground">Has Tattoos</label>
-            </div>
-            <div className="flex items-center">
-              <Checkbox 
-                id="piercings"
-                checked={filters.piercings}
-                onCheckedChange={(checked) => onFilterChange({ ...filters, piercings: checked === true })}
-              />
-              <label htmlFor="piercings" className="ml-2 text-sm text-foreground">Has Piercings</label>
-            </div>
-          </div>
-        </div>
-        
-        <Button 
-          className="w-full btn-gold"
-          onClick={() => onFilterChange({ 
-            location: '',
-            ethnicity: '',
-            body_type: '',
-            hair_color: '',
-            eye_color: '',
-            cup_size: '',
-            ageMin: 18,
-            ageMax: 50,
-            priceMin: 100,
-            priceMax: 1000,
-            services: [],
-            verifiedOnly: false,
-            tattoos: false,
-            piercings: false,
-            searchQuery: ''
-          })}
-        >
-          Reset Filters
-        </Button>
+      {/* Ethnicity */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-2 text-foreground">Ethnicity</label>
+        <Select value={filters.ethnicity || 'all'} onValueChange={(value) => onFilterChange({ ...filters, ethnicity: value === 'all' ? '' : value })}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select ethnicity" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="Asian">Asian</SelectItem>
+            <SelectItem value="Black">Black</SelectItem>
+            <SelectItem value="Caucasian">Caucasian</SelectItem>
+            <SelectItem value="Hispanic">Hispanic</SelectItem>
+            <SelectItem value="Indian">Indian</SelectItem>
+            <SelectItem value="Middle Eastern">Middle Eastern</SelectItem>
+            <SelectItem value="Mixed">Mixed</SelectItem>
+            <SelectItem value="Other">Other</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
-    </>
+
+      {/* Body Type */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-2 text-foreground">Body Type</label>
+        <Select value={filters.body_type || 'all'} onValueChange={(value) => onFilterChange({ ...filters, body_type: value === 'all' ? '' : value })}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select body type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="Petite">Petite</SelectItem>
+            <SelectItem value="Slim">Slim</SelectItem>
+            <SelectItem value="Athletic">Athletic</SelectItem>
+            <SelectItem value="Average">Average</SelectItem>
+            <SelectItem value="Curvy">Curvy</SelectItem>
+            <SelectItem value="Full Figured">Full Figured</SelectItem>
+            <SelectItem value="BBW">BBW</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Hair Color */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-2 text-foreground">Hair Color</label>
+        <Select value={filters.hair_color || 'all'} onValueChange={(value) => onFilterChange({ ...filters, hair_color: value === 'all' ? '' : value })}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select hair color" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="Blonde">Blonde</SelectItem>
+            <SelectItem value="Brunette">Brunette</SelectItem>
+            <SelectItem value="Black">Black</SelectItem>
+            <SelectItem value="Red">Red</SelectItem>
+            <SelectItem value="Auburn">Auburn</SelectItem>
+            <SelectItem value="Grey">Grey</SelectItem>
+            <SelectItem value="Other">Other</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Eye Color */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-2 text-foreground">Eye Color</label>
+        <Select value={filters.eye_color || 'all'} onValueChange={(value) => onFilterChange({ ...filters, eye_color: value === 'all' ? '' : value })}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select eye color" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="Blue">Blue</SelectItem>
+            <SelectItem value="Brown">Brown</SelectItem>
+            <SelectItem value="Green">Green</SelectItem>
+            <SelectItem value="Hazel">Hazel</SelectItem>
+            <SelectItem value="Grey">Grey</SelectItem>
+            <SelectItem value="Other">Other</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Cup Size */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-2 text-foreground">Cup Size</label>
+        <Select value={filters.cup_size || 'all'} onValueChange={(value) => onFilterChange({ ...filters, cup_size: value === 'all' ? '' : value })}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select cup size" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="A">A</SelectItem>
+            <SelectItem value="B">B</SelectItem>
+            <SelectItem value="C">C</SelectItem>
+            <SelectItem value="D">D</SelectItem>
+            <SelectItem value="DD">DD</SelectItem>
+            <SelectItem value="E">E</SelectItem>
+            <SelectItem value="F">F+</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      
+      {/* Age Range */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-2 text-foreground">
+          Age Range: {ageRange[0]} - {ageRange[1]}
+        </label>
+        <Slider 
+          defaultValue={[18, 50]} 
+          min={18} 
+          max={60} 
+          step={1}
+          value={ageRange}
+          onValueChange={handleAgeChange}
+          className="mt-2"
+        />
+      </div>
+      
+      {/* Price Range */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-2 text-foreground">
+          Price Range: ${priceRange[0]} - ${priceRange[1]}
+        </label>
+        <Slider 
+          defaultValue={[100, 1000]} 
+          min={100} 
+          max={2000} 
+          step={50}
+          value={priceRange}
+          onValueChange={handlePriceChange}
+          className="mt-2"
+        />
+      </div>
+      
+      {/* Services */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-2 text-foreground">Services</label>
+        <div className="space-y-2">
+          {['Dinner Date', 'Travel Companion', 'Event Escort', 'Overnight'].map((service) => (
+            <div key={service} className="flex items-center">
+              <Checkbox 
+                id={`service-${service}`}
+                checked={filters.services?.includes(service)}
+                onCheckedChange={(checked) => {
+                  const services = filters.services || [];
+                  const newServices = checked === true
+                    ? [...services, service]
+                    : services.filter((s: string) => s !== service);
+                  onFilterChange({ ...filters, services: newServices });
+                }}
+              />
+              <label 
+                htmlFor={`service-${service}`} 
+                className="ml-2 text-sm text-foreground"
+              >
+                {service}
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Additional Attributes */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-2 text-foreground">Additional</label>
+        <div className="space-y-2">
+          <div className="flex items-center">
+            <Checkbox 
+              id="verified"
+              checked={filters.verifiedOnly}
+              onCheckedChange={(checked) => onFilterChange({ ...filters, verifiedOnly: checked === true })}
+            />
+            <label htmlFor="verified" className="ml-2 text-sm text-foreground">Verified Only</label>
+          </div>
+          <div className="flex items-center">
+            <Checkbox 
+              id="tattoos"
+              checked={filters.tattoos}
+              onCheckedChange={(checked) => onFilterChange({ ...filters, tattoos: checked === true })}
+            />
+            <label htmlFor="tattoos" className="ml-2 text-sm text-foreground">Has Tattoos</label>
+          </div>
+          <div className="flex items-center">
+            <Checkbox 
+              id="piercings"
+              checked={filters.piercings}
+              onCheckedChange={(checked) => onFilterChange({ ...filters, piercings: checked === true })}
+            />
+            <label htmlFor="piercings" className="ml-2 text-sm text-foreground">Has Piercings</label>
+          </div>
+        </div>
+      </div>
+      
+      <Button 
+        className="w-full btn-gold"
+        onClick={() => onFilterChange({ 
+          location: '',
+          ethnicity: '',
+          body_type: '',
+          hair_color: '',
+          eye_color: '',
+          cup_size: '',
+          ageMin: 18,
+          ageMax: 50,
+          priceMin: 100,
+          priceMax: 1000,
+          services: [],
+          verifiedOnly: false,
+          tattoos: false,
+          piercings: false,
+          searchQuery: ''
+        })}
+      >
+        Reset Filters
+      </Button>
+    </div>
   );
+
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return (
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button 
+            variant="outline"
+            className="w-full flex items-center justify-center gap-2 mb-4"
+          >
+            <Filter className="h-4 w-4" />
+            Show Filters
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="w-full sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle>Filter Escorts</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4">
+            <FilterContent />
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  return <FilterContent />;
 };
 
 const Directory = () => {
