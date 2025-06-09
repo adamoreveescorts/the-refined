@@ -52,7 +52,12 @@ export const MessagingDialog = ({ isOpen, onClose, escortId, escortName }: Messa
           },
           (payload) => {
             const newMsg = payload.new as Message;
-            setMessages(prev => [...prev, newMsg]);
+            // Only add the message if it's not already in the state (to avoid duplicates)
+            setMessages(prev => {
+              const exists = prev.some(msg => msg.id === newMsg.id);
+              if (exists) return prev;
+              return [...prev, newMsg];
+            });
             scrollToBottom();
           }
         )
@@ -131,26 +136,55 @@ export const MessagingDialog = ({ isOpen, onClose, escortId, escortName }: Messa
   const sendMessage = async () => {
     if (!newMessage.trim() || !conversationId || !currentUserId) return;
 
+    const messageContent = newMessage.trim();
     setLoading(true);
+    setNewMessage(''); // Clear input immediately
+
+    // Create a temporary message object for immediate UI update
+    const tempMessage: Message = {
+      id: `temp-${Date.now()}`, // Temporary ID
+      content: messageContent,
+      sender_id: currentUserId,
+      created_at: new Date().toISOString(),
+      read_at: null
+    };
+
+    // Add message to UI immediately
+    setMessages(prev => [...prev, tempMessage]);
+    setTimeout(scrollToBottom, 100);
+
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('messages')
         .insert({
           conversation_id: conversationId,
           sender_id: currentUserId,
-          content: newMessage.trim()
-        });
+          content: messageContent
+        })
+        .select()
+        .single();
 
       if (error) {
         console.error('Error sending message:', error);
         toast.error('Failed to send message');
+        // Remove the temporary message on error
+        setMessages(prev => prev.filter(msg => msg.id !== tempMessage.id));
+        setNewMessage(messageContent); // Restore the message content
         return;
       }
 
-      setNewMessage('');
+      // Replace the temporary message with the real one from the database
+      if (data) {
+        setMessages(prev => prev.map(msg => 
+          msg.id === tempMessage.id ? data as Message : msg
+        ));
+      }
     } catch (error) {
       console.error('Error:', error);
       toast.error('Failed to send message');
+      // Remove the temporary message on error
+      setMessages(prev => prev.filter(msg => msg.id !== tempMessage.id));
+      setNewMessage(messageContent); // Restore the message content
     } finally {
       setLoading(false);
     }
