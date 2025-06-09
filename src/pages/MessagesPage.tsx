@@ -7,7 +7,7 @@ import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, User } from 'lucide-react';
+import { MessageSquare, User, Clock } from 'lucide-react';
 import { MessagingDialog } from '@/components/messaging/MessagingDialog';
 
 interface Conversation {
@@ -162,12 +162,12 @@ const MessagesPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-background">
         <NavBar />
-        <main className="flex-grow bg-gray-50 py-8 flex items-center justify-center">
+        <main className="flex-grow py-8 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold mx-auto mb-4"></div>
-            <p>Loading messages...</p>
+            <p className="text-muted-foreground">Loading messages...</p>
           </div>
         </main>
         <Footer />
@@ -176,83 +176,109 @@ const MessagesPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <NavBar />
       
-      <main className="flex-grow bg-gray-50 py-8">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-6">
-            <h1 className="text-3xl font-serif font-bold text-navy mb-2">Messages</h1>
-            <p className="text-charcoal">
-              Your conversations
-              {currentUserRole && (
-                <Badge variant="outline" className="ml-2 capitalize">
-                  {currentUserRole}
-                </Badge>
-              )}
-            </p>
+      <main className="flex-grow py-8">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+          <div className="mb-8">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="p-3 bg-gold/10 rounded-xl">
+                <MessageSquare className="h-6 w-6 text-gold" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-serif font-bold text-foreground">Messages</h1>
+                <p className="text-muted-foreground flex items-center gap-2">
+                  Your conversations
+                  {currentUserRole && (
+                    <Badge variant="secondary" className="capitalize bg-gold/20 text-gold-dark border-gold/30">
+                      {currentUserRole}
+                    </Badge>
+                  )}
+                </p>
+              </div>
+            </div>
           </div>
 
           {conversations.length === 0 ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <MessageSquare className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No messages yet</h3>
-                <p className="text-gray-600">
+            <Card className="border-border bg-card">
+              <CardContent className="p-12 text-center">
+                <div className="p-4 bg-muted/50 rounded-full w-fit mx-auto mb-6">
+                  <MessageSquare className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-3">No messages yet</h3>
+                <p className="text-muted-foreground max-w-md mx-auto leading-relaxed">
                   {currentUserRole === 'client' 
-                    ? 'Start a conversation by messaging an escort from their profile.'
-                    : 'Conversations will appear here when clients message you.'
+                    ? 'Start a conversation by messaging an escort from their profile page. Your conversations will appear here.'
+                    : 'Conversations will appear here when clients message you. Check back soon!'
                   }
                 </p>
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {conversations.map((conversation) => (
                 <Card 
                   key={conversation.id}
-                  className="cursor-pointer hover:shadow-md transition-shadow"
+                  className="cursor-pointer hover:shadow-lg transition-all duration-200 border-border bg-card hover:bg-accent/5 group"
                   onClick={() => setSelectedConversation({
                     userId: conversation.other_user.id,
                     userName: conversation.other_user.display_name || 'Unknown User'
                   })}
                 >
-                  <CardContent className="p-4">
+                  <CardContent className="p-5">
                     <div className="flex items-center space-x-4">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage src={conversation.other_user.profile_picture} />
-                        <AvatarFallback>
-                          <User className="h-6 w-6" />
-                        </AvatarFallback>
-                      </Avatar>
+                      <div className="relative">
+                        <Avatar className="h-14 w-14 border-2 border-border">
+                          <AvatarImage src={conversation.other_user.profile_picture} />
+                          <AvatarFallback className="bg-muted text-muted-foreground">
+                            <User className="h-6 w-6" />
+                          </AvatarFallback>
+                        </Avatar>
+                        {conversation.unread_count > 0 && (
+                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                            <div className="w-3 h-3 bg-white rounded-full"></div>
+                          </div>
+                        )}
+                      </div>
                       
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <h3 className="text-sm font-medium text-gray-900 truncate">
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center space-x-3">
+                            <h3 className="text-base font-semibold text-foreground truncate group-hover:text-gold transition-colors">
                               {conversation.other_user.display_name || 'Unknown User'}
                             </h3>
-                            <Badge variant="outline" className="text-xs capitalize">
+                            <Badge 
+                              variant="outline" 
+                              className="text-xs capitalize border-muted-foreground/30 text-muted-foreground bg-muted/30"
+                            >
                               {conversation.other_user.role}
                             </Badge>
                           </div>
-                          <div className="flex items-center space-x-2">
+                          <div className="flex items-center space-x-3">
                             {conversation.unread_count > 0 && (
-                              <Badge className="bg-gold text-white">
-                                {conversation.unread_count}
+                              <Badge className="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1">
+                                {conversation.unread_count > 99 ? '99+' : conversation.unread_count}
                               </Badge>
                             )}
-                            <span className="text-xs text-gray-500">
-                              {conversation.last_message && formatTime(conversation.last_message.created_at)}
-                            </span>
+                            {conversation.last_message && (
+                              <div className="flex items-center text-xs text-muted-foreground">
+                                <Clock className="h-3 w-3 mr-1" />
+                                {formatTime(conversation.last_message.created_at)}
+                              </div>
+                            )}
                           </div>
                         </div>
                         
-                        {conversation.last_message && (
-                          <p className="text-sm text-gray-600 truncate mt-1">
-                            {conversation.last_message.sender_id === currentUserId && 'You: '}
+                        {conversation.last_message ? (
+                          <p className="text-sm text-muted-foreground truncate leading-relaxed">
+                            <span className={conversation.last_message.sender_id === currentUserId ? "text-foreground/70" : ""}>
+                              {conversation.last_message.sender_id === currentUserId && 'You: '}
+                            </span>
                             {conversation.last_message.content}
                           </p>
+                        ) : (
+                          <p className="text-sm text-muted-foreground italic">No messages yet</p>
                         )}
                       </div>
                     </div>
