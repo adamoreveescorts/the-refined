@@ -13,6 +13,9 @@ import MessagesPage from "./pages/MessagesPage";
 import About from "./pages/About";
 import FAQ from "./pages/FAQ";
 import Contact from "./pages/Contact";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import Cookies from "./pages/Cookies";
 import Auth from "./pages/Auth";
 import ChoosePlan from "./pages/ChoosePlan";
 import PaymentTest from "./pages/PaymentTest";
@@ -38,6 +41,9 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/cookies" element={<Cookies />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/choose-plan" element={<ChoosePlan />} />
           <Route path="/payment-test" element={<PaymentTest />} />
