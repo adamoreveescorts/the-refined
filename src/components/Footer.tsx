@@ -1,10 +1,7 @@
-
 import { Link } from 'react-router-dom';
 import { Separator } from '@/components/ui/separator';
-
 const Footer = () => {
-  return (
-    <footer className="bg-card text-card-foreground border-t border-border">
+  return <footer className="bg-card text-card-foreground border-t border-border">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* About Section */}
@@ -23,9 +20,7 @@ const Footer = () => {
               <li>
                 <Link to="/directory" className="hover:text-gold transition-colors">Escort Directory</Link>
               </li>
-              <li>
-                <Link to="/join" className="hover:text-gold transition-colors">Join Our Network</Link>
-              </li>
+              
               <li>
                 <Link to="/about" className="hover:text-gold transition-colors">About Us</Link>
               </li>
@@ -48,9 +43,7 @@ const Footer = () => {
               <li>
                 <Link to="/contact" className="hover:text-gold transition-colors">Contact Us</Link>
               </li>
-              <li>
-                <Link to="/help" className="hover:text-gold transition-colors">Help Center</Link>
-              </li>
+              
               <li>
                 <Link to="/privacy" className="hover:text-gold transition-colors">Privacy Policy</Link>
               </li>
@@ -67,15 +60,8 @@ const Footer = () => {
               Subscribe to receive updates about new features and exclusive offers.
             </p>
             <form className="flex">
-              <input 
-                type="email" 
-                placeholder="Your email" 
-                className="px-3 py-2 bg-background border border-border rounded-l-md focus:outline-none focus:ring-1 focus:ring-gold focus:border-gold text-sm w-full"
-              />
-              <button 
-                type="submit" 
-                className="bg-gold hover:bg-gold/90 text-navy font-medium py-2 px-4 rounded-r-md text-sm"
-              >
+              <input type="email" placeholder="Your email" className="px-3 py-2 bg-background border border-border rounded-l-md focus:outline-none focus:ring-1 focus:ring-gold focus:border-gold text-sm w-full" />
+              <button type="submit" className="bg-gold hover:bg-gold/90 text-navy font-medium py-2 px-4 rounded-r-md text-sm">
                 Subscribe
               </button>
             </form>
@@ -94,8 +80,6 @@ const Footer = () => {
           </div>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
-
 export default Footer;
