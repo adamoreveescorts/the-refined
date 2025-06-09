@@ -23,19 +23,27 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { X, Upload, User } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const profileSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters").max(30, "Username must be less than 30 characters"),
   display_name: z.string().min(2, "Display name must be at least 2 characters").max(50, "Display name must be less than 50 characters"),
   email: z.string().email("Please enter a valid email address"),
   bio: z.string().max(1000, "Bio must be less than 1000 characters").optional(),
-  // Details fields
-  gender: z.string().optional(),
-  ethnicity: z.string().optional(),
+  // Basic details
+  age: z.string().optional(),
   height: z.string().optional(),
   weight: z.string().optional(),
+  // Appearance fields
+  ethnicity: z.string().optional(),
+  body_type: z.string().optional(),
   hair_color: z.string().optional(),
   eye_color: z.string().optional(),
+  cup_size: z.string().optional(),
+  nationality: z.string().optional(),
+  // Lifestyle fields
+  smoking: z.string().optional(),
+  drinking: z.string().optional(),
   languages: z.string().max(200, "Languages must be less than 200 characters").optional(),
   services: z.string().max(500, "Services must be less than 500 characters").optional(),
   // Rates fields
@@ -55,12 +63,17 @@ interface EditProfileFormProps {
     email: string | null;
     role: string | null;
     bio?: string | null;
-    gender?: string | null;
-    ethnicity?: string | null;
+    age?: string | null;
     height?: string | null;
     weight?: string | null;
+    ethnicity?: string | null;
+    body_type?: string | null;
     hair_color?: string | null;
     eye_color?: string | null;
+    cup_size?: string | null;
+    nationality?: string | null;
+    smoking?: string | null;
+    drinking?: string | null;
     languages?: string | null;
     services?: string | null;
     hourly_rate?: string | null;
@@ -69,6 +82,8 @@ interface EditProfileFormProps {
     overnight_rate?: string | null;
     profile_picture?: string | null;
     tags?: string | null;
+    tattoos?: boolean | null;
+    piercings?: boolean | null;
   };
   onProfileUpdate: (updatedProfile: any) => void;
   onCancel: () => void;
@@ -81,6 +96,8 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
   const [selectedTags, setSelectedTags] = useState<string[]>(
     profile.tags ? profile.tags.split(',').filter(Boolean) : []
   );
+  const [tattoos, setTattoos] = useState(profile.tattoos || false);
+  const [piercings, setPiercings] = useState(profile.piercings || false);
 
   const isEscortOrAgency = profile.role === 'escort' || profile.role === 'agency';
 
@@ -91,12 +108,17 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
       display_name: profile.display_name || "",
       email: profile.email || "",
       bio: profile.bio || "",
-      gender: profile.gender || "",
-      ethnicity: profile.ethnicity || "",
+      age: profile.age || "",
       height: profile.height || "",
       weight: profile.weight || "",
+      ethnicity: profile.ethnicity || "",
+      body_type: profile.body_type || "",
       hair_color: profile.hair_color || "",
       eye_color: profile.eye_color || "",
+      cup_size: profile.cup_size || "",
+      nationality: profile.nationality || "",
+      smoking: profile.smoking || "",
+      drinking: profile.drinking || "",
       languages: profile.languages || "",
       services: profile.services || "",
       hourly_rate: profile.hourly_rate || "",
@@ -181,12 +203,17 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
       // Add escort-specific fields only if user is escort or agency
       if (isEscortOrAgency) {
         updateData.bio = data.bio;
-        updateData.gender = data.gender;
-        updateData.ethnicity = data.ethnicity;
+        updateData.age = data.age;
         updateData.height = data.height;
         updateData.weight = data.weight;
+        updateData.ethnicity = data.ethnicity;
+        updateData.body_type = data.body_type;
         updateData.hair_color = data.hair_color;
         updateData.eye_color = data.eye_color;
+        updateData.cup_size = data.cup_size;
+        updateData.nationality = data.nationality;
+        updateData.smoking = data.smoking;
+        updateData.drinking = data.drinking;
         updateData.languages = data.languages;
         updateData.services = data.services;
         updateData.hourly_rate = data.hourly_rate;
@@ -195,6 +222,8 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
         updateData.overnight_rate = data.overnight_rate;
         updateData.profile_picture = profilePicture;
         updateData.tags = selectedTags.join(',');
+        updateData.tattoos = tattoos;
+        updateData.piercings = piercings;
       }
 
       const { data: updatedProfile, error } = await supabase
@@ -316,8 +345,9 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
             {/* Escort/Agency Specific Fields in Tabs */}
             {isEscortOrAgency && (
               <Tabs defaultValue="about" className="w-full">
-                <TabsList className="grid grid-cols-3 mb-4">
+                <TabsList className="grid grid-cols-4 mb-4">
                   <TabsTrigger value="about">About</TabsTrigger>
+                  <TabsTrigger value="appearance">Appearance</TabsTrigger>
                   <TabsTrigger value="details">Details</TabsTrigger>
                   <TabsTrigger value="rates">Rates</TabsTrigger>
                 </TabsList>
@@ -361,26 +391,44 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                       </FormItem>
                     )}
                   />
+
+                  <FormField
+                    control={form.control}
+                    name="languages"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Languages</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., English, French, Spanish" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </TabsContent>
                 
-                <TabsContent value="details" className="space-y-4">
+                <TabsContent value="appearance" className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="gender"
+                      name="ethnicity"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Gender</FormLabel>
+                          <FormLabel>Ethnicity</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select gender" />
+                                <SelectValue placeholder="Select ethnicity" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="Female">Female</SelectItem>
-                              <SelectItem value="Male">Male</SelectItem>
-                              <SelectItem value="Non-binary">Non-binary</SelectItem>
+                              <SelectItem value="Asian">Asian</SelectItem>
+                              <SelectItem value="Black">Black</SelectItem>
+                              <SelectItem value="Caucasian">Caucasian</SelectItem>
+                              <SelectItem value="Hispanic">Hispanic</SelectItem>
+                              <SelectItem value="Indian">Indian</SelectItem>
+                              <SelectItem value="Middle Eastern">Middle Eastern</SelectItem>
+                              <SelectItem value="Mixed">Mixed</SelectItem>
                               <SelectItem value="Other">Other</SelectItem>
                             </SelectContent>
                           </Select>
@@ -391,12 +439,157 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
 
                     <FormField
                       control={form.control}
-                      name="ethnicity"
+                      name="body_type"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Ethnicity</FormLabel>
+                          <FormLabel>Body Type</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select body type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Petite">Petite</SelectItem>
+                              <SelectItem value="Slim">Slim</SelectItem>
+                              <SelectItem value="Athletic">Athletic</SelectItem>
+                              <SelectItem value="Average">Average</SelectItem>
+                              <SelectItem value="Curvy">Curvy</SelectItem>
+                              <SelectItem value="Full Figured">Full Figured</SelectItem>
+                              <SelectItem value="BBW">BBW</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="hair_color"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Hair Color</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select hair color" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Blonde">Blonde</SelectItem>
+                              <SelectItem value="Brunette">Brunette</SelectItem>
+                              <SelectItem value="Black">Black</SelectItem>
+                              <SelectItem value="Red">Red</SelectItem>
+                              <SelectItem value="Auburn">Auburn</SelectItem>
+                              <SelectItem value="Grey">Grey</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="eye_color"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Eye Color</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select eye color" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Blue">Blue</SelectItem>
+                              <SelectItem value="Brown">Brown</SelectItem>
+                              <SelectItem value="Green">Green</SelectItem>
+                              <SelectItem value="Hazel">Hazel</SelectItem>
+                              <SelectItem value="Grey">Grey</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="cup_size"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Cup Size</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select cup size" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="A">A</SelectItem>
+                              <SelectItem value="B">B</SelectItem>
+                              <SelectItem value="C">C</SelectItem>
+                              <SelectItem value="D">D</SelectItem>
+                              <SelectItem value="DD">DD</SelectItem>
+                              <SelectItem value="E">E</SelectItem>
+                              <SelectItem value="F">F+</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="nationality"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nationality</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., Caucasian" {...field} />
+                            <Input placeholder="e.g., Australian" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="tattoos"
+                        checked={tattoos}
+                        onCheckedChange={setTattoos}
+                      />
+                      <label htmlFor="tattoos" className="text-sm font-medium">Has Tattoos</label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="piercings"
+                        checked={piercings}
+                        onCheckedChange={setPiercings}
+                      />
+                      <label htmlFor="piercings" className="text-sm font-medium">Has Piercings</label>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="details" className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="age"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Age</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., 25" type="number" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -433,13 +626,23 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
 
                     <FormField
                       control={form.control}
-                      name="hair_color"
+                      name="smoking"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Hair Color</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., Blonde" {...field} />
-                          </FormControl>
+                          <FormLabel>Smoking</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select option" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Non-smoker">Non-smoker</SelectItem>
+                              <SelectItem value="Light smoker">Light smoker</SelectItem>
+                              <SelectItem value="Social smoker">Social smoker</SelectItem>
+                              <SelectItem value="Regular smoker">Regular smoker</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -447,32 +650,28 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
 
                     <FormField
                       control={form.control}
-                      name="eye_color"
+                      name="drinking"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Eye Color</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., Blue" {...field} />
-                          </FormControl>
+                          <FormLabel>Drinking</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select option" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Non-drinker">Non-drinker</SelectItem>
+                              <SelectItem value="Light drinker">Light drinker</SelectItem>
+                              <SelectItem value="Social drinker">Social drinker</SelectItem>
+                              <SelectItem value="Regular drinker">Regular drinker</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-
-                  <FormField
-                    control={form.control}
-                    name="languages"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Languages</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., English, French, Spanish" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </TabsContent>
                 
                 <TabsContent value="rates" className="space-y-4">

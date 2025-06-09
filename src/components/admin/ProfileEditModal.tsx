@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -23,6 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface ProfileEditModalProps {
   profile: any;
@@ -38,6 +39,15 @@ const ProfileEditModal = ({ profile, open, onOpenChange, onProfileUpdate }: Prof
     location: '',
     age: '',
     height: '',
+    weight: '',
+    ethnicity: '',
+    body_type: '',
+    hair_color: '',
+    eye_color: '',
+    cup_size: '',
+    nationality: '',
+    smoking: '',
+    drinking: '',
     services: '',
     rates: '',
     languages: '',
@@ -47,7 +57,13 @@ const ProfileEditModal = ({ profile, open, onOpenChange, onProfileUpdate }: Prof
     verified: false,
     is_active: false,
     rating: 4.5,
-    profile_picture: ''
+    profile_picture: '',
+    tattoos: false,
+    piercings: false,
+    hourly_rate: '',
+    two_hour_rate: '',
+    dinner_rate: '',
+    overnight_rate: ''
   });
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -60,6 +76,15 @@ const ProfileEditModal = ({ profile, open, onOpenChange, onProfileUpdate }: Prof
         location: profile.location || '',
         age: profile.age || '',
         height: profile.height || '',
+        weight: profile.weight || '',
+        ethnicity: profile.ethnicity || '',
+        body_type: profile.body_type || '',
+        hair_color: profile.hair_color || '',
+        eye_color: profile.eye_color || '',
+        cup_size: profile.cup_size || '',
+        nationality: profile.nationality || '',
+        smoking: profile.smoking || '',
+        drinking: profile.drinking || '',
         services: profile.services || '',
         rates: profile.rates || '',
         languages: profile.languages || '',
@@ -69,7 +94,13 @@ const ProfileEditModal = ({ profile, open, onOpenChange, onProfileUpdate }: Prof
         verified: profile.verified || false,
         is_active: profile.is_active || false,
         rating: profile.rating || 4.5,
-        profile_picture: profile.profile_picture || ''
+        profile_picture: profile.profile_picture || '',
+        tattoos: profile.tattoos || false,
+        piercings: profile.piercings || false,
+        hourly_rate: profile.hourly_rate || '',
+        two_hour_rate: profile.two_hour_rate || '',
+        dinner_rate: profile.dinner_rate || '',
+        overnight_rate: profile.overnight_rate || ''
       });
     }
   }, [profile]);
@@ -155,7 +186,7 @@ const ProfileEditModal = ({ profile, open, onOpenChange, onProfileUpdate }: Prof
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Profile</DialogTitle>
         </DialogHeader>
@@ -209,150 +240,378 @@ const ProfileEditModal = ({ profile, open, onOpenChange, onProfileUpdate }: Prof
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="display_name">Display Name</Label>
-              <Input
-                id="display_name"
-                value={formData.display_name}
-                onChange={(e) => setFormData({ ...formData, display_name: e.target.value })}
-              />
-            </div>
+          <Tabs defaultValue="basic" className="w-full">
+            <TabsList className="grid grid-cols-4 mb-4">
+              <TabsTrigger value="basic">Basic</TabsTrigger>
+              <TabsTrigger value="appearance">Appearance</TabsTrigger>
+              <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
+            </TabsList>
 
-            <div>
-              <Label htmlFor="location">Location</Label>
-              <Input
-                id="location"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              />
-            </div>
+            <TabsContent value="basic" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="display_name">Display Name</Label>
+                  <Input
+                    id="display_name"
+                    value={formData.display_name}
+                    onChange={(e) => setFormData({ ...formData, display_name: e.target.value })}
+                  />
+                </div>
 
-            <div>
-              <Label htmlFor="age">Age</Label>
-              <Input
-                id="age"
-                value={formData.age}
-                onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-              />
-            </div>
+                <div>
+                  <Label htmlFor="location">Location</Label>
+                  <Input
+                    id="location"
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  />
+                </div>
 
-            <div>
-              <Label htmlFor="height">Height</Label>
-              <Input
-                id="height"
-                value={formData.height}
-                onChange={(e) => setFormData({ ...formData, height: e.target.value })}
-              />
-            </div>
+                <div>
+                  <Label htmlFor="age">Age</Label>
+                  <Input
+                    id="age"
+                    value={formData.age}
+                    onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                  />
+                </div>
 
-            <div>
-              <Label htmlFor="status">Status</Label>
-              <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+                <div>
+                  <Label htmlFor="nationality">Nationality</Label>
+                  <Input
+                    id="nationality"
+                    value={formData.nationality}
+                    onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
+                  />
+                </div>
+              </div>
 
-            <div>
-              <Label htmlFor="rating">Rating</Label>
-              <Input
-                id="rating"
-                type="number"
-                min="1"
-                max="5"
-                step="0.1"
-                value={formData.rating}
-                onChange={(e) => setFormData({ ...formData, rating: parseFloat(e.target.value) })}
-              />
-            </div>
-          </div>
+              <div>
+                <Label htmlFor="bio">Biography</Label>
+                <Textarea
+                  id="bio"
+                  value={formData.bio}
+                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                  rows={4}
+                />
+              </div>
 
-          <div>
-            <Label htmlFor="bio">Biography</Label>
-            <Textarea
-              id="bio"
-              value={formData.bio}
-              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              rows={4}
-            />
-          </div>
+              <div>
+                <Label htmlFor="services">Services</Label>
+                <Textarea
+                  id="services"
+                  value={formData.services}
+                  onChange={(e) => setFormData({ ...formData, services: e.target.value })}
+                  rows={3}
+                />
+              </div>
 
-          <div>
-            <Label htmlFor="services">Services</Label>
-            <Textarea
-              id="services"
-              value={formData.services}
-              onChange={(e) => setFormData({ ...formData, services: e.target.value })}
-              rows={3}
-            />
-          </div>
+              <div>
+                <Label htmlFor="languages">Languages</Label>
+                <Input
+                  id="languages"
+                  value={formData.languages}
+                  onChange={(e) => setFormData({ ...formData, languages: e.target.value })}
+                />
+              </div>
+            </TabsContent>
 
-          <div>
-            <Label htmlFor="rates">Rates</Label>
-            <Textarea
-              id="rates"
-              value={formData.rates}
-              onChange={(e) => setFormData({ ...formData, rates: e.target.value })}
-              rows={3}
-            />
-          </div>
+            <TabsContent value="appearance" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="ethnicity">Ethnicity</Label>
+                  <Select value={formData.ethnicity} onValueChange={(value) => setFormData({ ...formData, ethnicity: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select ethnicity" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Not specified</SelectItem>
+                      <SelectItem value="Asian">Asian</SelectItem>
+                      <SelectItem value="Black">Black</SelectItem>
+                      <SelectItem value="Caucasian">Caucasian</SelectItem>
+                      <SelectItem value="Hispanic">Hispanic</SelectItem>
+                      <SelectItem value="Indian">Indian</SelectItem>
+                      <SelectItem value="Middle Eastern">Middle Eastern</SelectItem>
+                      <SelectItem value="Mixed">Mixed</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="languages">Languages</Label>
-              <Input
-                id="languages"
-                value={formData.languages}
-                onChange={(e) => setFormData({ ...formData, languages: e.target.value })}
-              />
-            </div>
+                <div>
+                  <Label htmlFor="body_type">Body Type</Label>
+                  <Select value={formData.body_type} onValueChange={(value) => setFormData({ ...formData, body_type: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select body type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Not specified</SelectItem>
+                      <SelectItem value="Petite">Petite</SelectItem>
+                      <SelectItem value="Slim">Slim</SelectItem>
+                      <SelectItem value="Athletic">Athletic</SelectItem>
+                      <SelectItem value="Average">Average</SelectItem>
+                      <SelectItem value="Curvy">Curvy</SelectItem>
+                      <SelectItem value="Full Figured">Full Figured</SelectItem>
+                      <SelectItem value="BBW">BBW</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            <div>
-              <Label htmlFor="availability">Availability</Label>
-              <Input
-                id="availability"
-                value={formData.availability}
-                onChange={(e) => setFormData({ ...formData, availability: e.target.value })}
-              />
-            </div>
-          </div>
+                <div>
+                  <Label htmlFor="hair_color">Hair Color</Label>
+                  <Select value={formData.hair_color} onValueChange={(value) => setFormData({ ...formData, hair_color: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select hair color" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Not specified</SelectItem>
+                      <SelectItem value="Blonde">Blonde</SelectItem>
+                      <SelectItem value="Brunette">Brunette</SelectItem>
+                      <SelectItem value="Black">Black</SelectItem>
+                      <SelectItem value="Red">Red</SelectItem>
+                      <SelectItem value="Auburn">Auburn</SelectItem>
+                      <SelectItem value="Grey">Grey</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="featured"
-                checked={formData.featured}
-                onCheckedChange={(checked) => setFormData({ ...formData, featured: checked })}
-              />
-              <Label htmlFor="featured">Featured</Label>
-            </div>
+                <div>
+                  <Label htmlFor="eye_color">Eye Color</Label>
+                  <Select value={formData.eye_color} onValueChange={(value) => setFormData({ ...formData, eye_color: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select eye color" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Not specified</SelectItem>
+                      <SelectItem value="Blue">Blue</SelectItem>
+                      <SelectItem value="Brown">Brown</SelectItem>
+                      <SelectItem value="Green">Green</SelectItem>
+                      <SelectItem value="Hazel">Hazel</SelectItem>
+                      <SelectItem value="Grey">Grey</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="verified"
-                checked={formData.verified}
-                onCheckedChange={(checked) => setFormData({ ...formData, verified: checked })}
-              />
-              <Label htmlFor="verified">Verified</Label>
-            </div>
+                <div>
+                  <Label htmlFor="cup_size">Cup Size</Label>
+                  <Select value={formData.cup_size} onValueChange={(value) => setFormData({ ...formData, cup_size: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select cup size" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Not specified</SelectItem>
+                      <SelectItem value="A">A</SelectItem>
+                      <SelectItem value="B">B</SelectItem>
+                      <SelectItem value="C">C</SelectItem>
+                      <SelectItem value="D">D</SelectItem>
+                      <SelectItem value="DD">DD</SelectItem>
+                      <SelectItem value="E">E</SelectItem>
+                      <SelectItem value="F">F+</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="is_active"
-                checked={formData.is_active}
-                onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
-              />
-              <Label htmlFor="is_active">Active</Label>
-            </div>
-          </div>
+                <div>
+                  <Label htmlFor="height">Height</Label>
+                  <Input
+                    id="height"
+                    value={formData.height}
+                    onChange={(e) => setFormData({ ...formData, height: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="weight">Weight</Label>
+                  <Input
+                    id="weight"
+                    value={formData.weight}
+                    onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="tattoos"
+                    checked={formData.tattoos}
+                    onCheckedChange={(checked) => setFormData({ ...formData, tattoos: !!checked })}
+                  />
+                  <Label htmlFor="tattoos">Has Tattoos</Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="piercings"
+                    checked={formData.piercings}
+                    onCheckedChange={(checked) => setFormData({ ...formData, piercings: !!checked })}
+                  />
+                  <Label htmlFor="piercings">Has Piercings</Label>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="details" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="smoking">Smoking</Label>
+                  <Select value={formData.smoking} onValueChange={(value) => setFormData({ ...formData, smoking: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Not specified</SelectItem>
+                      <SelectItem value="Non-smoker">Non-smoker</SelectItem>
+                      <SelectItem value="Light smoker">Light smoker</SelectItem>
+                      <SelectItem value="Social smoker">Social smoker</SelectItem>
+                      <SelectItem value="Regular smoker">Regular smoker</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="drinking">Drinking</Label>
+                  <Select value={formData.drinking} onValueChange={(value) => setFormData({ ...formData, drinking: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Not specified</SelectItem>
+                      <SelectItem value="Non-drinker">Non-drinker</SelectItem>
+                      <SelectItem value="Light drinker">Light drinker</SelectItem>
+                      <SelectItem value="Social drinker">Social drinker</SelectItem>
+                      <SelectItem value="Regular drinker">Regular drinker</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="availability">Availability</Label>
+                  <Input
+                    id="availability"
+                    value={formData.availability}
+                    onChange={(e) => setFormData({ ...formData, availability: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="hourly_rate">Hourly Rate ($)</Label>
+                  <Input
+                    id="hourly_rate"
+                    type="number"
+                    value={formData.hourly_rate}
+                    onChange={(e) => setFormData({ ...formData, hourly_rate: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="two_hour_rate">2 Hour Rate ($)</Label>
+                  <Input
+                    id="two_hour_rate"
+                    type="number"
+                    value={formData.two_hour_rate}
+                    onChange={(e) => setFormData({ ...formData, two_hour_rate: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="dinner_rate">Dinner Rate ($)</Label>
+                  <Input
+                    id="dinner_rate"
+                    type="number"
+                    value={formData.dinner_rate}
+                    onChange={(e) => setFormData({ ...formData, dinner_rate: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="overnight_rate">Overnight Rate ($)</Label>
+                  <Input
+                    id="overnight_rate"
+                    type="number"
+                    value={formData.overnight_rate}
+                    onChange={(e) => setFormData({ ...formData, overnight_rate: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="rates">Legacy Rates (Text)</Label>
+                <Textarea
+                  id="rates"
+                  value={formData.rates}
+                  onChange={(e) => setFormData({ ...formData, rates: e.target.value })}
+                  rows={3}
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="settings" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="status">Status</Label>
+                  <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="approved">Approved</SelectItem>
+                      <SelectItem value="rejected">Rejected</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="rating">Rating</Label>
+                  <Input
+                    id="rating"
+                    type="number"
+                    min="1"
+                    max="5"
+                    step="0.1"
+                    value={formData.rating}
+                    onChange={(e) => setFormData({ ...formData, rating: parseFloat(e.target.value) })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="featured"
+                    checked={formData.featured}
+                    onCheckedChange={(checked) => setFormData({ ...formData, featured: checked })}
+                  />
+                  <Label htmlFor="featured">Featured</Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="verified"
+                    checked={formData.verified}
+                    onCheckedChange={(checked) => setFormData({ ...formData, verified: checked })}
+                  />
+                  <Label htmlFor="verified">Verified</Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="is_active"
+                    checked={formData.is_active}
+                    onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+                  />
+                  <Label htmlFor="is_active">Active</Label>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

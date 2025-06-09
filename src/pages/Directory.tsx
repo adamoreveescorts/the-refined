@@ -12,6 +12,13 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Check, Heart, Search, Filter, Star } from 'lucide-react';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Pagination,
   PaginationContent,
   PaginationEllipsis,
@@ -103,9 +110,14 @@ const EscortCard = ({ escort, index }: { escort: any, index: number }) => {
           </div>
           
           <div className="mt-2 flex flex-wrap gap-1">
-            {escort.services && (
+            {escort.ethnicity && (
               <Badge variant="secondary" className="bg-muted text-muted-foreground text-xs">
-                {escort.services.split(',')[0]}
+                {escort.ethnicity}
+              </Badge>
+            )}
+            {escort.body_type && (
+              <Badge variant="secondary" className="bg-muted text-muted-foreground text-xs">
+                {escort.body_type}
               </Badge>
             )}
           </div>
@@ -159,7 +171,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
         </Button>
       </div>
       
-      <div className={`md:block bg-card rounded-lg shadow-md p-4 sticky top-20 transition-all duration-500 ${
+      <div className={`md:block bg-card rounded-lg shadow-md p-4 sticky top-20 transition-all duration-500 max-h-[80vh] overflow-y-auto ${
         isVisible ? 'animate-fade-in opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
       }`}>
         <h3 className="font-medium text-lg mb-4 text-foreground">Filters</h3>
@@ -176,26 +188,104 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
           />
         </div>
         
-        {/* Gender */}
+        {/* Ethnicity */}
         <div className="mb-6">
-          <label className="block text-sm font-medium mb-2 text-foreground">Gender</label>
-          <div className="space-y-2">
-            {['Female', 'Male', 'Non-Binary'].map((gender) => (
-              <div key={gender} className="flex items-center">
-                <Checkbox 
-                  id={`gender-${gender}`}
-                  checked={filters.gender === gender}
-                  onCheckedChange={() => onFilterChange({ ...filters, gender })}
-                />
-                <label 
-                  htmlFor={`gender-${gender}`} 
-                  className="ml-2 text-sm text-foreground"
-                >
-                  {gender}
-                </label>
-              </div>
-            ))}
-          </div>
+          <label className="block text-sm font-medium mb-2 text-foreground">Ethnicity</label>
+          <Select value={filters.ethnicity || ''} onValueChange={(value) => onFilterChange({ ...filters, ethnicity: value })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select ethnicity" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All</SelectItem>
+              <SelectItem value="Asian">Asian</SelectItem>
+              <SelectItem value="Black">Black</SelectItem>
+              <SelectItem value="Caucasian">Caucasian</SelectItem>
+              <SelectItem value="Hispanic">Hispanic</SelectItem>
+              <SelectItem value="Indian">Indian</SelectItem>
+              <SelectItem value="Middle Eastern">Middle Eastern</SelectItem>
+              <SelectItem value="Mixed">Mixed</SelectItem>
+              <SelectItem value="Other">Other</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Body Type */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-2 text-foreground">Body Type</label>
+          <Select value={filters.body_type || ''} onValueChange={(value) => onFilterChange({ ...filters, body_type: value })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select body type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All</SelectItem>
+              <SelectItem value="Petite">Petite</SelectItem>
+              <SelectItem value="Slim">Slim</SelectItem>
+              <SelectItem value="Athletic">Athletic</SelectItem>
+              <SelectItem value="Average">Average</SelectItem>
+              <SelectItem value="Curvy">Curvy</SelectItem>
+              <SelectItem value="Full Figured">Full Figured</SelectItem>
+              <SelectItem value="BBW">BBW</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Hair Color */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-2 text-foreground">Hair Color</label>
+          <Select value={filters.hair_color || ''} onValueChange={(value) => onFilterChange({ ...filters, hair_color: value })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select hair color" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All</SelectItem>
+              <SelectItem value="Blonde">Blonde</SelectItem>
+              <SelectItem value="Brunette">Brunette</SelectItem>
+              <SelectItem value="Black">Black</SelectItem>
+              <SelectItem value="Red">Red</SelectItem>
+              <SelectItem value="Auburn">Auburn</SelectItem>
+              <SelectItem value="Grey">Grey</SelectItem>
+              <SelectItem value="Other">Other</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Eye Color */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-2 text-foreground">Eye Color</label>
+          <Select value={filters.eye_color || ''} onValueChange={(value) => onFilterChange({ ...filters, eye_color: value })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select eye color" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All</SelectItem>
+              <SelectItem value="Blue">Blue</SelectItem>
+              <SelectItem value="Brown">Brown</SelectItem>
+              <SelectItem value="Green">Green</SelectItem>
+              <SelectItem value="Hazel">Hazel</SelectItem>
+              <SelectItem value="Grey">Grey</SelectItem>
+              <SelectItem value="Other">Other</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Cup Size */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-2 text-foreground">Cup Size</label>
+          <Select value={filters.cup_size || ''} onValueChange={(value) => onFilterChange({ ...filters, cup_size: value })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select cup size" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All</SelectItem>
+              <SelectItem value="A">A</SelectItem>
+              <SelectItem value="B">B</SelectItem>
+              <SelectItem value="C">C</SelectItem>
+              <SelectItem value="D">D</SelectItem>
+              <SelectItem value="DD">DD</SelectItem>
+              <SelectItem value="E">E</SelectItem>
+              <SelectItem value="F">F+</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         
         {/* Age Range */}
@@ -257,16 +347,35 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
             ))}
           </div>
         </div>
-        
-        {/* Verified Only */}
+
+        {/* Additional Attributes */}
         <div className="mb-6">
-          <div className="flex items-center">
-            <Checkbox 
-              id="verified"
-              checked={filters.verifiedOnly}
-              onCheckedChange={(checked) => onFilterChange({ ...filters, verifiedOnly: !!checked })}
-            />
-            <label htmlFor="verified" className="ml-2 text-sm text-foreground">Verified Only</label>
+          <label className="block text-sm font-medium mb-2 text-foreground">Additional</label>
+          <div className="space-y-2">
+            <div className="flex items-center">
+              <Checkbox 
+                id="verified"
+                checked={filters.verifiedOnly}
+                onCheckedChange={(checked) => onFilterChange({ ...filters, verifiedOnly: !!checked })}
+              />
+              <label htmlFor="verified" className="ml-2 text-sm text-foreground">Verified Only</label>
+            </div>
+            <div className="flex items-center">
+              <Checkbox 
+                id="tattoos"
+                checked={filters.tattoos}
+                onCheckedChange={(checked) => onFilterChange({ ...filters, tattoos: !!checked })}
+              />
+              <label htmlFor="tattoos" className="ml-2 text-sm text-foreground">Has Tattoos</label>
+            </div>
+            <div className="flex items-center">
+              <Checkbox 
+                id="piercings"
+                checked={filters.piercings}
+                onCheckedChange={(checked) => onFilterChange({ ...filters, piercings: !!checked })}
+              />
+              <label htmlFor="piercings" className="ml-2 text-sm text-foreground">Has Piercings</label>
+            </div>
           </div>
         </div>
         
@@ -274,13 +383,20 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
           className="w-full btn-gold"
           onClick={() => onFilterChange({ 
             location: '',
-            gender: '',
+            ethnicity: '',
+            body_type: '',
+            hair_color: '',
+            eye_color: '',
+            cup_size: '',
             ageMin: 18,
             ageMax: 50,
             priceMin: 100,
             priceMax: 1000,
             services: [],
-            verifiedOnly: false
+            verifiedOnly: false,
+            tattoos: false,
+            piercings: false,
+            searchQuery: ''
           })}
         >
           Reset Filters
@@ -301,13 +417,19 @@ const Directory = () => {
   const [searchVisible, setSearchVisible] = useState(false);
   const [filters, setFilters] = useState({
     location: initialLocation,
-    gender: '',
+    ethnicity: '',
+    body_type: '',
+    hair_color: '',
+    eye_color: '',
+    cup_size: '',
     ageMin: 18,
     ageMax: 50,
     priceMin: 100,
     priceMax: 1000,
     services: [],
     verifiedOnly: false,
+    tattoos: false,
+    piercings: false,
     searchQuery: ''
   });
   
@@ -367,7 +489,35 @@ const Directory = () => {
       return false;
     }
     
+    if (filters.ethnicity && escort.ethnicity !== filters.ethnicity) {
+      return false;
+    }
+    
+    if (filters.body_type && escort.body_type !== filters.body_type) {
+      return false;
+    }
+    
+    if (filters.hair_color && escort.hair_color !== filters.hair_color) {
+      return false;
+    }
+    
+    if (filters.eye_color && escort.eye_color !== filters.eye_color) {
+      return false;
+    }
+    
+    if (filters.cup_size && escort.cup_size !== filters.cup_size) {
+      return false;
+    }
+    
     if (filters.verifiedOnly && !escort.verified) {
+      return false;
+    }
+    
+    if (filters.tattoos && !escort.tattoos) {
+      return false;
+    }
+    
+    if (filters.piercings && !escort.piercings) {
       return false;
     }
     
@@ -377,7 +527,9 @@ const Directory = () => {
         escort.display_name?.toLowerCase().includes(query) ||
         escort.username?.toLowerCase().includes(query) ||
         escort.location?.toLowerCase().includes(query) ||
-        escort.services?.toLowerCase().includes(query)
+        escort.services?.toLowerCase().includes(query) ||
+        escort.ethnicity?.toLowerCase().includes(query) ||
+        escort.body_type?.toLowerCase().includes(query)
       );
     }
     
@@ -395,6 +547,22 @@ const Directory = () => {
         return (b.rating || 0) - (a.rating || 0);
       case 'newest':
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      case 'age-asc':
+        return (parseInt(a.age) || 0) - (parseInt(b.age) || 0);
+      case 'age-desc':
+        return (parseInt(b.age) || 0) - (parseInt(a.age) || 0);
+      case 'price-asc':
+        const aPrice = a.hourly_rate ? parseInt(a.hourly_rate) : 0;
+        const bPrice = b.hourly_rate ? parseInt(b.hourly_rate) : 0;
+        return aPrice - bPrice;
+      case 'price-desc':
+        const aPriceDesc = a.hourly_rate ? parseInt(a.hourly_rate) : 0;
+        const bPriceDesc = b.hourly_rate ? parseInt(b.hourly_rate) : 0;
+        return bPriceDesc - aPriceDesc;
+      case 'name':
+        const aName = a.display_name || a.username || '';
+        const bName = b.display_name || b.username || '';
+        return aName.localeCompare(bName);
       default:
         return 0;
     }
@@ -450,7 +618,7 @@ const Directory = () => {
             <Search className="h-5 w-5 text-muted-foreground mx-2" />
             <Input 
               type="text" 
-              placeholder="Search by name, location, or service..."
+              placeholder="Search by name, location, ethnicity, or service..."
               className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-transparent bg-card text-foreground"
               value={filters.searchQuery}
               onChange={(e) => setFilters({ ...filters, searchQuery: e.target.value })}
@@ -471,15 +639,21 @@ const Directory = () => {
                 </p>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">Sort by:</span>
-                  <select 
-                    className="text-sm border border-border rounded-md p-1 bg-card text-foreground"
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                  >
-                    <option value="featured">Featured</option>
-                    <option value="rating">Rating</option>
-                    <option value="newest">Newest</option>
-                  </select>
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="featured">Featured</SelectItem>
+                      <SelectItem value="rating">Rating</SelectItem>
+                      <SelectItem value="newest">Newest</SelectItem>
+                      <SelectItem value="name">Name A-Z</SelectItem>
+                      <SelectItem value="age-asc">Age (Youngest)</SelectItem>
+                      <SelectItem value="age-desc">Age (Oldest)</SelectItem>
+                      <SelectItem value="price-asc">Price (Low to High)</SelectItem>
+                      <SelectItem value="price-desc">Price (High to Low)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               

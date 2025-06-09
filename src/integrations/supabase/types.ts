@@ -14,85 +14,118 @@ export type Database = {
           age: string | null
           availability: string | null
           bio: string | null
+          body_type: string | null
           created_at: string
+          cup_size: string | null
           display_name: string | null
+          drinking: string | null
           email: string | null
+          ethnicity: string | null
+          eye_color: string | null
           featured: boolean | null
           gallery_images: string[] | null
+          hair_color: string | null
           height: string | null
           id: string
           is_active: boolean | null
           languages: string | null
           last_active: string | null
           location: string | null
+          nationality: string | null
           payment_status: string | null
+          piercings: boolean | null
           profile_picture: string | null
           rates: string | null
           rating: number | null
           role: Database["public"]["Enums"]["user_role"] | null
           services: string | null
+          smoking: string | null
           status: string | null
           tags: string | null
+          tattoos: boolean | null
           updated_at: string
           username: string | null
           verified: boolean | null
           view_count: number | null
+          weight: string | null
         }
         Insert: {
           age?: string | null
           availability?: string | null
           bio?: string | null
+          body_type?: string | null
           created_at?: string
+          cup_size?: string | null
           display_name?: string | null
+          drinking?: string | null
           email?: string | null
+          ethnicity?: string | null
+          eye_color?: string | null
           featured?: boolean | null
           gallery_images?: string[] | null
+          hair_color?: string | null
           height?: string | null
           id: string
           is_active?: boolean | null
           languages?: string | null
           last_active?: string | null
           location?: string | null
+          nationality?: string | null
           payment_status?: string | null
+          piercings?: boolean | null
           profile_picture?: string | null
           rates?: string | null
           rating?: number | null
           role?: Database["public"]["Enums"]["user_role"] | null
           services?: string | null
+          smoking?: string | null
           status?: string | null
           tags?: string | null
+          tattoos?: boolean | null
           updated_at?: string
           username?: string | null
           verified?: boolean | null
           view_count?: number | null
+          weight?: string | null
         }
         Update: {
           age?: string | null
           availability?: string | null
           bio?: string | null
+          body_type?: string | null
           created_at?: string
+          cup_size?: string | null
           display_name?: string | null
+          drinking?: string | null
           email?: string | null
+          ethnicity?: string | null
+          eye_color?: string | null
           featured?: boolean | null
           gallery_images?: string[] | null
+          hair_color?: string | null
           height?: string | null
           id?: string
           is_active?: boolean | null
           languages?: string | null
           last_active?: string | null
           location?: string | null
+          nationality?: string | null
           payment_status?: string | null
+          piercings?: boolean | null
           profile_picture?: string | null
           rates?: string | null
           rating?: number | null
           role?: Database["public"]["Enums"]["user_role"] | null
           services?: string | null
+          smoking?: string | null
           status?: string | null
           tags?: string | null
+          tattoos?: boolean | null
           updated_at?: string
           username?: string | null
           verified?: boolean | null
           view_count?: number | null
+          weight?: string | null
         }
         Relationships: []
       }
