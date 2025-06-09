@@ -233,12 +233,12 @@ const UserProfilePage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-background">
         <NavBar />
         <div className="flex-grow flex items-center justify-center">
           <div className="text-center">
-            <div className="w-16 h-16 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="mt-4 text-navy">Loading profile...</p>
+            <div className="w-16 h-16 border-4 border-secondary border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="mt-4 text-foreground">Loading profile...</p>
           </div>
         </div>
         <Footer />
@@ -248,7 +248,7 @@ const UserProfilePage = () => {
   
   if (!profile) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-background">
         <NavBar />
         <div className="flex-grow flex items-center justify-center">
           <div className="text-center">
@@ -262,33 +262,33 @@ const UserProfilePage = () => {
   }
   
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <NavBar />
       
-      <main className="flex-grow bg-gray-50 py-8">
+      <main className="flex-grow py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-serif font-bold text-navy">My Profile</h1>
-            <p className="text-gray-500 mt-2">Manage your account settings and subscription</p>
+            <h1 className="text-3xl font-serif font-bold text-foreground">My Profile</h1>
+            <p className="text-muted-foreground mt-2">Manage your account settings and subscription</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Profile Summary Card */}
-            <Card className="bg-white shadow-sm md:col-span-1">
+            <Card className="bg-card shadow-sm md:col-span-1 border-border">
               <CardHeader>
-                <CardTitle className="text-navy">Account Details</CardTitle>
+                <CardTitle className="text-foreground">Account Details</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col items-center space-y-4 mb-6">
-                  <div className="w-20 h-20 rounded-full bg-navy/10 flex items-center justify-center">
-                    <UserRound className="h-10 w-10 text-navy" />
+                  <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center">
+                    <UserRound className="h-10 w-10 text-foreground" />
                   </div>
-                  <h3 className="text-xl font-medium">{profile?.display_name}</h3>
+                  <h3 className="text-xl font-medium text-foreground">{profile?.display_name}</h3>
                   
                   <Badge className={`${
                     profile?.role === 'escort' || profile?.role === 'agency' 
-                      ? 'bg-gold' 
-                      : 'bg-navy'
+                      ? 'bg-secondary text-secondary-foreground' 
+                      : 'bg-primary text-primary-foreground'
                   }`}>
                     {profile?.role === 'escort' ? 'Escort' : 
                      profile?.role === 'agency' ? 'Agency' : 'Client'}
@@ -299,33 +299,33 @@ const UserProfilePage = () => {
                 
                 <div className="space-y-3">
                   <div className="flex items-start">
-                    <User className="h-5 w-5 mr-2 text-gray-400" />
+                    <User className="h-5 w-5 mr-2 text-muted-foreground" />
                     <div>
-                      <p className="text-sm text-gray-500">Username</p>
-                      <p className="font-medium">{profile?.username}</p>
+                      <p className="text-sm text-muted-foreground">Username</p>
+                      <p className="font-medium text-foreground">{profile?.username}</p>
                     </div>
                   </div>
 
                   <div className="flex items-start">
-                    <Mail className="h-5 w-5 mr-2 text-gray-400" />
+                    <Mail className="h-5 w-5 mr-2 text-muted-foreground" />
                     <div>
-                      <p className="text-sm text-gray-500">Email</p>
-                      <p className="font-medium">{profile?.email}</p>
+                      <p className="text-sm text-muted-foreground">Email</p>
+                      <p className="font-medium text-foreground">{profile?.email}</p>
                     </div>
                   </div>
                   
                   <div className="flex items-start">
-                    <Calendar className="h-5 w-5 mr-2 text-gray-400" />
+                    <Calendar className="h-5 w-5 mr-2 text-muted-foreground" />
                     <div>
-                      <p className="text-sm text-gray-500">Member Since</p>
-                      <p className="font-medium">{profile?.created_at}</p>
+                      <p className="text-sm text-muted-foreground">Member Since</p>
+                      <p className="font-medium text-foreground">{profile?.created_at}</p>
                     </div>
                   </div>
                   
                   <div className="flex items-start">
-                    <Shield className="h-5 w-5 mr-2 text-gray-400" />
+                    <Shield className="h-5 w-5 mr-2 text-muted-foreground" />
                     <div>
-                      <p className="text-sm text-gray-500">Account Status</p>
+                      <p className="text-sm text-muted-foreground">Account Status</p>
                       <Badge variant={profile?.is_active ? "default" : "outline"} className={profile?.is_active ? "bg-green-500" : ""}>
                         {profile?.is_active ? "Active" : "Pending Activation"}
                       </Badge>
@@ -336,17 +336,17 @@ const UserProfilePage = () => {
                   {(profile?.role === 'escort' || profile?.role === 'agency') && (
                     <>
                       <div className="flex items-start">
-                        <Crown className="h-5 w-5 mr-2 text-gray-400" />
+                        <Crown className="h-5 w-5 mr-2 text-muted-foreground" />
                         <div className="w-full">
-                          <p className="text-sm text-gray-500">Current Plan</p>
+                          <p className="text-sm text-muted-foreground">Current Plan</p>
                           <div className="flex flex-col gap-1">
                             {getSubscriptionStatusBadge()}
                             {getPlanDurationDisplay() && (
-                              <span className="text-xs text-gray-600">{getPlanDurationDisplay()}</span>
+                              <span className="text-xs text-muted-foreground">{getPlanDurationDisplay()}</span>
                             )}
                             {subscription?.expires_at && (
                               <div className="flex items-center">
-                                <Clock className="h-3 w-3 mr-1 text-gray-400" />
+                                <Clock className="h-3 w-3 mr-1 text-muted-foreground" />
                                 <span className="text-xs">{getExpirationInfo()}</span>
                               </div>
                             )}
@@ -356,10 +356,10 @@ const UserProfilePage = () => {
 
                       {subscription?.is_featured && (
                         <div className="flex items-start">
-                          <Crown className="h-5 w-5 mr-2 text-gold" />
+                          <Crown className="h-5 w-5 mr-2 text-secondary" />
                           <div>
-                            <p className="text-sm text-gray-500">Featured Status</p>
-                            <Badge className="bg-gold text-white">Featured Profile</Badge>
+                            <p className="text-sm text-muted-foreground">Featured Status</p>
+                            <Badge className="bg-secondary text-secondary-foreground">Featured Profile</Badge>
                           </div>
                         </div>
                       )}
@@ -368,7 +368,7 @@ const UserProfilePage = () => {
                         <div className="flex items-start">
                           <Shield className="h-5 w-5 mr-2 text-green-500" />
                           <div>
-                            <p className="text-sm text-gray-500">Verification</p>
+                            <p className="text-sm text-muted-foreground">Verification</p>
                             <Badge className="bg-green-500 text-white">Photo Verified</Badge>
                           </div>
                         </div>
@@ -387,7 +387,7 @@ const UserProfilePage = () => {
                   </Button>
                   {(profile?.role === 'escort' || profile?.role === 'agency') && (
                     <Button 
-                      className="w-full btn-gold" 
+                      className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground" 
                       onClick={() => setShowUpgrade(!showUpgrade)}
                     >
                       {subscription?.subscription_tier === 'Platinum' ? 'Manage Plan' : 'Upgrade Plan'}
@@ -406,9 +406,9 @@ const UserProfilePage = () => {
                   onCancel={() => setShowEditProfile(false)}
                 />
               ) : showUpgrade && (profile?.role === 'escort' || profile?.role === 'agency') ? (
-                <Card className="bg-white shadow-sm">
+                <Card className="bg-card shadow-sm border-border">
                   <CardHeader>
-                    <CardTitle className="text-navy">Choose Your Plan</CardTitle>
+                    <CardTitle className="text-foreground">Choose Your Plan</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <SubscriptionTierSelector 
@@ -439,16 +439,16 @@ const UserProfilePage = () => {
                   </TabsList>
                   
                   <TabsContent value="dashboard" className="space-y-6">
-                    <Card className="bg-white shadow-sm">
+                    <Card className="bg-card shadow-sm border-border">
                       <CardHeader>
-                        <CardTitle className="text-navy">Account Summary</CardTitle>
+                        <CardTitle className="text-foreground">Account Summary</CardTitle>
                       </CardHeader>
                       <CardContent>
                         {(profile?.role === 'escort' || profile?.role === 'agency') ? (
                           <div className="space-y-6">
                             <div className="flex justify-between items-center">
                               <div>
-                                <p className="text-sm text-gray-500">Subscription Status</p>
+                                <p className="text-sm text-muted-foreground">Subscription Status</p>
                                 <div className="mt-1">
                                   {subscription?.subscription_tier === 'Platinum' ? (
                                     <Badge className="bg-green-500">
@@ -466,7 +466,7 @@ const UserProfilePage = () => {
                                     Manage Subscription
                                   </Button>
                                 ) : (
-                                  <Button className="btn-gold" onClick={() => setShowUpgrade(true)}>
+                                  <Button className="bg-secondary hover:bg-secondary/90 text-secondary-foreground" onClick={() => setShowUpgrade(true)}>
                                     Upgrade Plan
                                   </Button>
                                 )}
@@ -474,34 +474,34 @@ const UserProfilePage = () => {
                             </div>
                             
                             <div>
-                              <p className="text-sm text-gray-500 mb-2">Profile Status</p>
-                              <div className="p-4 bg-gray-50 rounded-md">
+                              <p className="text-sm text-muted-foreground mb-2">Profile Status</p>
+                              <div className="p-4 bg-muted rounded-md">
                                 <div className="flex items-center justify-between mb-2">
-                                  <span>Profile Completion</span>
-                                  <span className="font-medium">65%</span>
+                                  <span className="text-foreground">Profile Completion</span>
+                                  <span className="font-medium text-foreground">65%</span>
                                 </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div className="bg-gold h-2 rounded-full" style={{ width: '65%' }}></div>
+                                <div className="w-full bg-border rounded-full h-2">
+                                  <div className="bg-secondary h-2 rounded-full" style={{ width: '65%' }}></div>
                                 </div>
-                                <p className="mt-2 text-sm text-gray-500">Complete your profile to increase visibility</p>
+                                <p className="mt-2 text-sm text-muted-foreground">Complete your profile to increase visibility</p>
                               </div>
                             </div>
 
                             {/* Show subscription benefits */}
                             {subscription?.subscription_tier === 'Platinum' && (
                               <div>
-                                <p className="text-sm text-gray-500 mb-2">Platinum Benefits</p>
-                                <div className="p-4 bg-gold/10 rounded-md border border-gold/20">
+                                <p className="text-sm text-muted-foreground mb-2">Platinum Benefits</p>
+                                <div className="p-4 bg-secondary/10 rounded-md border border-secondary/20">
                                   <div className="grid grid-cols-2 gap-2 text-sm">
                                     <div className="flex items-center">
-                                      <Crown className="h-4 w-4 mr-2 text-gold" />
-                                      <span className={subscription?.is_featured ? "text-green-600" : "text-gray-500"}>
+                                      <Crown className="h-4 w-4 mr-2 text-secondary" />
+                                      <span className={subscription?.is_featured ? "text-green-600" : "text-muted-foreground"}>
                                         Featured Profile {subscription?.is_featured ? "✓" : ""}
                                       </span>
                                     </div>
                                     <div className="flex items-center">
                                       <Shield className="h-4 w-4 mr-2 text-green-500" />
-                                      <span className={subscription?.photo_verified ? "text-green-600" : "text-gray-500"}>
+                                      <span className={subscription?.photo_verified ? "text-green-600" : "text-muted-foreground"}>
                                         Photo Verified {subscription?.photo_verified ? "✓" : ""}
                                       </span>
                                     </div>
@@ -513,14 +513,14 @@ const UserProfilePage = () => {
                         ) : (
                           <div className="space-y-6">
                             <div>
-                              <h3 className="font-medium mb-2">Welcome to The Refined Escort</h3>
-                              <p className="text-gray-500">Browse our directory to find the perfect companion for your next event or evening.</p>
+                              <h3 className="font-medium mb-2 text-foreground">Welcome to Adam or Eve Escorts</h3>
+                              <p className="text-muted-foreground">Browse our directory to find the perfect companion for your next event or evening.</p>
                             </div>
                             
-                            <div className="p-4 bg-gray-50 rounded-md">
-                              <h4 className="font-medium mb-2">Recent Activity</h4>
-                              <p className="text-gray-500 text-sm">You haven't made any bookings yet.</p>
-                              <Button className="btn-gold mt-4">
+                            <div className="p-4 bg-muted rounded-md">
+                              <h4 className="font-medium mb-2 text-foreground">Recent Activity</h4>
+                              <p className="text-muted-foreground text-sm">You haven't made any bookings yet.</p>
+                              <Button className="bg-secondary hover:bg-secondary/90 text-secondary-foreground mt-4">
                                 Browse Directory
                               </Button>
                             </div>
@@ -531,22 +531,22 @@ const UserProfilePage = () => {
                   </TabsContent>
                   
                   <TabsContent value="settings" className="space-y-6">
-                    <Card className="bg-white shadow-sm">
+                    <Card className="bg-card shadow-sm border-border">
                       <CardHeader>
-                        <CardTitle className="text-navy">Account Settings</CardTitle>
+                        <CardTitle className="text-foreground">Account Settings</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-6">
                           <div>
-                            <h3 className="font-medium mb-3">Change Password</h3>
+                            <h3 className="font-medium mb-3 text-foreground">Change Password</h3>
                             <Button variant="outline">Update Password</Button>
                           </div>
                           
                           <Separator />
                           
                           <div>
-                            <h3 className="font-medium mb-3">Notification Preferences</h3>
-                            <p className="text-gray-500 mb-3">Coming soon</p>
+                            <h3 className="font-medium mb-3 text-foreground">Notification Preferences</h3>
+                            <p className="text-muted-foreground mb-3">Coming soon</p>
                           </div>
                           
                           <Separator />
@@ -562,20 +562,20 @@ const UserProfilePage = () => {
                   
                   {(profile?.role === 'escort' || profile?.role === 'agency') && (
                     <TabsContent value="profile-management" className="space-y-6">
-                      <Card className="bg-white shadow-sm">
+                      <Card className="bg-card shadow-sm border-border">
                         <CardHeader>
-                          <CardTitle className="text-navy">
+                          <CardTitle className="text-foreground">
                             {profile?.role === 'agency' ? 'Agency Profile' : 'Public Profile'}
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
                           <div className="space-y-6">
                             <div>
-                              <h3 className="font-medium mb-3">Profile Visibility</h3>
+                              <h3 className="font-medium mb-3 text-foreground">Profile Visibility</h3>
                               <Badge className={isProfilePublic() ? "bg-green-500" : "bg-red-500"}>
                                 {isProfilePublic() ? "Public" : "Not Visible"}
                               </Badge>
-                              <p className="text-sm text-gray-500 mt-1">
+                              <p className="text-sm text-muted-foreground mt-1">
                                 {isProfilePublic()
                                   ? "Your profile is visible in the directory" 
                                   : "Your profile is not visible until you have an active subscription"}
@@ -585,11 +585,11 @@ const UserProfilePage = () => {
                             <Separator />
                             
                             <div>
-                              <h3 className="font-medium mb-3">
+                              <h3 className="font-medium mb-3 text-foreground">
                                 {profile?.role === 'agency' ? 'Manage Agency Profile' : 'Edit Public Profile'}
                               </h3>
                               <Button 
-                                className="btn-gold"
+                                className="bg-secondary hover:bg-secondary/90 text-secondary-foreground"
                                 onClick={() => setShowEditProfile(true)}
                               >
                                 Manage Profile
@@ -599,7 +599,7 @@ const UserProfilePage = () => {
                             <Separator />
                             
                             <div>
-                              <h3 className="font-medium mb-3">
+                              <h3 className="font-medium mb-3 text-foreground">
                                 {profile?.role === 'agency' ? 'Manage Photos & Profiles' : 'Upload Photos'}
                               </h3>
                               <Button variant="outline">

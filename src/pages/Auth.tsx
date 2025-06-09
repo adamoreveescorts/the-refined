@@ -259,7 +259,7 @@ const Auth = () => {
       {/* Back to Home Button positioned correctly in the top-left */}
       <div className="fixed top-4 left-4 z-10">
         <Link to="/">
-          <Button variant="ghost" size="sm" className="flex items-center gap-1 text-navy hover:text-gold">
+          <Button variant="ghost" size="sm" className="flex items-center gap-1 text-foreground hover:text-secondary">
             <ArrowLeft size={16} />
             Back to Home
           </Button>
@@ -268,30 +268,30 @@ const Auth = () => {
       
       <div className="w-full max-w-4xl space-y-8">
         <div className="text-center">
-          <h2 className="mt-6 text-3xl font-serif font-bold text-navy">
-            The Refined Escort
+          <h2 className="mt-6 text-3xl font-serif font-bold text-foreground">
+            Adam or Eve Escorts
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-muted-foreground">
             Enter your details to access the platform
           </p>
         </div>
 
         {verificationSent ? (
-          <div className="mt-8 bg-white p-6 shadow rounded-lg">
-            <h3 className="text-lg font-medium text-center mb-4">
+          <div className="mt-8 bg-card p-6 shadow rounded-lg border border-border">
+            <h3 className="text-lg font-medium text-center mb-4 text-foreground">
               {selectedRole === 'client' ? 'Verification Email Sent' : 'Account Created Successfully'}
             </h3>
-            <p className="text-sm text-gray-600 mb-6">
+            <p className="text-sm text-muted-foreground mb-6">
               {selectedRole === 'client' ? (
                 <>
-                  We've sent a verification link to <strong>{formValues?.email}</strong>.
+                  We've sent a verification link to <strong className="text-foreground">{formValues?.email}</strong>.
                   Please check your email and click the link to complete your registration.
                 </>
               ) : (
                 <>
                   Your {selectedRole} account has been created! Please check your email and click the verification link.
                   After verification, you'll be redirected to choose your subscription plan.
-                  We've sent a verification link to <strong>{formValues?.email}</strong>.
+                  We've sent a verification link to <strong className="text-foreground">{formValues?.email}</strong>.
                 </>
               )}
             </p>
@@ -299,17 +299,17 @@ const Auth = () => {
             <div className="space-y-4">
               <Button 
                 type="button" 
-                className="w-full" 
+                className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground" 
                 onClick={handleBackToLogin}
               >
                 Back to Login
               </Button>
               
-              <p className="text-xs text-center text-gray-500">
+              <p className="text-xs text-center text-muted-foreground">
                 Didn't receive an email? Check your spam folder or
                 <Button 
                   variant="link" 
-                  className="p-0 h-auto text-xs underline ml-1"
+                  className="p-0 h-auto text-xs underline ml-1 text-secondary"
                   onClick={() => setVerificationSent(false)}
                 >
                   try again
@@ -325,7 +325,7 @@ const Auth = () => {
             </TabsList>
             
             <TabsContent value="login">
-              <div className="mt-8 bg-white p-6 shadow rounded-lg">
+              <div className="mt-8 bg-card p-6 shadow rounded-lg border border-border">
                 <Form {...loginForm}>
                   <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-6">
                     <FormField
@@ -333,7 +333,7 @@ const Auth = () => {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Email</FormLabel>
+                          <FormLabel className="text-foreground">Email</FormLabel>
                           <FormControl>
                             <Input placeholder="you@example.com" {...field} />
                           </FormControl>
@@ -347,7 +347,7 @@ const Auth = () => {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Password</FormLabel>
+                          <FormLabel className="text-foreground">Password</FormLabel>
                           <FormControl>
                             <Input type="password" placeholder="••••••••" {...field} />
                           </FormControl>
@@ -358,7 +358,7 @@ const Auth = () => {
                     
                     <Button 
                       type="submit" 
-                      className="btn-gold w-full" 
+                      className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground" 
                       disabled={isLoading}
                     >
                       {isLoading ? "Logging in..." : "Log In"}
@@ -369,7 +369,7 @@ const Auth = () => {
             </TabsContent>
             
             <TabsContent value="signup">
-              <div className="mt-8 bg-white p-6 shadow rounded-lg">
+              <div className="mt-8 bg-card p-6 shadow rounded-lg border border-border">
                 <Form {...signupForm}>
                   <form onSubmit={(e) => { e.preventDefault(); initiateSignup(); }} className="space-y-6">
                     <FormField
@@ -377,7 +377,7 @@ const Auth = () => {
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Username</FormLabel>
+                          <FormLabel className="text-foreground">Username</FormLabel>
                           <FormControl>
                             <Input placeholder="johndoe" {...field} />
                           </FormControl>
@@ -391,7 +391,7 @@ const Auth = () => {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Email</FormLabel>
+                          <FormLabel className="text-foreground">Email</FormLabel>
                           <FormControl>
                             <Input placeholder="you@example.com" {...field} />
                           </FormControl>
@@ -405,7 +405,7 @@ const Auth = () => {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Password</FormLabel>
+                          <FormLabel className="text-foreground">Password</FormLabel>
                           <FormControl>
                             <Input type="password" placeholder="••••••••" {...field} />
                           </FormControl>
@@ -419,7 +419,7 @@ const Auth = () => {
                       name="confirmPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Confirm Password</FormLabel>
+                          <FormLabel className="text-foreground">Confirm Password</FormLabel>
                           <FormControl>
                             <Input type="password" placeholder="••••••••" {...field} />
                           </FormControl>
@@ -430,7 +430,7 @@ const Auth = () => {
                     
                     <Button 
                       type="submit" 
-                      className="btn-gold w-full" 
+                      className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground" 
                       disabled={isLoading}
                     >
                       {isLoading ? "Creating Account..." : "Create Account"}

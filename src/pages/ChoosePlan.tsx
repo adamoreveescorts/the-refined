@@ -90,7 +90,7 @@ const ChoosePlan = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary mx-auto mb-4"></div>
           <p className="text-foreground">Loading...</p>
         </div>
       </div>
@@ -102,7 +102,7 @@ const ChoosePlan = () => {
       {/* Back to Home Button */}
       <div className="fixed top-4 left-4 z-10">
         <Link to="/">
-          <Button variant="ghost" size="sm" className="flex items-center gap-1 text-foreground hover:text-gold">
+          <Button variant="ghost" size="sm" className="flex items-center gap-1 text-foreground hover:text-secondary">
             <ArrowLeft size={16} />
             Back to Home
           </Button>
@@ -129,7 +129,7 @@ const ChoosePlan = () => {
         ) : (
           <div className="text-center">
             <p className="text-muted-foreground mb-4">Setting up your account...</p>
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold mx-auto"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary mx-auto"></div>
           </div>
         )}
       </div>
