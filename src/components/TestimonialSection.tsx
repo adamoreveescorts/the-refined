@@ -46,7 +46,7 @@ const TestimonialSection = () => {
       <div className="container mx-auto">
         <div className="text-center mb-10">
           <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-gray-100">What Our Users Say</h2>
-          <p className="text-charcoal max-w-2xl mx-auto">
+          <p className="max-w-2xl mx-auto text-gray-100">
             Discover why clients and companions trust our platform
           </p>
         </div>
