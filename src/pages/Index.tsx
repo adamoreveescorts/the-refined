@@ -2,7 +2,6 @@
 import { useEffect } from "react";
 import NavBar from "@/components/NavBar";
 import HeroBanner from "@/components/HeroBanner";
-import FeaturedSection from "@/components/FeaturedSection";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import LocationsSection from "@/components/LocationsSection";
 import TestimonialSection from "@/components/TestimonialSection";
@@ -32,7 +31,7 @@ const Index = () => {
     // Initial check for elements in view on page load
     setTimeout(() => {
       handleScroll();
-    }, isMobile ? 800 : 100); // Longer delay on mobile to allow for escort card animations
+    }, isMobile ? 800 : 100);
 
     // Add scroll event listener
     window.addEventListener('scroll', handleScroll);
@@ -49,18 +48,15 @@ const Index = () => {
       <main className="flex-grow">
         <HeroBanner />
         <div className="animate-on-scroll opacity-0" style={{ transitionDelay: '0.2s' }}>
-          <FeaturedSection />
-        </div>
-        <div className="animate-on-scroll opacity-0" style={{ transitionDelay: '0.3s' }}>
           <WhyChooseUs />
         </div>
-        <div className="animate-on-scroll opacity-0" style={{ transitionDelay: '0.4s' }}>
+        <div className="animate-on-scroll opacity-0" style={{ transitionDelay: '0.3s' }}>
           <LocationsSection />
         </div>
-        <div className="animate-on-scroll opacity-0" style={{ transitionDelay: '0.5s' }}>
+        <div className="animate-on-scroll opacity-0" style={{ transitionDelay: '0.4s' }}>
           <TestimonialSection />
         </div>
-        <div className="animate-on-scroll opacity-0" style={{ transitionDelay: '0.6s' }}>
+        <div className="animate-on-scroll opacity-0" style={{ transitionDelay: '0.5s' }}>
           <CallToAction />
         </div>
       </main>
