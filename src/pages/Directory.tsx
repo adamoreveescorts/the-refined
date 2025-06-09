@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -48,7 +47,7 @@ const EscortCard = ({ escort, index }: { escort: any, index: number }) => {
   };
 
   return (
-    <div className={`group relative bg-white rounded-lg overflow-hidden shadow-md card-hover transition-all duration-500 ${
+    <div className={`group relative bg-card rounded-lg overflow-hidden shadow-md card-hover transition-all duration-500 ${
       isVisible ? 'animate-fade-in opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
     }`}>
       <Link to={`/profile/${escort.id}`}>
@@ -69,7 +68,7 @@ const EscortCard = ({ escort, index }: { escort: any, index: number }) => {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="absolute top-2 right-2 bg-white/50 backdrop-blur-md hover:bg-white/80 rounded-full p-1.5 transition-all duration-300"
+            className="absolute top-2 right-2 bg-background/50 backdrop-blur-md hover:bg-background/80 rounded-full p-1.5 transition-all duration-300"
           >
             <Heart className="h-5 w-5 text-red-500" />
           </Button>
@@ -77,26 +76,26 @@ const EscortCard = ({ escort, index }: { escort: any, index: number }) => {
           {/* Featured badge */}
           {escort.featured && (
             <div className="absolute bottom-2 left-2">
-              <Badge variant="secondary" className="bg-gold text-white">Featured</Badge>
+              <Badge variant="secondary" className="bg-secondary text-secondary-foreground">Featured</Badge>
             </div>
           )}
         </div>
         
         <div className="p-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-medium text-lg text-navy">
+            <h3 className="font-medium text-lg text-foreground">
               {escort.display_name || escort.username || 'Anonymous'}{escort.age && `, ${escort.age}`}
             </h3>
             <div className="flex items-center">
-              <Star className="h-4 w-4 text-gold fill-gold mr-1" />
-              <span className="text-sm font-medium">{escort.rating?.toFixed(1) || '4.5'}</span>
+              <Star className="h-4 w-4 text-secondary fill-secondary mr-1" />
+              <span className="text-sm font-medium text-foreground">{escort.rating?.toFixed(1) || '4.5'}</span>
             </div>
           </div>
           
-          <div className="flex items-center mt-1 text-sm text-charcoal">
+          <div className="flex items-center mt-1 text-sm text-muted-foreground">
             <span>{escort.location || 'Location not specified'}</span>
             {escort.verified && (
-              <Badge variant="outline" className="ml-2 flex items-center border-green-500 text-green-600 text-xs">
+              <Badge variant="outline" className="ml-2 flex items-center border-green-500 text-green-400 text-xs">
                 <Check className="h-3 w-3 mr-1" />
                 Verified
               </Badge>
@@ -105,17 +104,17 @@ const EscortCard = ({ escort, index }: { escort: any, index: number }) => {
           
           <div className="mt-2 flex flex-wrap gap-1">
             {escort.services && (
-              <Badge variant="secondary" className="bg-gray-100 text-charcoal text-xs">
+              <Badge variant="secondary" className="bg-muted text-muted-foreground text-xs">
                 {escort.services.split(',')[0]}
               </Badge>
             )}
           </div>
           
-          <div className="mt-4 pt-2 border-t border-gray-100 flex items-center justify-between">
-            <span className="text-gold font-medium">
+          <div className="mt-4 pt-2 border-t border-border flex items-center justify-between">
+            <span className="text-secondary font-medium">
               {getHourlyRate()}
             </span>
-            <Button size="sm" variant="link" className="text-navy">View Profile</Button>
+            <Button size="sm" variant="link" className="text-foreground">View Profile</Button>
           </div>
         </div>
       </Link>
@@ -160,25 +159,26 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
         </Button>
       </div>
       
-      <div className={`md:block bg-white rounded-lg shadow-md p-4 sticky top-20 transition-all duration-500 ${
+      <div className={`md:block bg-card rounded-lg shadow-md p-4 sticky top-20 transition-all duration-500 ${
         isVisible ? 'animate-fade-in opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
       }`}>
-        <h3 className="font-medium text-lg mb-4">Filters</h3>
+        <h3 className="font-medium text-lg mb-4 text-foreground">Filters</h3>
         
         {/* Location */}
         <div className="mb-6">
-          <label className="block text-sm font-medium mb-2">Location</label>
+          <label className="block text-sm font-medium mb-2 text-foreground">Location</label>
           <Input 
             type="text" 
             placeholder="Enter city or region"
             value={filters.location || ''}
             onChange={(e) => onFilterChange({ ...filters, location: e.target.value })}
+            className="bg-background border-border text-foreground"
           />
         </div>
         
         {/* Gender */}
         <div className="mb-6">
-          <label className="block text-sm font-medium mb-2">Gender</label>
+          <label className="block text-sm font-medium mb-2 text-foreground">Gender</label>
           <div className="space-y-2">
             {['Female', 'Male', 'Non-Binary'].map((gender) => (
               <div key={gender} className="flex items-center">
@@ -189,7 +189,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
                 />
                 <label 
                   htmlFor={`gender-${gender}`} 
-                  className="ml-2 text-sm"
+                  className="ml-2 text-sm text-foreground"
                 >
                   {gender}
                 </label>
@@ -200,7 +200,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
         
         {/* Age Range */}
         <div className="mb-6">
-          <label className="block text-sm font-medium mb-2">
+          <label className="block text-sm font-medium mb-2 text-foreground">
             Age Range: {ageRange[0]} - {ageRange[1]}
           </label>
           <Slider 
@@ -216,7 +216,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
         
         {/* Price Range */}
         <div className="mb-6">
-          <label className="block text-sm font-medium mb-2">
+          <label className="block text-sm font-medium mb-2 text-foreground">
             Price Range: ${priceRange[0]} - ${priceRange[1]}
           </label>
           <Slider 
@@ -232,7 +232,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
         
         {/* Services */}
         <div className="mb-6">
-          <label className="block text-sm font-medium mb-2">Services</label>
+          <label className="block text-sm font-medium mb-2 text-foreground">Services</label>
           <div className="space-y-2">
             {['Dinner Date', 'Travel Companion', 'Event Escort', 'Overnight'].map((service) => (
               <div key={service} className="flex items-center">
@@ -249,7 +249,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
                 />
                 <label 
                   htmlFor={`service-${service}`} 
-                  className="ml-2 text-sm"
+                  className="ml-2 text-sm text-foreground"
                 >
                   {service}
                 </label>
@@ -266,7 +266,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
               checked={filters.verifiedOnly}
               onCheckedChange={(checked) => onFilterChange({ ...filters, verifiedOnly: !!checked })}
             />
-            <label htmlFor="verified" className="ml-2 text-sm">Verified Only</label>
+            <label htmlFor="verified" className="ml-2 text-sm text-foreground">Verified Only</label>
           </div>
         </div>
         
@@ -413,12 +413,12 @@ const Directory = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-background">
         <NavBar />
-        <main className="flex-grow bg-gray-50 py-8">
+        <main className="flex-grow py-8">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-center py-20">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary"></div>
             </div>
           </div>
         </main>
@@ -428,30 +428,30 @@ const Directory = () => {
   }
   
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <NavBar />
       
       {/* Page Content */}
-      <main className="flex-grow bg-gray-50 py-8">
+      <main className="flex-grow py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <header className={`mb-8 transition-all duration-500 ${
             headerVisible ? 'animate-fade-in opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
           }`}>
-            <h1 className="text-3xl sm:text-4xl font-bold text-navy">Escort Directory</h1>
-            <p className="text-charcoal mt-2">
+            <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Escort Directory</h1>
+            <p className="text-muted-foreground mt-2">
               Discover premium companions tailored to your preferences
             </p>
           </header>
           
           {/* Search Bar */}
-          <div className={`mb-8 flex items-center bg-white rounded-lg shadow-sm p-2 max-w-2xl transition-all duration-500 ${
+          <div className={`mb-8 flex items-center bg-card rounded-lg shadow-sm p-2 max-w-2xl transition-all duration-500 ${
             searchVisible ? 'animate-fade-in opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
           }`}>
-            <Search className="h-5 w-5 text-gray-400 mx-2" />
+            <Search className="h-5 w-5 text-muted-foreground mx-2" />
             <Input 
               type="text" 
               placeholder="Search by name, location, or service..."
-              className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-transparent"
+              className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-transparent bg-card text-foreground"
               value={filters.searchQuery}
               onChange={(e) => setFilters({ ...filters, searchQuery: e.target.value })}
             />
@@ -466,13 +466,13 @@ const Directory = () => {
             {/* Escort Grid */}
             <div className="flex-1">
               <div className="flex items-center justify-between mb-6">
-                <p className="text-sm text-charcoal">
+                <p className="text-sm text-muted-foreground">
                   {filteredEscorts.length} escorts found - Page {currentPage} of {totalPages}
                 </p>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-charcoal">Sort by:</span>
+                  <span className="text-sm text-muted-foreground">Sort by:</span>
                   <select 
-                    className="text-sm border rounded-md p-1 bg-white"
+                    className="text-sm border border-border rounded-md p-1 bg-card text-foreground"
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
                   >
@@ -490,9 +490,9 @@ const Directory = () => {
                   ))}
                 </div>
               ) : (
-                <div className="bg-white rounded-lg p-8 text-center animate-fade-in">
-                  <h3 className="text-lg font-medium mb-2">No escorts found</h3>
-                  <p className="text-charcoal">Try adjusting your filters or search query</p>
+                <div className="bg-card rounded-lg p-8 text-center animate-fade-in">
+                  <h3 className="text-lg font-medium mb-2 text-foreground">No escorts found</h3>
+                  <p className="text-muted-foreground">Try adjusting your filters or search query</p>
                 </div>
               )}
               
