@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -58,9 +57,6 @@ const NavBar = () => {
               </Link>
               <Link to="/faq" className="px-3 py-2 text-sm font-medium text-foreground hover:text-gold transition-colors">
                 FAQ
-              </Link>
-              <Link to="/blog" className="px-3 py-2 text-sm font-medium text-foreground hover:text-gold transition-colors">
-                Blog
               </Link>
               <Link to="/contact" className="px-3 py-2 text-sm font-medium text-foreground hover:text-gold transition-colors">
                 Contact
@@ -125,9 +121,6 @@ const NavBar = () => {
           </Link>
           <Link to="/faq" className="block px-3 py-2 text-base font-medium text-foreground hover:text-gold transition-colors">
             FAQ
-          </Link>
-          <Link to="/blog" className="block px-3 py-2 text-base font-medium text-foreground hover:text-gold transition-colors">
-            Blog
           </Link>
           <Link to="/contact" className="block px-3 py-2 text-base font-medium text-foreground hover:text-gold transition-colors">
             Contact

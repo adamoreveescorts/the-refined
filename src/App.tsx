@@ -11,7 +11,6 @@ import UserProfilePage from "./pages/UserProfilePage";
 import MessagesPage from "./pages/MessagesPage";
 import About from "./pages/About";
 import FAQ from "./pages/FAQ";
-import Blog from "./pages/Blog";
 import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
 import ChoosePlan from "./pages/ChoosePlan";
@@ -36,7 +35,6 @@ const App = () => (
           <Route path="/messages" element={<MessagesPage />} />
           <Route path="/about" element={<About />} />
           <Route path="/faq" element={<FAQ />} />
-          <Route path="/blog" element={<Blog />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/choose-plan" element={<ChoosePlan />} />
