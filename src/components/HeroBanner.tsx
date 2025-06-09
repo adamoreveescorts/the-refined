@@ -180,8 +180,8 @@ const HeroBanner = () => {
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <CarouselPrevious className="text-white border-white/50 hover:bg-white/20" />
-                <CarouselNext className="text-white border-white/50 hover:bg-white/20" />
+                <CarouselPrevious className="hidden md:flex text-white border-white/50 hover:bg-white/20" />
+                <CarouselNext className="hidden md:flex text-white border-white/50 hover:bg-white/20" />
               </Carousel>
             </div>
             <div className="text-center mt-8">
