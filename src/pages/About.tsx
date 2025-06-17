@@ -52,7 +52,7 @@ const About = () => {
               <div>
                 <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-6">Our Story</h2>
                 <p className="text-muted-foreground mb-4">
-                  Founded in 2020, Adam or Eve Escorts emerged from a vision to elevate the standards of escort services worldwide. 
+                  Founded in 2024, Adam or Eve Escorts emerged from a vision to elevate the standards of escort services worldwide. 
                   We recognized a gap in the market for a platform that truly values sophistication, safety, and mutual respect.
                 </p>
                 <p className="text-muted-foreground mb-4">
