@@ -90,7 +90,7 @@ const HeroBanner = () => {
         .eq('is_active', true)
         .eq('featured', true)
         .order('rating', { ascending: false })
-        .limit(12); // Reduced to 12 for better layout
+        .limit(18); // Increased to 18 for 3 rows of 6
 
       if (error) throw error;
       setFeaturedEscorts(data || []);
@@ -103,7 +103,7 @@ const HeroBanner = () => {
   };
 
   return (
-    <div className="relative h-[100vh] min-h-[700px] w-full overflow-hidden flex flex-col">
+    <div className="relative min-h-screen w-full overflow-hidden flex flex-col">
       {/* Background with color placeholder while image loads */}
       <div 
         className={`absolute inset-0 bg-navy transition-opacity duration-500 ${bgLoaded ? 'opacity-0' : 'opacity-100'}`}
@@ -121,9 +121,9 @@ const HeroBanner = () => {
       </div>
       
       {/* Content */}
-      <div className="relative flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-8 z-10">
-        {/* Main Hero Content - Takes up more space */}
-        <div className="text-center mb-6 flex-1 flex flex-col justify-center">
+      <div className="relative flex-1 flex flex-col z-10 py-8">
+        {/* Main Hero Content - Top section */}
+        <div className="flex-none text-center px-4 sm:px-6 lg:px-8 pt-16 pb-8">
           <h1 className={`text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4 transition-all duration-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
             Discover Elite Companionship
           </h1>
@@ -146,33 +146,47 @@ const HeroBanner = () => {
           </div>
         </div>
 
-        {/* Featured Escorts Grid - Compact at bottom */}
+        {/* Featured Escorts Grid - Bottom section with proper spacing */}
         {!loading && featuredEscorts.length > 0 && (
-          <div className={`transition-all duration-700 delay-300 pb-8 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
-            <h2 className="text-xl sm:text-2xl font-bold text-white text-center mb-4">
-              Featured Escorts
-            </h2>
-            <div className="max-w-6xl mx-auto px-4">
-              {/* 2 Rows Grid Layout - More compact */}
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 mb-2">
-                {featuredEscorts.slice(0, 6).map((escort) => (
-                  <EscortCard key={escort.id} escort={escort} />
-                ))}
-              </div>
+          <div className={`flex-1 flex flex-col justify-end px-4 sm:px-6 lg:px-8 pb-8 transition-all duration-700 delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+            <div className="max-w-7xl mx-auto w-full">
+              <h2 className="text-xl sm:text-2xl font-bold text-white text-center mb-6">
+                Featured Escorts
+              </h2>
               
-              {featuredEscorts.length > 6 && (
+              {/* 3 Rows Grid Layout */}
+              <div className="space-y-3">
+                {/* Row 1 */}
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                  {featuredEscorts.slice(6, 12).map((escort) => (
+                  {featuredEscorts.slice(0, 6).map((escort) => (
                     <EscortCard key={escort.id} escort={escort} />
                   ))}
                 </div>
-              )}
-            </div>
-            
-            <div className="text-center mt-4">
-              <Link to="/directory">
-                <Button className="btn-gold px-6 py-2">View All Escorts</Button>
-              </Link>
+                
+                {/* Row 2 */}
+                {featuredEscorts.length > 6 && (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                    {featuredEscorts.slice(6, 12).map((escort) => (
+                      <EscortCard key={escort.id} escort={escort} />
+                    ))}
+                  </div>
+                )}
+                
+                {/* Row 3 */}
+                {featuredEscorts.length > 12 && (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                    {featuredEscorts.slice(12, 18).map((escort) => (
+                      <EscortCard key={escort.id} escort={escort} />
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              <div className="text-center mt-6">
+                <Link to="/directory">
+                  <Button className="btn-gold px-6 py-2">View All Escorts</Button>
+                </Link>
+              </div>
             </div>
           </div>
         )}
