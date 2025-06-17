@@ -122,13 +122,13 @@ serve(async (req) => {
       const now = new Date();
       const trialEnd = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000)); // 7 days from now
 
-      // Update user to Trial tier with premium features enabled
+      // Update user to Platinum tier with trial features enabled - use 'Platinum' as the tier
       const { error: updateError } = await supabaseClient.from("subscribers").upsert({
         email: user.email,
         user_id: user.id,
         stripe_customer_id: null,
         subscribed: true,
-        subscription_tier: 'Trial',
+        subscription_tier: 'Platinum', // Use Platinum instead of Trial
         subscription_type: 'trial',
         plan_duration: selectedTier.duration,
         plan_price: 0,
@@ -167,7 +167,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({ 
         success: true, 
         message: "Free trial activated with full premium features",
-        tier: 'Trial',
+        tier: 'Platinum',
         trial_end: trialEnd.toISOString()
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
