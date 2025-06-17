@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
@@ -122,14 +121,14 @@ serve(async (req) => {
       const now = new Date();
       const trialEnd = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000)); // 7 days from now
 
-      // Update user to Platinum tier with trial features enabled - use 'Platinum' as the tier
+      // Update user to Platinum tier with trial features enabled - use 'free' as subscription_type
       const { error: updateError } = await supabaseClient.from("subscribers").upsert({
         email: user.email,
         user_id: user.id,
         stripe_customer_id: null,
         subscribed: true,
-        subscription_tier: 'Platinum', // Use Platinum instead of Trial
-        subscription_type: 'trial',
+        subscription_tier: 'Platinum', // Use Platinum for trial with premium features
+        subscription_type: 'free', // Use 'free' instead of 'trial' to satisfy DB constraint
         plan_duration: selectedTier.duration,
         plan_price: 0,
         expires_at: trialEnd.toISOString(),
