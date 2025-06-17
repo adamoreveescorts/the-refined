@@ -53,14 +53,71 @@ serve(async (req) => {
 
     logStep("Current subscription record", currentSub);
 
-    // Check if subscription has expired
+    // Check if subscription or trial has expired
     const now = new Date();
     let isExpired = false;
+    let isTrialExpired = false;
     
     if (currentSub?.expires_at) {
       const expiresAt = new Date(currentSub.expires_at);
       isExpired = now > expiresAt;
       logStep("Expiration check", { expiresAt, now, isExpired });
+    }
+
+    if (currentSub?.trial_end_date && currentSub.is_trial_active) {
+      const trialEnd = new Date(currentSub.trial_end_date);
+      isTrialExpired = now > trialEnd;
+      logStep("Trial expiration check", { trialEnd, now, isTrialExpired });
+    }
+
+    // If trial expired, deactivate it and revert to Basic
+    if (isTrialExpired && currentSub?.is_trial_active) {
+      logStep("Trial expired, reverting to Basic");
+      await supabaseClient.from("subscribers").update({
+        subscription_tier: 'Basic',
+        subscribed: false,
+        subscription_type: 'free',
+        is_trial_active: false,
+        is_featured: false,
+        photo_verified: false,
+        expires_at: null,
+        subscription_end: null,
+        updated_at: new Date().toISOString(),
+      }).eq('email', user.email);
+
+      return new Response(JSON.stringify({
+        subscribed: false,
+        subscription_tier: 'Basic',
+        subscription_end: null,
+        expires_at: null,
+        is_featured: false,
+        photo_verified: false,
+        subscription_type: 'free',
+        is_trial_active: false,
+        trial_expired: true
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    // If current subscription is trial and still active, return trial info
+    if (currentSub?.is_trial_active && !isTrialExpired) {
+      logStep("Active trial found");
+      return new Response(JSON.stringify({
+        subscribed: true,
+        subscription_tier: 'Trial',
+        subscription_end: currentSub.trial_end_date,
+        expires_at: currentSub.trial_end_date,
+        is_featured: false,
+        photo_verified: false,
+        subscription_type: 'trial',
+        is_trial_active: true,
+        trial_days_remaining: Math.ceil((new Date(currentSub.trial_end_date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
     }
 
     // If expired or no subscription, check Stripe for any payments
@@ -80,6 +137,7 @@ serve(async (req) => {
       expires_at: null,
       is_featured: false,
       photo_verified: false,
+      is_trial_active: false,
       updated_at: new Date().toISOString(),
     };
 
@@ -191,7 +249,9 @@ serve(async (req) => {
       expires_at: subscriptionData.expires_at,
       is_featured: subscriptionData.is_featured,
       photo_verified: subscriptionData.photo_verified,
-      subscription_type: subscriptionData.subscription_type
+      subscription_type: subscriptionData.subscription_type,
+      is_trial_active: subscriptionData.is_trial_active,
+      has_used_trial: currentSub?.trial_start_date ? true : false
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

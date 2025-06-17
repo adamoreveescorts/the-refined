@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, CreditCard, User, Building2, RefreshCw, Crown, Shield } from "lucide-react";
+import { ArrowLeft, CreditCard, User, Building2, RefreshCw, Crown, Shield, Clock } from "lucide-react";
 import { toast } from "sonner";
 import SubscriptionTierSelector from "@/components/SubscriptionTierSelector";
 
@@ -87,13 +87,20 @@ const PaymentTest = () => {
       if (tier.id === 'basic') {
         toast.success("Basic plan activated");
         await checkSubscriptionStatus();
+      } else if (tier.id === 'trial') {
+        toast.success("Free trial activated! You have 7 days to explore premium features.");
+        await checkSubscriptionStatus();
       } else {
         window.open(data.url, '_blank');
         toast.success("Redirected to Stripe checkout.");
       }
     } catch (error: any) {
       console.error("Payment error:", error);
-      toast.error(error.message || "Failed to create checkout session");
+      if (error.message === "Trial already used") {
+        toast.error("You have already used your free trial. Please select a different plan.");
+      } else {
+        toast.error(error.message || "Failed to create checkout session");
+      }
     }
   };
 
@@ -124,7 +131,7 @@ const PaymentTest = () => {
             Back to Home
           </Link>
           <h1 className="text-3xl font-serif text-gray-900 mb-2">Subscription Testing</h1>
-          <p className="text-gray-600">Test the multi-tier subscription system</p>
+          <p className="text-gray-600">Test the multi-tier subscription system with free trial</p>
         </div>
 
         <div className="grid gap-6">
@@ -173,18 +180,31 @@ const PaymentTest = () => {
                       <div className="flex items-center justify-between">
                         <span>Subscription Tier:</span>
                         <Badge 
-                          variant={subscription.subscription_tier === 'Platinum' ? "default" : "outline"}
-                          className={subscription.subscription_tier === 'Platinum' ? "bg-gold text-white" : ""}
+                          variant={subscription.subscription_tier === 'Platinum' || subscription.subscription_tier === 'Trial' ? "default" : "outline"}
+                          className={subscription.subscription_tier === 'Platinum' ? "bg-gold text-white" : subscription.subscription_tier === 'Trial' ? "bg-blue-500 text-white" : ""}
                         >
                           {subscription.subscription_tier === 'Platinum' && <Crown className="h-3 w-3 mr-1" />}
+                          {subscription.subscription_tier === 'Trial' && <Clock className="h-3 w-3 mr-1" />}
                           {subscription.subscription_tier === 'Basic' && <Shield className="h-3 w-3 mr-1" />}
                           {subscription.subscription_tier}
                         </Badge>
                       </div>
+                      {subscription.is_trial_active && subscription.trial_days_remaining && (
+                        <div className="flex items-center justify-between">
+                          <span>Trial Days Remaining:</span>
+                          <Badge className="bg-blue-500 text-white">{subscription.trial_days_remaining} days</Badge>
+                        </div>
+                      )}
                       {subscription.expires_at && (
                         <div className="flex items-center justify-between">
                           <span>Expires:</span>
                           <span className="text-sm">{new Date(subscription.expires_at).toLocaleDateString()}</span>
+                        </div>
+                      )}
+                      {subscription.has_used_trial && (
+                        <div className="flex items-center justify-between">
+                          <span>Trial Used:</span>
+                          <Badge variant="outline">Yes</Badge>
                         </div>
                       )}
                       {subscription.is_featured && (
@@ -222,7 +242,7 @@ const PaymentTest = () => {
                 <CardHeader>
                   <CardTitle>Test Subscription Plans</CardTitle>
                   <CardDescription>
-                    Test the different subscription tiers and payment flows
+                    Test the different subscription tiers including the new free trial
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -238,8 +258,10 @@ const PaymentTest = () => {
                       <div className="mt-6">
                         <SubscriptionTierSelector 
                           onTierSelect={handleTierSelect}
-                          selectedTier={subscription?.subscription_tier === 'Platinum' ? 'platinum_monthly' : 'basic'}
+                          selectedTier={subscription?.subscription_tier === 'Platinum' ? 'platinum_monthly' : subscription?.subscription_tier === 'Trial' ? 'trial' : 'basic'}
+                          currentTier={subscription?.subscription_tier}
                           role={profile?.role || 'escort'}
+                          hasUsedTrial={subscription?.has_used_trial}
                         />
                       </div>
                     )}
@@ -257,6 +279,7 @@ const PaymentTest = () => {
                     <div>
                       <h4 className="font-medium mb-2">Available Plans:</h4>
                       <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
+                        <li><strong>Free Trial:</strong> 7 days with limited premium features (one-time only)</li>
                         <li><strong>Basic (Free):</strong> Default plan with basic features</li>
                         <li><strong>Platinum Weekly:</strong> $15 for 1 week with premium features</li>
                         <li><strong>Platinum Monthly:</strong> $79 for 1 month with premium features</li>
@@ -266,12 +289,11 @@ const PaymentTest = () => {
                     </div>
                     
                     <div>
-                      <h4 className="font-medium mb-2">Premium Features:</h4>
+                      <h4 className="font-medium mb-2">Trial vs Premium Features:</h4>
                       <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
-                        <li>Photo verification capability</li>
-                        <li>Featured escort status</li>
-                        <li>Enhanced profile visibility</li>
-                        <li>Priority search ranking</li>
+                        <li><strong>Trial:</strong> Limited photo uploads (5), basic messaging, standard visibility</li>
+                        <li><strong>Premium:</strong> Photo verification, featured status, priority ranking, unlimited photos</li>
+                        <li><strong>Basic:</strong> Very limited features (3 photos), minimal visibility</li>
                       </ul>
                     </div>
 
@@ -279,10 +301,11 @@ const PaymentTest = () => {
                       <h4 className="font-medium mb-2">How to test:</h4>
                       <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
                         <li>Click "Show Tier Selector" above</li>
-                        <li>Select any plan to test the flow</li>
+                        <li>Start with the Free Trial (if not used before)</li>
                         <li>For paid plans, use Stripe test card: 4242 4242 4242 4242</li>
                         <li>Use any future date and CVC for test payments</li>
                         <li>Return here and refresh to see updated status</li>
+                        <li>Trial will automatically expire after 7 days</li>
                       </ol>
                     </div>
                   </div>

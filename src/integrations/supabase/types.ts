@@ -220,6 +220,7 @@ export type Database = {
           expires_at: string | null
           id: string
           is_featured: boolean | null
+          is_trial_active: boolean | null
           photo_verified: boolean | null
           plan_duration: string | null
           plan_price: number | null
@@ -228,6 +229,8 @@ export type Database = {
           subscription_end: string | null
           subscription_tier: string | null
           subscription_type: string | null
+          trial_end_date: string | null
+          trial_start_date: string | null
           updated_at: string
           user_id: string | null
         }
@@ -237,6 +240,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_featured?: boolean | null
+          is_trial_active?: boolean | null
           photo_verified?: boolean | null
           plan_duration?: string | null
           plan_price?: number | null
@@ -245,6 +249,8 @@ export type Database = {
           subscription_end?: string | null
           subscription_tier?: string | null
           subscription_type?: string | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -254,6 +260,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_featured?: boolean | null
+          is_trial_active?: boolean | null
           photo_verified?: boolean | null
           plan_duration?: string | null
           plan_price?: number | null
@@ -262,6 +269,8 @@ export type Database = {
           subscription_end?: string | null
           subscription_tier?: string | null
           subscription_type?: string | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
           updated_at?: string
           user_id?: string | null
         }

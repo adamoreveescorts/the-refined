@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
@@ -14,6 +15,7 @@ const logStep = (step: string, details?: any) => {
 
 // Define subscription tiers
 const SUBSCRIPTION_TIERS = {
+  trial: { name: "Free Trial", price: 0, duration: "7 Days", durationDays: 7 },
   basic: { name: "Basic Plan", price: 0, duration: "Forever", durationDays: 0 },
   platinum_weekly: { name: "Platinum Weekly", price: 1500, duration: "1 Week", durationDays: 7 },
   platinum_monthly: { name: "Platinum Monthly", price: 7900, duration: "1 Month", durationDays: 30 },
@@ -100,7 +102,79 @@ serve(async (req) => {
     const selectedTier = SUBSCRIPTION_TIERS[tier as keyof typeof SUBSCRIPTION_TIERS];
     logStep("Tier selected", { tier, selectedTier });
 
-    // Handle free Basic tier
+    // Handle free tiers (trial and basic)
+    if (tier === 'trial') {
+      // Check if user has already used trial
+      const { data: existingSubscriber } = await supabaseClient
+        .from("subscribers")
+        .select("trial_start_date")
+        .eq("email", user.email)
+        .single();
+
+      if (existingSubscriber?.trial_start_date) {
+        logStep("ERROR: User has already used trial");
+        return new Response(JSON.stringify({ error: "Trial already used" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        });
+      }
+
+      const now = new Date();
+      const trialEnd = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000)); // 7 days from now
+
+      // Update user to Trial tier
+      const { error: updateError } = await supabaseClient.from("subscribers").upsert({
+        email: user.email,
+        user_id: user.id,
+        stripe_customer_id: null,
+        subscribed: true,
+        subscription_tier: 'Trial',
+        subscription_type: 'trial',
+        plan_duration: selectedTier.duration,
+        plan_price: 0,
+        expires_at: trialEnd.toISOString(),
+        subscription_end: trialEnd.toISOString(),
+        trial_start_date: now.toISOString(),
+        trial_end_date: trialEnd.toISOString(),
+        is_trial_active: true,
+        is_featured: false,
+        photo_verified: false,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'email' });
+
+      if (updateError) {
+        logStep("ERROR: Failed to update subscriber record", { error: updateError });
+        return new Response(JSON.stringify({ error: "Failed to update subscription" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500,
+        });
+      }
+
+      // Update user profile payment status
+      const { error: profileError } = await supabaseClient
+        .from('profiles')
+        .update({ 
+          payment_status: 'completed',
+          is_active: true 
+        })
+        .eq('id', user.id);
+
+      if (profileError) {
+        logStep("ERROR: Failed to update profile", { error: profileError });
+      }
+
+      logStep("Trial tier assigned", { userId: user.id, trialEnd });
+      return new Response(JSON.stringify({ 
+        success: true, 
+        message: "Free trial activated",
+        tier: 'Trial',
+        trial_end: trialEnd.toISOString()
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
     if (tier === 'basic') {
       // Update user to Basic tier directly
       const { error: updateError } = await supabaseClient.from("subscribers").upsert({
@@ -115,6 +189,7 @@ serve(async (req) => {
         expires_at: null,
         is_featured: false,
         photo_verified: false,
+        is_trial_active: false,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'email' });
 

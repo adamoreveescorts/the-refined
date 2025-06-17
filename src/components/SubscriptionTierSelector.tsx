@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Star, Crown, Shield } from "lucide-react";
+import { CheckCircle, Star, Crown, Shield, Clock } from "lucide-react";
 
 export interface SubscriptionTier {
   id: string;
@@ -13,9 +13,25 @@ export interface SubscriptionTier {
   durationDays: number;
   features: string[];
   recommended?: boolean;
+  trial?: boolean;
 }
 
 const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
+  {
+    id: "trial",
+    name: "Free Trial",
+    price: 0,
+    duration: "7 Days",
+    durationDays: 7,
+    trial: true,
+    features: [
+      "Basic profile listing",
+      "Limited photo uploads (5 photos)",
+      "Standard search visibility",
+      "Basic messaging",
+      "Trial period - 7 days only"
+    ]
+  },
   {
     id: "basic",
     name: "Basic",
@@ -24,7 +40,8 @@ const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
     durationDays: 0,
     features: [
       "Basic profile listing",
-      "Standard search visibility",
+      "Limited photo uploads (3 photos)",
+      "Minimal search visibility",
       "Basic messaging"
     ]
   },
@@ -39,7 +56,8 @@ const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
       "Featured escort status",
       "Enhanced profile visibility",
       "Priority search ranking",
-      "Premium messaging features"
+      "Premium messaging features",
+      "Unlimited photo uploads"
     ]
   },
   {
@@ -53,7 +71,8 @@ const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
       "Featured escort status",
       "Enhanced profile visibility",
       "Priority search ranking",
-      "Premium messaging features"
+      "Premium messaging features",
+      "Unlimited photo uploads"
     ],
     recommended: true
   },
@@ -68,7 +87,8 @@ const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
       "Featured escort status",
       "Enhanced profile visibility",
       "Priority search ranking",
-      "Premium messaging features"
+      "Premium messaging features",
+      "Unlimited photo uploads"
     ]
   },
   {
@@ -82,7 +102,8 @@ const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
       "Featured escort status",
       "Enhanced profile visibility",
       "Priority search ranking",
-      "Premium messaging features"
+      "Premium messaging features",
+      "Unlimited photo uploads"
     ]
   }
 ];
@@ -92,9 +113,10 @@ interface SubscriptionTierSelectorProps {
   selectedTier?: string;
   currentTier?: string;
   role: "escort" | "agency";
+  hasUsedTrial?: boolean;
 }
 
-const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, role }: SubscriptionTierSelectorProps) => {
+const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, role, hasUsedTrial = false }: SubscriptionTierSelectorProps) => {
   const [loading, setLoading] = useState<string | null>(null);
 
   const handleSelectTier = async (tier: SubscriptionTier) => {
@@ -110,14 +132,22 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, rol
 
   const getTierIcon = (tierId: string) => {
     if (tierId === "basic") return <Shield className="h-6 w-6" />;
+    if (tierId === "trial") return <Clock className="h-6 w-6 text-blue-500" />;
     return <Crown className="h-6 w-6 text-gold" />;
   };
 
   const isCurrentTier = (tierId: string) => {
     if (currentTier === 'Basic' && tierId === 'basic') return true;
+    if (currentTier === 'Trial' && tierId === 'trial') return true;
     if (currentTier === 'Platinum' && tierId.startsWith('platinum_')) return true;
     return false;
   };
+
+  // Filter out trial tier if user has already used it
+  const availableTiers = SUBSCRIPTION_TIERS.filter(tier => {
+    if (tier.trial && hasUsedTrial) return false;
+    return true;
+  });
 
   return (
     <div className="space-y-6">
@@ -126,12 +156,12 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, rol
           Choose Your {role === "escort" ? "Escort" : "Agency"} Plan
         </h2>
         <p className="text-gray-600">
-          Select the plan that best fits your needs. Upgrade or downgrade anytime.
+          Start with a free trial, then select the plan that best fits your needs.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {SUBSCRIPTION_TIERS.map((tier) => {
+        {availableTiers.map((tier) => {
           const isCurrent = isCurrentTier(tier.id);
           
           return (
@@ -140,9 +170,20 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, rol
               className={`relative transition-all duration-200 hover:shadow-lg ${
                 selectedTier === tier.id ? 'ring-2 ring-gold' : ''
               } ${tier.recommended ? 'border-gold' : ''} ${
+                tier.trial ? 'border-blue-500' : ''
+              } ${
                 isCurrent ? 'ring-2 ring-green-500 bg-green-50' : ''
               }`}
             >
+              {tier.trial && !hasUsedTrial && !isCurrent && (
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                  <Badge className="bg-blue-500 text-white px-3 py-1">
+                    <Clock className="h-3 w-3 mr-1" />
+                    Free Trial
+                  </Badge>
+                </div>
+              )}
+              
               {tier.recommended && !isCurrent && (
                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                   <Badge className="bg-gold text-white px-3 py-1">
@@ -190,13 +231,16 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, rol
                   className={`w-full ${
                     isCurrent 
                       ? "bg-green-500 hover:bg-green-500 cursor-not-allowed" 
-                      : tier.id === "basic" 
-                        ? "bg-gray-600 hover:bg-gray-700" 
-                        : "btn-gold"
+                      : tier.trial
+                        ? "bg-blue-500 hover:bg-blue-600"
+                        : tier.id === "basic" 
+                          ? "bg-gray-600 hover:bg-gray-700" 
+                          : "btn-gold"
                   }`}
                 >
                   {loading === tier.id ? "Processing..." : 
                    isCurrent ? "Your Current Plan" :
+                   tier.trial ? "Start Free Trial" :
                    tier.price === 0 ? "Select Free Plan" : "Upgrade to Platinum"}
                 </Button>
               </CardContent>
