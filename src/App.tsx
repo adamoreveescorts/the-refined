@@ -38,7 +38,7 @@ function App() {
   return (
     <Router>
       <QueryProvider>
-        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <ThemeProvider>
           <ScrollToTop />
           <Routes>
             <Route path="/" element={<Index />} />
