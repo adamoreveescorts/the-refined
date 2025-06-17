@@ -25,10 +25,12 @@ const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
     durationDays: 7,
     trial: true,
     features: [
-      "Basic profile listing",
-      "Limited photo uploads (5 photos)",
-      "Standard search visibility",
-      "Basic messaging",
+      "Photo verification",
+      "Featured escort status",
+      "Enhanced profile visibility",
+      "Priority search ranking",
+      "Premium messaging features",
+      "Unlimited photo uploads",
       "Trial period - 7 days only"
     ]
   },
@@ -156,7 +158,7 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, rol
           Choose Your {role === "escort" ? "Escort" : "Agency"} Plan
         </h2>
         <p className="text-muted-foreground">
-          Start with a free trial, then select the plan that best fits your needs.
+          Start with a free trial to experience all premium features, then select the plan that best fits your needs.
         </p>
       </div>
 

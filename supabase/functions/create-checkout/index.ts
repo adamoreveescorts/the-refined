@@ -122,7 +122,7 @@ serve(async (req) => {
       const now = new Date();
       const trialEnd = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000)); // 7 days from now
 
-      // Update user to Trial tier
+      // Update user to Trial tier with premium features enabled
       const { error: updateError } = await supabaseClient.from("subscribers").upsert({
         email: user.email,
         user_id: user.id,
@@ -137,8 +137,8 @@ serve(async (req) => {
         trial_start_date: now.toISOString(),
         trial_end_date: trialEnd.toISOString(),
         is_trial_active: true,
-        is_featured: false,
-        photo_verified: false,
+        is_featured: true, // Enable premium feature
+        photo_verified: true, // Enable premium feature
         updated_at: new Date().toISOString(),
       }, { onConflict: 'email' });
 
@@ -163,10 +163,10 @@ serve(async (req) => {
         logStep("ERROR: Failed to update profile", { error: profileError });
       }
 
-      logStep("Trial tier assigned", { userId: user.id, trialEnd });
+      logStep("Trial tier assigned with premium features", { userId: user.id, trialEnd });
       return new Response(JSON.stringify({ 
         success: true, 
-        message: "Free trial activated",
+        message: "Free trial activated with full premium features",
         tier: 'Trial',
         trial_end: trialEnd.toISOString()
       }), {

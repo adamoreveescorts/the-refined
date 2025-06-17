@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -280,7 +279,7 @@ const PaymentTest = () => {
                     <div>
                       <h4 className="font-medium mb-2 text-foreground">Available Plans:</h4>
                       <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                        <li><strong>Free Trial:</strong> 7 days with limited premium features (one-time only)</li>
+                        <li><strong>Free Trial:</strong> 7 days with FULL premium features (one-time only)</li>
                         <li><strong>Basic (Free):</strong> Default plan with basic features</li>
                         <li><strong>Platinum Weekly:</strong> $15 for 1 week with premium features</li>
                         <li><strong>Platinum Monthly:</strong> $79 for 1 month with premium features</li>
@@ -292,8 +291,8 @@ const PaymentTest = () => {
                     <div>
                       <h4 className="font-medium mb-2 text-foreground">Trial vs Premium Features:</h4>
                       <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                        <li><strong>Trial:</strong> Limited photo uploads (5), basic messaging, standard visibility</li>
-                        <li><strong>Premium:</strong> Photo verification, featured status, priority ranking, unlimited photos</li>
+                        <li><strong>Trial:</strong> FULL premium features - photo verification, featured status, priority ranking, unlimited photos</li>
+                        <li><strong>Premium:</strong> Same as trial - photo verification, featured status, priority ranking, unlimited photos</li>
                         <li><strong>Basic:</strong> Very limited features (3 photos), minimal visibility</li>
                       </ul>
                     </div>

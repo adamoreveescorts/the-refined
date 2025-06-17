@@ -101,16 +101,16 @@ serve(async (req) => {
       });
     }
 
-    // If current subscription is trial and still active, return trial info
+    // If current subscription is trial and still active, return trial info with premium features
     if (currentSub?.is_trial_active && !isTrialExpired) {
-      logStep("Active trial found");
+      logStep("Active trial found with premium features");
       return new Response(JSON.stringify({
         subscribed: true,
         subscription_tier: 'Trial',
         subscription_end: currentSub.trial_end_date,
         expires_at: currentSub.trial_end_date,
-        is_featured: false,
-        photo_verified: false,
+        is_featured: true, // Premium feature enabled during trial
+        photo_verified: true, // Premium feature enabled during trial
         subscription_type: 'trial',
         is_trial_active: true,
         trial_days_remaining: Math.ceil((new Date(currentSub.trial_end_date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
