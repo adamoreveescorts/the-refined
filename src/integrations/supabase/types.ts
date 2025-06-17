@@ -93,6 +93,48 @@ export type Database = {
           },
         ]
       }
+      photo_verifications: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          id: string
+          profile_photo_url: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submitted_at: string
+          updated_at: string
+          user_id: string
+          verification_photo_url: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          profile_photo_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+          user_id: string
+          verification_photo_url: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          profile_photo_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+          user_id?: string
+          verification_photo_url?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: string | null

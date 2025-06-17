@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { UserRound, Calendar, Mail, Shield, User, CreditCard, Crown, Clock } from "lucide-react";
 import SubscriptionTierSelector from "@/components/SubscriptionTierSelector";
+import VerificationButton from "@/components/verification/VerificationButton";
 
 interface UserProfile {
   id: string;
@@ -351,6 +351,19 @@ const UserProfilePage = () => {
                               </div>
                             )}
                           </div>
+                        </div>
+                      </div>
+
+                      {/* Photo Verification Section */}
+                      <div className="flex items-start">
+                        <Shield className="h-5 w-5 mr-2 text-muted-foreground" />
+                        <div className="w-full">
+                          <p className="text-sm text-muted-foreground mb-2">Photo Verification</p>
+                          <VerificationButton 
+                            userRole={profile?.role || ''} 
+                            subscription={subscription} 
+                            userId={profile?.id || ''} 
+                          />
                         </div>
                       </div>
 

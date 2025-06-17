@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,10 +9,11 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Users, UserCheck, UserX, Star, Eye, MessageSquare } from 'lucide-react';
+import { Search, Users, UserCheck, UserX, Star, Eye, MessageSquare, Shield } from 'lucide-react';
 import ProfileManagementTable from '@/components/admin/ProfileManagementTable';
 import AdminStats from '@/components/admin/AdminStats';
 import AdminMessagingTab from '@/components/admin/AdminMessagingTab';
+import VerificationManagementTab from '@/components/admin/VerificationManagementTab';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -111,8 +111,9 @@ const AdminDashboard = () => {
           <AdminStats profiles={profiles} />
 
           <Tabs defaultValue="profiles" className="mt-8">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="profiles">Profile Management</TabsTrigger>
+              <TabsTrigger value="verifications">Verifications</TabsTrigger>
               <TabsTrigger value="messaging">Messaging</TabsTrigger>
               <TabsTrigger value="content">Content Management</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -152,6 +153,23 @@ const AdminDashboard = () => {
                     profiles={filteredProfiles}
                     onProfileUpdate={fetchProfiles}
                   />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="verifications" className="mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Shield className="h-5 w-5 mr-2" />
+                    Photo Verification Management
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Review and approve photo verifications from escorts and agencies
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <VerificationManagementTab />
                 </CardContent>
               </Card>
             </TabsContent>
