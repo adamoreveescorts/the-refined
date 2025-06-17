@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import SubscriptionTierSelector, { SubscriptionTier } from "./SubscriptionTierSelector";
+import FreeTrialConfirmDialog from "./FreeTrialConfirmDialog";
 
 interface StripePaymentFlowProps {
   role: "escort" | "agency";
@@ -16,6 +17,7 @@ interface StripePaymentFlowProps {
 const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: StripePaymentFlowProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [subscriptionInfo, setSubscriptionInfo] = useState<any>(null);
+  const [showTrialDialog, setShowTrialDialog] = useState(false);
 
   useEffect(() => {
     checkSubscriptionStatus();
@@ -51,6 +53,12 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
   };
 
   const handleTierSelect = async (tier: SubscriptionTier) => {
+    // Handle free trial with confirmation dialog
+    if (tier.id === 'trial') {
+      setShowTrialDialog(true);
+      return;
+    }
+
     setIsLoading(true);
     try {
       // Get the current session more reliably
@@ -87,10 +95,6 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
         // Free tier, no payment needed
         toast.success("Basic plan activated successfully!");
         onPaymentComplete();
-      } else if (tier.id === 'trial') {
-        // Free trial, no payment needed
-        toast.success("Free trial activated successfully! You have 7 days to explore premium features.");
-        onPaymentComplete();
       } else {
         // Paid tier, redirect to Stripe
         if (data?.url) {
@@ -103,46 +107,56 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
       }
     } catch (error: any) {
       console.error("Payment error:", error);
-      if (error.message === "Trial already used") {
-        toast.error("You have already used your free trial. Please select a different plan.");
-      } else {
-        toast.error(error.message || "Failed to process subscription");
-      }
+      toast.error(error.message || "Failed to process subscription");
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleTrialActivated = () => {
+    checkSubscriptionStatus();
+    onPaymentComplete();
+  };
+
   return (
-    <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader>
-        <CardTitle className="text-center text-foreground">
-          Choose Your Subscription Plan
-        </CardTitle>
-        <CardDescription className="text-center text-muted-foreground">
-          Start with a free 7-day trial, then select the plan that best fits your {role} business needs
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <SubscriptionTierSelector 
-          onTierSelect={handleTierSelect}
-          role={role}
-          currentTier={subscriptionInfo?.subscription_tier}
-          hasUsedTrial={subscriptionInfo?.has_used_trial}
-        />
-        
-        <div className="flex justify-center">
-          <button 
-            onClick={onCancel}
-            className="flex items-center text-muted-foreground hover:text-foreground"
-            disabled={isLoading}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Registration
-          </button>
-        </div>
-      </CardContent>
-    </Card>
+    <>
+      <Card className="w-full max-w-4xl mx-auto">
+        <CardHeader>
+          <CardTitle className="text-center text-foreground">
+            Choose Your Subscription Plan
+          </CardTitle>
+          <CardDescription className="text-center text-muted-foreground">
+            Start with a free 7-day trial, then select the plan that best fits your {role} business needs
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <SubscriptionTierSelector 
+            onTierSelect={handleTierSelect}
+            role={role}
+            currentTier={subscriptionInfo?.subscription_tier}
+            hasUsedTrial={subscriptionInfo?.has_used_trial}
+          />
+          
+          <div className="flex justify-center">
+            <button 
+              onClick={onCancel}
+              className="flex items-center text-muted-foreground hover:text-foreground"
+              disabled={isLoading}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Registration
+            </button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <FreeTrialConfirmDialog
+        open={showTrialDialog}
+        onOpenChange={setShowTrialDialog}
+        role={role}
+        onTrialActivated={handleTrialActivated}
+      />
+    </>
   );
 };
 
