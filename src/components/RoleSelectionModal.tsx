@@ -45,7 +45,7 @@ const RoleSelectionModal = ({ isOpen, onRoleSelect, onClose }: RoleSelectionModa
         <DialogHeader>
           <DialogTitle className="text-xl font-serif">Choose Your Role</DialogTitle>
           <DialogDescription>
-            Select how you would like to use The Refined Escort
+            Select how you would like to use Adam or Eve Escorts
           </DialogDescription>
         </DialogHeader>
 
