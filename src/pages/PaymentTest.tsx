@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -113,32 +114,32 @@ const PaymentTest = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold mx-auto mb-4"></div>
-          <p>Loading...</p>
+          <p className="text-foreground">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
           <Link to="/" className="inline-flex items-center text-gold hover:text-gold/80 mb-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Home
           </Link>
-          <h1 className="text-3xl font-serif text-gray-900 mb-2">Subscription Testing</h1>
-          <p className="text-gray-600">Test the multi-tier subscription system with free trial</p>
+          <h1 className="text-3xl font-serif text-foreground mb-2">Subscription Testing</h1>
+          <p className="text-muted-foreground">Test the multi-tier subscription system with free trial</p>
         </div>
 
         <div className="grid gap-6">
           {/* User Status Card */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center justify-between">
+              <CardTitle className="flex items-center justify-between text-foreground">
                 <div className="flex items-center">
                   <User className="h-5 w-5 mr-2" />
                   Current User Status
@@ -158,17 +159,17 @@ const PaymentTest = () => {
               {user ? (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span>Email:</span>
-                    <span className="font-medium">{user.email}</span>
+                    <span className="text-foreground">Email:</span>
+                    <span className="font-medium text-foreground">{user.email}</span>
                   </div>
                   {profile && (
                     <>
                       <div className="flex items-center justify-between">
-                        <span>Role:</span>
+                        <span className="text-foreground">Role:</span>
                         <Badge variant="outline">{profile.role}</Badge>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span>Account Active:</span>
+                        <span className="text-foreground">Account Active:</span>
                         <Badge variant={profile.is_active ? "default" : "destructive"}>
                           {profile.is_active ? "Yes" : "No"}
                         </Badge>
@@ -178,7 +179,7 @@ const PaymentTest = () => {
                   {subscription && (
                     <>
                       <div className="flex items-center justify-between">
-                        <span>Subscription Tier:</span>
+                        <span className="text-foreground">Subscription Tier:</span>
                         <Badge 
                           variant={subscription.subscription_tier === 'Platinum' || subscription.subscription_tier === 'Trial' ? "default" : "outline"}
                           className={subscription.subscription_tier === 'Platinum' ? "bg-gold text-white" : subscription.subscription_tier === 'Trial' ? "bg-blue-500 text-white" : ""}
@@ -191,31 +192,31 @@ const PaymentTest = () => {
                       </div>
                       {subscription.is_trial_active && subscription.trial_days_remaining && (
                         <div className="flex items-center justify-between">
-                          <span>Trial Days Remaining:</span>
+                          <span className="text-foreground">Trial Days Remaining:</span>
                           <Badge className="bg-blue-500 text-white">{subscription.trial_days_remaining} days</Badge>
                         </div>
                       )}
                       {subscription.expires_at && (
                         <div className="flex items-center justify-between">
-                          <span>Expires:</span>
-                          <span className="text-sm">{new Date(subscription.expires_at).toLocaleDateString()}</span>
+                          <span className="text-foreground">Expires:</span>
+                          <span className="text-sm text-muted-foreground">{new Date(subscription.expires_at).toLocaleDateString()}</span>
                         </div>
                       )}
                       {subscription.has_used_trial && (
                         <div className="flex items-center justify-between">
-                          <span>Trial Used:</span>
+                          <span className="text-foreground">Trial Used:</span>
                           <Badge variant="outline">Yes</Badge>
                         </div>
                       )}
                       {subscription.is_featured && (
                         <div className="flex items-center justify-between">
-                          <span>Featured Status:</span>
+                          <span className="text-foreground">Featured Status:</span>
                           <Badge className="bg-gold text-white">Featured</Badge>
                         </div>
                       )}
                       {subscription.photo_verified && (
                         <div className="flex items-center justify-between">
-                          <span>Photo Verified:</span>
+                          <span className="text-foreground">Photo Verified:</span>
                           <Badge className="bg-green-500 text-white">Verified</Badge>
                         </div>
                       )}
@@ -224,7 +225,7 @@ const PaymentTest = () => {
                 </div>
               ) : (
                 <div className="text-center py-4">
-                  <p className="text-gray-600 mb-4">You need to be logged in to test subscriptions</p>
+                  <p className="text-muted-foreground mb-4">You need to be logged in to test subscriptions</p>
                   <Link to="/auth">
                     <Button>Go to Login</Button>
                   </Link>
@@ -240,7 +241,7 @@ const PaymentTest = () => {
               
               <Card>
                 <CardHeader>
-                  <CardTitle>Test Subscription Plans</CardTitle>
+                  <CardTitle className="text-foreground">Test Subscription Plans</CardTitle>
                   <CardDescription>
                     Test the different subscription tiers including the new free trial
                   </CardDescription>
@@ -272,13 +273,13 @@ const PaymentTest = () => {
               {/* Instructions Card */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Testing Instructions</CardTitle>
+                  <CardTitle className="text-foreground">Testing Instructions</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div>
-                      <h4 className="font-medium mb-2">Available Plans:</h4>
-                      <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
+                      <h4 className="font-medium mb-2 text-foreground">Available Plans:</h4>
+                      <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                         <li><strong>Free Trial:</strong> 7 days with limited premium features (one-time only)</li>
                         <li><strong>Basic (Free):</strong> Default plan with basic features</li>
                         <li><strong>Platinum Weekly:</strong> $15 for 1 week with premium features</li>
@@ -289,8 +290,8 @@ const PaymentTest = () => {
                     </div>
                     
                     <div>
-                      <h4 className="font-medium mb-2">Trial vs Premium Features:</h4>
-                      <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
+                      <h4 className="font-medium mb-2 text-foreground">Trial vs Premium Features:</h4>
+                      <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                         <li><strong>Trial:</strong> Limited photo uploads (5), basic messaging, standard visibility</li>
                         <li><strong>Premium:</strong> Photo verification, featured status, priority ranking, unlimited photos</li>
                         <li><strong>Basic:</strong> Very limited features (3 photos), minimal visibility</li>
@@ -298,8 +299,8 @@ const PaymentTest = () => {
                     </div>
 
                     <div>
-                      <h4 className="font-medium mb-2">How to test:</h4>
-                      <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
+                      <h4 className="font-medium mb-2 text-foreground">How to test:</h4>
+                      <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
                         <li>Click "Show Tier Selector" above</li>
                         <li>Start with the Free Trial (if not used before)</li>
                         <li>For paid plans, use Stripe test card: 4242 4242 4242 4242</li>

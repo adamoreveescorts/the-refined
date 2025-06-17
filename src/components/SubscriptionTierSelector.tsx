@@ -152,10 +152,10 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, rol
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-serif font-bold text-navy mb-2">
+        <h2 className="text-2xl font-serif font-bold text-foreground mb-2">
           Choose Your {role === "escort" ? "Escort" : "Agency"} Plan
         </h2>
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           Start with a free trial, then select the plan that best fits your needs.
         </p>
       </div>
@@ -172,7 +172,7 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, rol
               } ${tier.recommended ? 'border-gold' : ''} ${
                 tier.trial ? 'border-blue-500' : ''
               } ${
-                isCurrent ? 'ring-2 ring-green-500 bg-green-50' : ''
+                isCurrent ? 'ring-2 ring-green-500 bg-accent' : ''
               }`}
             >
               {tier.trial && !hasUsedTrial && !isCurrent && (
@@ -206,12 +206,12 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, rol
                 <div className="flex justify-center mb-2">
                   {getTierIcon(tier.id)}
                 </div>
-                <CardTitle className="text-navy">{tier.name}</CardTitle>
+                <CardTitle className="text-foreground">{tier.name}</CardTitle>
                 <CardDescription>
-                  <div className="text-2xl font-bold text-navy">
+                  <div className="text-2xl font-bold text-foreground">
                     {tier.price === 0 ? "Free" : `$${tier.price} AUD`}
                   </div>
-                  <div className="text-sm text-gray-500">{tier.duration}</div>
+                  <div className="text-sm text-muted-foreground">{tier.duration}</div>
                 </CardDescription>
               </CardHeader>
               
@@ -220,7 +220,7 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, rol
                   {tier.features.map((feature, index) => (
                     <li key={index} className="flex items-start text-sm">
                       <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                      <span>{feature}</span>
+                      <span className="text-foreground">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -230,11 +230,11 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, rol
                   disabled={loading === tier.id || isCurrent}
                   className={`w-full ${
                     isCurrent 
-                      ? "bg-green-500 hover:bg-green-500 cursor-not-allowed" 
+                      ? "bg-green-500 hover:bg-green-500 cursor-not-allowed text-white" 
                       : tier.trial
-                        ? "bg-blue-500 hover:bg-blue-600"
+                        ? "bg-blue-500 hover:bg-blue-600 text-white"
                         : tier.id === "basic" 
-                          ? "bg-gray-600 hover:bg-gray-700" 
+                          ? "bg-muted hover:bg-muted/80 text-muted-foreground" 
                           : "btn-gold"
                   }`}
                 >

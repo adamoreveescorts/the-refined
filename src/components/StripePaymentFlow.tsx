@@ -116,10 +116,10 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
-        <CardTitle className="text-center">
+        <CardTitle className="text-center text-foreground">
           Choose Your Subscription Plan
         </CardTitle>
-        <CardDescription className="text-center">
+        <CardDescription className="text-center text-muted-foreground">
           Start with a free 7-day trial, then select the plan that best fits your {role} business needs
         </CardDescription>
       </CardHeader>
@@ -134,7 +134,7 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
         <div className="flex justify-center">
           <button 
             onClick={onCancel}
-            className="flex items-center text-gray-600 hover:text-gray-800"
+            className="flex items-center text-muted-foreground hover:text-foreground"
             disabled={isLoading}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
