@@ -5,14 +5,6 @@ import { Heart, Star, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
 
 const EscortCard = ({ escort }: { escort: any }) => {
   return (
@@ -98,7 +90,7 @@ const HeroBanner = () => {
         .eq('is_active', true)
         .eq('featured', true)
         .order('rating', { ascending: false })
-        .limit(8);
+        .limit(18); // Increased to show more escorts in 3 rows
 
       if (error) throw error;
       setFeaturedEscorts(data || []);
@@ -154,36 +146,37 @@ const HeroBanner = () => {
           </div>
         </div>
 
-        {/* Featured Escorts Carousel */}
+        {/* Featured Escorts Grid */}
         {!loading && featuredEscorts.length > 0 && (
           <div className={`transition-all duration-700 delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
             <h2 className="text-2xl sm:text-3xl font-bold text-white text-center mb-8">
               Featured Escorts
             </h2>
-            <div className="max-w-6xl mx-auto px-4">
-              <Carousel
-                opts={{
-                  align: "start",
-                  loop: true,
-                }}
-                plugins={[
-                  Autoplay({
-                    delay: 3000,
-                  }),
-                ]}
-                className="w-full"
-              >
-                <CarouselContent className="-ml-2 md:-ml-4">
-                  {featuredEscorts.map((escort) => (
-                    <CarouselItem key={escort.id} className="pl-2 md:pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
-                      <EscortCard escort={escort} />
-                    </CarouselItem>
+            <div className="max-w-7xl mx-auto px-4">
+              {/* 3 Rows Grid Layout */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-4">
+                {featuredEscorts.slice(0, 6).map((escort) => (
+                  <EscortCard key={escort.id} escort={escort} />
+                ))}
+              </div>
+              
+              {featuredEscorts.length > 6 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-4">
+                  {featuredEscorts.slice(6, 12).map((escort) => (
+                    <EscortCard key={escort.id} escort={escort} />
                   ))}
-                </CarouselContent>
-                <CarouselPrevious className="hidden md:flex text-white border-white/50 hover:bg-white/20" />
-                <CarouselNext className="hidden md:flex text-white border-white/50 hover:bg-white/20" />
-              </Carousel>
+                </div>
+              )}
+              
+              {featuredEscorts.length > 12 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  {featuredEscorts.slice(12, 18).map((escort) => (
+                    <EscortCard key={escort.id} escort={escort} />
+                  ))}
+                </div>
+              )}
             </div>
+            
             <div className="text-center mt-8">
               <Link to="/directory">
                 <Button className="btn-gold px-8 py-3">View All Escorts</Button>
