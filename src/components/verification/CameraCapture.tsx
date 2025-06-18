@@ -29,6 +29,63 @@ const CameraCapture = ({ onPhotoCapture, onCancel }: CameraCaptureProps) => {
     };
   }, []);
 
+  const waitForVideoElement = async (maxAttempts = 10): Promise<HTMLVideoElement> => {
+    return new Promise((resolve, reject) => {
+      let attempts = 0;
+      
+      const checkVideo = () => {
+        attempts++;
+        console.log(`Checking for video element, attempt ${attempts}`);
+        
+        if (videoRef.current) {
+          console.log('Video element found!');
+          resolve(videoRef.current);
+          return;
+        }
+        
+        if (attempts >= maxAttempts) {
+          console.error('Video element not found after maximum attempts');
+          reject(new Error('Video element not available'));
+          return;
+        }
+        
+        setTimeout(checkVideo, 100);
+      };
+      
+      checkVideo();
+    });
+  };
+
+  const setupVideoStream = async (video: HTMLVideoElement, stream: MediaStream): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Video setup timeout'));
+      }, 10000);
+
+      const onLoadedMetadata = () => {
+        console.log('Video metadata loaded');
+        video.removeEventListener('loadedmetadata', onLoadedMetadata);
+        video.removeEventListener('error', onError);
+        clearTimeout(timeout);
+        resolve();
+      };
+
+      const onError = (error: Event) => {
+        console.error('Video error:', error);
+        video.removeEventListener('loadedmetadata', onLoadedMetadata);
+        video.removeEventListener('error', onError);
+        clearTimeout(timeout);
+        reject(new Error('Video failed to load'));
+      };
+
+      video.addEventListener('loadedmetadata', onLoadedMetadata);
+      video.addEventListener('error', onError);
+
+      video.srcObject = stream;
+      video.load();
+    });
+  };
+
   const startCamera = async () => {
     console.log('Starting camera...');
     setIsLoading(true);
@@ -40,6 +97,7 @@ const CameraCapture = ({ onPhotoCapture, onCancel }: CameraCaptureProps) => {
         throw new Error('Camera not supported by this browser');
       }
 
+      console.log('Requesting camera access...');
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { 
           width: { ideal: 1280 },
@@ -50,27 +108,40 @@ const CameraCapture = ({ onPhotoCapture, onCancel }: CameraCaptureProps) => {
       });
       
       console.log('Camera stream obtained:', stream);
-      console.log('Video tracks:', stream.getVideoTracks().length);
+      const videoTracks = stream.getVideoTracks();
+      console.log('Video tracks:', videoTracks.length);
       
-      if (videoRef.current && stream.getVideoTracks().length > 0) {
-        const video = videoRef.current;
-        video.srcObject = stream;
-        streamRef.current = stream;
-        
-        // Force video to play and wait for it to be ready
-        try {
-          await video.play();
-          console.log('Video is now playing');
-          setIsStreaming(true);
-        } catch (playError) {
-          console.error('Error playing video:', playError);
-          throw new Error('Failed to start video playback');
-        }
-      } else {
-        throw new Error('No video track available');
+      if (videoTracks.length === 0) {
+        throw new Error('No video track available in stream');
       }
+
+      console.log('Waiting for video element...');
+      const video = await waitForVideoElement();
+      
+      console.log('Setting up video stream...');
+      await setupVideoStream(video, stream);
+      
+      streamRef.current = stream;
+      
+      // Start playing the video
+      try {
+        await video.play();
+        console.log('Video is now playing');
+        setIsStreaming(true);
+      } catch (playError) {
+        console.error('Error playing video:', playError);
+        throw new Error('Failed to start video playback');
+      }
+      
     } catch (error) {
       console.error('Error accessing camera:', error);
+      
+      // Clean up stream if it was created
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+      
       let errorMessage = 'Unable to access camera';
       
       if (error instanceof Error) {
@@ -222,22 +293,14 @@ const CameraCapture = ({ onPhotoCapture, onCancel }: CameraCaptureProps) => {
             </div>
           )}
 
-          {isStreaming && (
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-full object-cover"
-              style={{ transform: 'scaleX(-1)' }}
-              onLoadedMetadata={() => {
-                console.log('Video metadata loaded');
-              }}
-              onCanPlay={() => {
-                console.log('Video can play');
-              }}
-            />
-          )}
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className={`w-full h-full object-cover ${isStreaming ? 'block' : 'hidden'}`}
+            style={{ transform: 'scaleX(-1)' }}
+          />
 
           {capturedPhoto && (
             <img
