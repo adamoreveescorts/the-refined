@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,6 +15,7 @@ import AdminStats from '@/components/admin/AdminStats';
 import AdminMessagingTab from '@/components/admin/AdminMessagingTab';
 import VerificationManagementTab from '@/components/admin/VerificationManagementTab';
 import ProfileDataCleanup from '@/components/admin/ProfileDataCleanup';
+import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -217,16 +217,7 @@ const AdminDashboard = () => {
           </TabsContent>
           
           <TabsContent value="analytics" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Analytics</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">Analytics dashboard coming soon...</p>
-                </div>
-              </CardContent>
-            </Card>
+            <AnalyticsDashboard />
           </TabsContent>
         </Tabs>
       </main>
