@@ -9,6 +9,110 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      agency_escorts: {
+        Row: {
+          agency_id: string
+          created_at: string
+          escort_id: string
+          id: string
+          invited_at: string
+          joined_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          agency_id: string
+          created_at?: string
+          escort_id: string
+          id?: string
+          invited_at?: string
+          joined_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          agency_id?: string
+          created_at?: string
+          escort_id?: string
+          id?: string
+          invited_at?: string
+          joined_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agency_escorts_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agency_escorts_escort_id_fkey"
+            columns: ["escort_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agency_subscriptions: {
+        Row: {
+          agency_id: string
+          billing_cycle: string
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          price_per_seat: number
+          status: string
+          stripe_subscription_id: string | null
+          subscription_tier: string
+          total_seats: number
+          updated_at: string
+          used_seats: number
+        }
+        Insert: {
+          agency_id: string
+          billing_cycle?: string
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          price_per_seat: number
+          status?: string
+          stripe_subscription_id?: string | null
+          subscription_tier?: string
+          total_seats?: number
+          updated_at?: string
+          used_seats?: number
+        }
+        Update: {
+          agency_id?: string
+          billing_cycle?: string
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          price_per_seat?: number
+          status?: string
+          stripe_subscription_id?: string | null
+          subscription_tier?: string
+          total_seats?: number
+          updated_at?: string
+          used_seats?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agency_subscriptions_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           client_id: string
@@ -138,6 +242,7 @@ export type Database = {
       profiles: {
         Row: {
           age: string | null
+          agency_id: string | null
           availability: string | null
           bio: string | null
           body_type: string | null
@@ -181,6 +286,7 @@ export type Database = {
         }
         Insert: {
           age?: string | null
+          agency_id?: string | null
           availability?: string | null
           bio?: string | null
           body_type?: string | null
@@ -224,6 +330,7 @@ export type Database = {
         }
         Update: {
           age?: string | null
+          agency_id?: string | null
           availability?: string | null
           bio?: string | null
           body_type?: string | null
@@ -265,7 +372,15 @@ export type Database = {
           view_count?: number | null
           weight?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscribers: {
         Row: {

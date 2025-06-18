@@ -79,6 +79,14 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
 
       console.log("Creating checkout with tier:", tier);
 
+      // Handle agency subscriptions differently
+      if (role === 'agency' && tier.perSeat) {
+        // For agency subscriptions, redirect to agency dashboard for seat selection
+        toast.success("Redirecting to agency dashboard for subscription setup");
+        onPaymentComplete();
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { role, tier: tier.id },
         headers: {
@@ -126,7 +134,10 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
             Choose Your Subscription Plan
           </CardTitle>
           <CardDescription className="text-center text-muted-foreground">
-            Start with a free 7-day trial, then select the plan that best fits your {role} business needs
+            {role === 'agency' 
+              ? "Select your agency plan with per-escort pricing that scales with your business"
+              : "Start with a free 7-day trial, then select the plan that best fits your escort business needs"
+            }
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
