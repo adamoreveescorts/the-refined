@@ -1,4 +1,3 @@
-
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
@@ -18,7 +17,7 @@ const FAQItem = ({ question, answer }: { question: string; answer: string }) => 
       <CollapsibleTrigger className="w-full p-4 flex justify-between items-center bg-card hover:bg-accent transition-colors text-left">
         <span className="font-serif text-lg text-foreground font-medium">{question}</span>
         {isOpen ? 
-          <ChevronUp className="h-5 w-5 text-gold" /> : 
+          <ChevronUp className="h-5 w-5 text-secondary" /> : 
           <ChevronDown className="h-5 w-5 text-foreground" />
         }
       </CollapsibleTrigger>
@@ -71,11 +70,11 @@ const FAQ = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <NavBar />
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="bg-navy py-16 lg:py-24 text-white">
+        <section className="bg-card py-16 lg:py-24 text-foreground">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div 
               className="max-w-3xl mx-auto text-center"
@@ -85,7 +84,7 @@ const FAQ = () => {
               transition={{ duration: 0.5 }}
             >
               <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold mb-6">Frequently Asked Questions</h1>
-              <p className="text-xl text-gray-300 mb-8">
+              <p className="text-xl text-muted-foreground mb-8">
                 Find answers to common questions about our services and platform.
               </p>
             </motion.div>
@@ -98,8 +97,8 @@ const FAQ = () => {
             <div className="max-w-3xl mx-auto">
               <div className="bg-card p-6 sm:p-8 rounded-xl shadow-sm border border-border mb-8">
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 rounded-full bg-navy/10 flex items-center justify-center">
-                    <HelpCircle className="h-6 w-6 text-navy" />
+                  <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center">
+                    <HelpCircle className="h-6 w-6 text-secondary" />
                   </div>
                   <h2 className="font-serif text-2xl font-bold text-foreground">Common Questions</h2>
                 </div>
@@ -125,7 +124,7 @@ const FAQ = () => {
                 <div className="flex flex-col sm:flex-row gap-4">
                   <a 
                     href="/contact" 
-                    className="bg-navy hover:bg-navy/90 text-white font-medium py-3 px-6 rounded-md text-center transition-colors"
+                    className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-medium py-3 px-6 rounded-md text-center transition-colors"
                   >
                     Contact Support
                   </a>

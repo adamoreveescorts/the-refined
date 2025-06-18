@@ -1,4 +1,3 @@
-
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
@@ -91,11 +90,11 @@ const Blog = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <NavBar />
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="bg-navy py-16 lg:py-24 text-white">
+        <section className="bg-card py-16 lg:py-24 text-foreground">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div 
               className="max-w-3xl mx-auto text-center"
@@ -105,7 +104,7 @@ const Blog = () => {
               transition={{ duration: 0.5 }}
             >
               <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold mb-6">The Refined Journal</h1>
-              <p className="text-xl text-gray-300 mb-8">
+              <p className="text-xl text-muted-foreground mb-8">
                 Insights, stories, and wisdom from the world of refined companionship.
               </p>
             </motion.div>
@@ -113,7 +112,7 @@ const Blog = () => {
         </section>
 
         {/* Blog Categories */}
-        <div className="bg-white border-b border-gray-200 sticky top-16 z-40 backdrop-blur-md bg-white/80">
+        <div className="bg-card border-b border-border sticky top-16 z-40 backdrop-blur-md bg-card/80">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="overflow-x-auto">
               <div className="flex space-x-2 md:space-x-4 min-w-max">
@@ -122,8 +121,8 @@ const Blog = () => {
                     key={index}
                     className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
                       index === 0
-                        ? "bg-navy text-white"
-                        : "bg-gray-100 text-charcoal hover:bg-gray-200"
+                        ? "bg-secondary text-secondary-foreground"
+                        : "bg-accent text-foreground hover:bg-muted"
                     }`}
                   >
                     {category}
@@ -135,7 +134,7 @@ const Blog = () => {
         </div>
 
         {/* Featured Post */}
-        <section className="py-12 lg:py-16 bg-white">
+        <section className="py-12 lg:py-16 bg-background">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div 
               className="grid md:grid-cols-2 gap-8 items-center"
@@ -152,16 +151,16 @@ const Blog = () => {
                 />
               </div>
               <div>
-                <span className="inline-block bg-gold/20 text-gold px-3 py-1 rounded-full text-xs font-medium mb-4">
+                <span className="inline-block bg-secondary/20 text-secondary px-3 py-1 rounded-full text-xs font-medium mb-4">
                   {featuredPost.category}
                 </span>
-                <h2 className="font-serif text-3xl md:text-4xl font-bold text-navy mb-4">
+                <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
                   {featuredPost.title}
                 </h2>
-                <p className="text-charcoal mb-6 text-lg">
+                <p className="text-muted-foreground mb-6 text-lg">
                   {featuredPost.excerpt}
                 </p>
-                <div className="flex items-center text-sm text-gray-500 mb-6">
+                <div className="flex items-center text-sm text-muted-foreground mb-6">
                   <User className="h-4 w-4 mr-1" />
                   <span className="mr-4">{featuredPost.author}</span>
                   <Clock className="h-4 w-4 mr-1" />
@@ -170,7 +169,7 @@ const Blog = () => {
                 </div>
                 <Link 
                   to={`/blog/${featuredPost.id}`}
-                  className="inline-flex items-center text-navy font-medium hover:text-gold transition-colors"
+                  className="inline-flex items-center text-secondary font-medium hover:text-secondary/80 transition-colors"
                 >
                   Read Article <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
@@ -180,13 +179,13 @@ const Blog = () => {
         </section>
 
         {/* Regular Posts Grid */}
-        <section className="py-12 lg:py-16 bg-gray-50">
+        <section className="py-12 lg:py-16 bg-muted/20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {regularPosts.map((post, index) => (
                 <motion.div 
                   key={post.id}
-                  className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 transition-all hover:shadow-md"
+                  className="bg-card rounded-xl overflow-hidden shadow-sm border border-border transition-all hover:shadow-md"
                   initial="hidden"
                   animate="visible"
                   variants={fadeIn}
@@ -200,23 +199,23 @@ const Blog = () => {
                     />
                   </div>
                   <div className="p-6">
-                    <span className="inline-block bg-gold/20 text-gold px-3 py-1 rounded-full text-xs font-medium mb-3">
+                    <span className="inline-block bg-secondary/20 text-secondary px-3 py-1 rounded-full text-xs font-medium mb-3">
                       {post.category}
                     </span>
-                    <h3 className="font-serif text-xl font-bold text-navy mb-3 line-clamp-2">
+                    <h3 className="font-serif text-xl font-bold text-foreground mb-3 line-clamp-2">
                       {post.title}
                     </h3>
-                    <p className="text-charcoal mb-4 line-clamp-3">
+                    <p className="text-muted-foreground mb-4 line-clamp-3">
                       {post.excerpt}
                     </p>
                     <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center text-gray-500">
+                      <div className="flex items-center text-muted-foreground">
                         <Clock className="h-4 w-4 mr-1" />
                         <span>{post.readTime}</span>
                       </div>
                       <Link 
                         to={`/blog/${post.id}`}
-                        className="text-navy font-medium hover:text-gold transition-colors"
+                        className="text-secondary font-medium hover:text-secondary/80 transition-colors"
                       >
                         Read More
                       </Link>
@@ -229,22 +228,22 @@ const Blog = () => {
         </section>
 
         {/* Newsletter Section */}
-        <section className="py-16 lg:py-24 bg-navy text-white">
+        <section className="py-16 lg:py-24 bg-card text-foreground">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto text-center">
               <h2 className="font-serif text-3xl md:text-4xl font-bold mb-6">Subscribe to Our Newsletter</h2>
-              <p className="text-lg text-gray-300 mb-8">
+              <p className="text-lg text-muted-foreground mb-8">
                 Stay updated with our latest articles, interviews, and industry insights.
               </p>
               <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
                 <input 
                   type="email" 
                   placeholder="Your email address" 
-                  className="px-4 py-3 bg-white/10 border border-white/20 rounded-md focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent flex-grow"
+                  className="px-4 py-3 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent flex-grow text-foreground"
                 />
                 <button 
                   type="submit" 
-                  className="bg-gold hover:bg-gold/90 text-navy font-medium py-3 px-6 rounded-md"
+                  className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-medium py-3 px-6 rounded-md"
                 >
                   Subscribe
                 </button>

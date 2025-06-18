@@ -43,7 +43,7 @@ const Index = () => {
   }, [isMobile]);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <NavBar />
       <main className="flex-grow">
         <HeroBanner />

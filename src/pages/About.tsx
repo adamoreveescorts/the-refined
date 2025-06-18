@@ -26,17 +26,17 @@ const About = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <NavBar />
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className={`bg-navy py-16 lg:py-24 text-white transition-all duration-700 ${
+        <section className={`bg-card py-16 lg:py-24 text-foreground transition-all duration-700 ${
           heroVisible ? 'animate-fade-in opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
         }`}>
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto text-center">
               <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold mb-6">About Adam or Eve Escorts</h1>
-              <p className="text-xl text-gray-300 mb-8">
+              <p className="text-xl text-muted-foreground mb-8">
                 Redefining connection with elegance, sophistication, and discretion.
               </p>
             </div>
@@ -113,8 +113,8 @@ const About = () => {
                   }`}
                   style={{ animationDelay: `${index * 200}ms` }}
                 >
-                  <div className="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center mb-6">
-                    <span className="text-gold text-2xl font-serif">{value.number}</span>
+                  <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center mb-6">
+                    <span className="text-secondary text-2xl font-serif">{value.number}</span>
                   </div>
                   <h3 className="font-serif text-xl font-bold text-foreground mb-4">{value.title}</h3>
                   <p className="text-muted-foreground">{value.description}</p>
@@ -125,7 +125,7 @@ const About = () => {
         </section>
 
         {/* Testimonials */}
-        <section className={`py-16 lg:py-20 bg-card transition-all duration-700 ${
+        <section className={`py-16 lg:py-20 bg-background transition-all duration-700 ${
           testimonialsVisible ? 'animate-fade-in opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
         }`}>
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -151,7 +151,7 @@ const About = () => {
               ].map((testimonial, index) => (
                 <div 
                   key={index}
-                  className={`bg-background p-8 rounded-xl shadow-sm border border-border transition-all duration-500 ${
+                  className={`bg-card p-8 rounded-xl shadow-sm border border-border transition-all duration-500 ${
                     testimonialsVisible ? 'animate-fade-in opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                   }`}
                   style={{ animationDelay: `${index * 200}ms` }}
@@ -159,7 +159,7 @@ const About = () => {
                   <div className="flex items-center mb-6">
                     <div className="ml-4">
                       <p className="text-foreground font-bold">{testimonial.name}</p>
-                      <div className="flex text-gold">
+                      <div className="flex text-secondary">
                         <span>{testimonial.rating}</span>
                       </div>
                     </div>
@@ -174,23 +174,23 @@ const About = () => {
         </section>
 
         {/* Join Us CTA */}
-        <section className={`py-16 lg:py-24 bg-navy text-white transition-all duration-700 ${
+        <section className={`py-16 lg:py-24 bg-card text-foreground transition-all duration-700 ${
           ctaVisible ? 'animate-fade-in opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
         }`}>
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto text-center">
               <h2 className="font-serif text-3xl md:text-4xl font-bold mb-6">Join Our Exclusive Network</h2>
-              <p className="text-xl text-gray-300 mb-8">
+              <p className="text-xl text-muted-foreground mb-8">
                 Experience the difference of a platform built on trust, quality, and mutual respect.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <Link to="/directory">
-                  <Button className="bg-white hover:bg-gray-100 text-navy font-medium text-base px-6 transition-all duration-300 hover:scale-105">
+                  <Button className="bg-background hover:bg-accent text-foreground font-medium text-base px-6 transition-all duration-300 hover:scale-105 border border-border">
                     Browse Directory
                   </Button>
                 </Link>
-                <Link to="/join">
-                  <Button className="bg-gold hover:bg-gold/90 text-navy font-medium text-base px-6 transition-all duration-300 hover:scale-105">
+                <Link to="/auth">
+                  <Button className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-medium text-base px-6 transition-all duration-300 hover:scale-105">
                     Join Today <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </Link>
