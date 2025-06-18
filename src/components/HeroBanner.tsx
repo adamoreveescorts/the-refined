@@ -121,18 +121,18 @@ const HeroBanner = () => {
       </div>
       
       {/* Content */}
-      <div className="relative flex-1 flex flex-col z-10 py-4 sm:py-8">
-        {/* Main Hero Content - Top section with reduced mobile padding */}
-        <div className="flex-none text-center px-4 sm:px-6 lg:px-8 pt-8 sm:pt-16 pb-4 sm:pb-8">
-          <h1 className={`text-3xl sm:text-5xl md:text-6xl font-bold text-white mb-3 sm:mb-4 transition-all duration-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+      <div className="relative flex-1 flex flex-col z-10 py-0 sm:py-8">
+        {/* Main Hero Content - Top section with no mobile padding */}
+        <div className="flex-none text-center px-0 sm:px-6 lg:px-8 pt-4 sm:pt-16 pb-2 sm:pb-8">
+          <h1 className={`text-3xl sm:text-5xl md:text-6xl font-bold text-white mb-2 sm:mb-4 transition-all duration-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
             Discover Elite Companionship
           </h1>
-          <p className={`text-base sm:text-xl text-gray-100 max-w-3xl mx-auto mb-4 sm:mb-6 transition-all duration-700 delay-100 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+          <p className={`text-base sm:text-xl text-gray-100 max-w-3xl mx-auto mb-3 sm:mb-6 px-2 sm:px-0 transition-all duration-700 delay-100 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
             Connect with sophisticated escorts worldwide through our premium directory
           </p>
           
           {/* CTA Buttons */}
-          <div className={`flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center transition-all duration-700 delay-200 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+          <div className={`flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center px-2 sm:px-0 transition-all duration-700 delay-200 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
             <Link to="/directory">
               <Button variant="outline" className="text-white border-white bg-zinc-500 hover:bg-zinc-400 text-sm sm:text-base px-4 py-2 sm:px-6 sm:py-3">
                 Browse Escorts
@@ -146,16 +146,16 @@ const HeroBanner = () => {
           </div>
         </div>
 
-        {/* Featured Escorts Grid - Bottom section with reduced mobile spacing */}
+        {/* Featured Escorts Grid - Bottom section with no mobile padding */}
         {!loading && featuredEscorts.length > 0 && (
-          <div className={`flex-1 flex flex-col justify-end px-4 sm:px-6 lg:px-8 pb-4 sm:pb-8 transition-all duration-700 delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+          <div className={`flex-1 flex flex-col justify-end px-0 sm:px-6 lg:px-8 pb-2 sm:pb-8 transition-all duration-700 delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
             <div className="max-w-7xl mx-auto w-full">
-              <h2 className="text-lg sm:text-2xl font-bold text-white text-center mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-2xl font-bold text-white text-center mb-3 sm:mb-6">
                 Featured Escorts
               </h2>
               
               {/* 3 Rows Grid Layout */}
-              <div className="space-y-2 sm:space-y-3">
+              <div className="space-y-2 sm:space-y-3 px-1 sm:px-0">
                 {/* Row 1 */}
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
                   {featuredEscorts.slice(0, 6).map((escort) => (
@@ -182,7 +182,7 @@ const HeroBanner = () => {
                 )}
               </div>
               
-              <div className="text-center mt-4 sm:mt-6">
+              <div className="text-center mt-3 sm:mt-6 px-2 sm:px-0">
                 <Link to="/directory">
                   <Button className="btn-gold px-4 py-2 sm:px-6 sm:py-2 text-sm sm:text-base">View All Escorts</Button>
                 </Link>
