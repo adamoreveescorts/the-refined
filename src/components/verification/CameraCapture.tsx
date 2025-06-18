@@ -15,6 +15,7 @@ const CameraCapture = ({ onPhotoCapture, onCancel }: CameraCaptureProps) => {
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -30,6 +31,7 @@ const CameraCapture = ({ onPhotoCapture, onCancel }: CameraCaptureProps) => {
 
   const startCamera = async () => {
     console.log('Starting camera...');
+    setIsLoading(true);
     setCameraError(null);
     
     try {
@@ -48,27 +50,24 @@ const CameraCapture = ({ onPhotoCapture, onCancel }: CameraCaptureProps) => {
       });
       
       console.log('Camera stream obtained:', stream);
+      console.log('Video tracks:', stream.getVideoTracks().length);
       
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+      if (videoRef.current && stream.getVideoTracks().length > 0) {
+        const video = videoRef.current;
+        video.srcObject = stream;
         streamRef.current = stream;
         
-        // Wait for video to load before setting streaming state
-        videoRef.current.onloadedmetadata = () => {
-          console.log('Video metadata loaded');
-          if (videoRef.current) {
-            videoRef.current.play()
-              .then(() => {
-                console.log('Video playing successfully');
-                setIsStreaming(true);
-              })
-              .catch((playError) => {
-                console.error('Error playing video:', playError);
-                setCameraError('Failed to start video playback');
-                toast.error('Failed to start video playback');
-              });
-          }
-        };
+        // Force video to play and wait for it to be ready
+        try {
+          await video.play();
+          console.log('Video is now playing');
+          setIsStreaming(true);
+        } catch (playError) {
+          console.error('Error playing video:', playError);
+          throw new Error('Failed to start video playback');
+        }
+      } else {
+        throw new Error('No video track available');
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
@@ -88,6 +87,8 @@ const CameraCapture = ({ onPhotoCapture, onCancel }: CameraCaptureProps) => {
       
       setCameraError(errorMessage);
       toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -108,8 +109,9 @@ const CameraCapture = ({ onPhotoCapture, onCancel }: CameraCaptureProps) => {
 
   const capturePhoto = useCallback(() => {
     console.log('Capturing photo...');
-    if (!videoRef.current || !canvasRef.current) {
-      console.error('Video or canvas ref not available');
+    if (!videoRef.current || !canvasRef.current || !isStreaming) {
+      console.error('Video or canvas ref not available, or not streaming');
+      toast.error('Camera not ready. Please ensure camera is active.');
       return;
     }
 
@@ -119,6 +121,7 @@ const CameraCapture = ({ onPhotoCapture, onCancel }: CameraCaptureProps) => {
 
     if (!context) {
       console.error('Could not get canvas context');
+      toast.error('Failed to initialize capture. Please try again.');
       return;
     }
 
@@ -133,7 +136,12 @@ const CameraCapture = ({ onPhotoCapture, onCancel }: CameraCaptureProps) => {
     canvas.height = video.videoHeight;
     
     console.log('Drawing video to canvas:', video.videoWidth, 'x', video.videoHeight);
-    context.drawImage(video, 0, 0);
+    
+    // Mirror the image horizontally to match what user sees
+    context.save();
+    context.scale(-1, 1);
+    context.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+    context.restore();
     
     canvas.toBlob((blob) => {
       if (blob) {
@@ -147,7 +155,7 @@ const CameraCapture = ({ onPhotoCapture, onCancel }: CameraCaptureProps) => {
         toast.error('Failed to capture photo. Please try again.');
       }
     }, 'image/jpeg', 0.8);
-  }, []);
+  }, [isStreaming]);
 
   const retakePhoto = () => {
     console.log('Retaking photo...');
@@ -196,12 +204,21 @@ const CameraCapture = ({ onPhotoCapture, onCancel }: CameraCaptureProps) => {
         )}
 
         <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
-          {!isStreaming && !capturedPhoto && (
+          {!isStreaming && !capturedPhoto && !isLoading && (
             <div className="absolute inset-0 flex items-center justify-center">
               <Button onClick={startCamera} size="lg">
                 <Camera className="h-5 w-5 mr-2" />
                 Start Camera
               </Button>
+            </div>
+          )}
+
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-white text-center">
+                <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                <p>Starting camera...</p>
+              </div>
             </div>
           )}
 
@@ -213,6 +230,12 @@ const CameraCapture = ({ onPhotoCapture, onCancel }: CameraCaptureProps) => {
               muted
               className="w-full h-full object-cover"
               style={{ transform: 'scaleX(-1)' }}
+              onLoadedMetadata={() => {
+                console.log('Video metadata loaded');
+              }}
+              onCanPlay={() => {
+                console.log('Video can play');
+              }}
             />
           )}
 
@@ -228,7 +251,7 @@ const CameraCapture = ({ onPhotoCapture, onCancel }: CameraCaptureProps) => {
         <canvas ref={canvasRef} className="hidden" />
 
         <div className="flex justify-center gap-4">
-          {isStreaming && (
+          {isStreaming && !isLoading && (
             <>
               <Button variant="outline" onClick={handleCancel}>
                 Cancel
@@ -253,9 +276,15 @@ const CameraCapture = ({ onPhotoCapture, onCancel }: CameraCaptureProps) => {
             </>
           )}
 
-          {!isStreaming && !capturedPhoto && cameraError && (
+          {!isStreaming && !capturedPhoto && !isLoading && cameraError && (
             <Button variant="outline" onClick={handleCancel}>
               Back
+            </Button>
+          )}
+
+          {isLoading && (
+            <Button variant="outline" onClick={handleCancel}>
+              Cancel
             </Button>
           )}
         </div>
