@@ -14,7 +14,6 @@ import ProfileManagementTable from '@/components/admin/ProfileManagementTable';
 import AdminStats from '@/components/admin/AdminStats';
 import AdminMessagingTab from '@/components/admin/AdminMessagingTab';
 import VerificationManagementTab from '@/components/admin/VerificationManagementTab';
-import ProfileDataCleanup from '@/components/admin/ProfileDataCleanup';
 import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard';
 
 const AdminDashboard = () => {
@@ -114,20 +113,12 @@ const AdminDashboard = () => {
           <AdminStats profiles={profiles} />
         </div>
 
-        {/* Data Cleanup Section */}
-        <div className="mb-8">
-          <div className="flex justify-center">
-            <ProfileDataCleanup />
-          </div>
-        </div>
-
         {/* Management Tabs */}
         <Tabs defaultValue="profiles" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="profiles">Profile Management</TabsTrigger>
             <TabsTrigger value="verifications">Verifications</TabsTrigger>
             <TabsTrigger value="messaging">Messaging</TabsTrigger>
-            <TabsTrigger value="content">Content Management</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
           
@@ -199,19 +190,6 @@ const AdminDashboard = () => {
               </CardHeader>
               <CardContent>
                 <AdminMessagingTab />
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="content" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Content Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">Content management features coming soon...</p>
-                </div>
               </CardContent>
             </Card>
           </TabsContent>
