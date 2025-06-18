@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -145,6 +146,8 @@ const EscortCard = ({ escort, index }: { escort: any, index: number }) => {
 const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filters: any }) => {
   const [ageRange, setAgeRange] = useState<number[]>([18, 50]);
   const [priceRange, setPriceRange] = useState<number[]>([100, 1000]);
+  const [weightRange, setWeightRange] = useState<number[]>([40, 100]);
+  const [heightRange, setHeightRange] = useState<number[]>([150, 190]);
   const [isVisible, setIsVisible] = useState(false);
   
   useEffect(() => {
@@ -163,6 +166,16 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
   const handlePriceChange = (value: number[]) => {
     setPriceRange(value);
     onFilterChange({ ...filters, priceMin: value[0], priceMax: value[1] });
+  };
+
+  const handleWeightChange = (value: number[]) => {
+    setWeightRange(value);
+    onFilterChange({ ...filters, weightMin: value[0], weightMax: value[1] });
+  };
+
+  const handleHeightChange = (value: number[]) => {
+    setHeightRange(value);
+    onFilterChange({ ...filters, heightMin: value[0], heightMax: value[1] });
   };
   
   const FilterContent = () => (
@@ -199,6 +212,35 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
             <SelectItem value="Indian">Indian</SelectItem>
             <SelectItem value="Middle Eastern">Middle Eastern</SelectItem>
             <SelectItem value="Mixed">Mixed</SelectItem>
+            <SelectItem value="Other">Other</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Nationality */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-2 text-foreground">Nationality</label>
+        <Select value={filters.nationality || 'all'} onValueChange={(value) => onFilterChange({ ...filters, nationality: value === 'all' ? '' : value })}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select nationality" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="American">American</SelectItem>
+            <SelectItem value="British">British</SelectItem>
+            <SelectItem value="Canadian">Canadian</SelectItem>
+            <SelectItem value="Australian">Australian</SelectItem>
+            <SelectItem value="French">French</SelectItem>
+            <SelectItem value="German">German</SelectItem>
+            <SelectItem value="Italian">Italian</SelectItem>
+            <SelectItem value="Spanish">Spanish</SelectItem>
+            <SelectItem value="Russian">Russian</SelectItem>
+            <SelectItem value="Brazilian">Brazilian</SelectItem>
+            <SelectItem value="Japanese">Japanese</SelectItem>
+            <SelectItem value="Chinese">Chinese</SelectItem>
+            <SelectItem value="Korean">Korean</SelectItem>
+            <SelectItem value="Thai">Thai</SelectItem>
+            <SelectItem value="Indian">Indian</SelectItem>
             <SelectItem value="Other">Other</SelectItem>
           </SelectContent>
         </Select>
@@ -282,6 +324,40 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
           </SelectContent>
         </Select>
       </div>
+
+      {/* Smoking */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-2 text-foreground">Smoking</label>
+        <Select value={filters.smoking || 'all'} onValueChange={(value) => onFilterChange({ ...filters, smoking: value === 'all' ? '' : value })}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select smoking preference" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="Yes">Yes</SelectItem>
+            <SelectItem value="No">No</SelectItem>
+            <SelectItem value="Socially">Socially</SelectItem>
+            <SelectItem value="Occasionally">Occasionally</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Drinking */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-2 text-foreground">Drinking</label>
+        <Select value={filters.drinking || 'all'} onValueChange={(value) => onFilterChange({ ...filters, drinking: value === 'all' ? '' : value })}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select drinking preference" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="Yes">Yes</SelectItem>
+            <SelectItem value="No">No</SelectItem>
+            <SelectItem value="Socially">Socially</SelectItem>
+            <SelectItem value="Occasionally">Occasionally</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
       
       {/* Age Range */}
       <div className="mb-6">
@@ -295,6 +371,38 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
           step={1}
           value={ageRange}
           onValueChange={handleAgeChange}
+          className="mt-2"
+        />
+      </div>
+
+      {/* Height Range */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-2 text-foreground">
+          Height Range: {heightRange[0]}cm - {heightRange[1]}cm
+        </label>
+        <Slider 
+          defaultValue={[150, 190]} 
+          min={140} 
+          max={200} 
+          step={5}
+          value={heightRange}
+          onValueChange={handleHeightChange}
+          className="mt-2"
+        />
+      </div>
+
+      {/* Weight Range */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-2 text-foreground">
+          Weight Range: {weightRange[0]}kg - {weightRange[1]}kg
+        </label>
+        <Slider 
+          defaultValue={[40, 100]} 
+          min={35} 
+          max={120} 
+          step={5}
+          value={weightRange}
+          onValueChange={handleWeightChange}
           className="mt-2"
         />
       </div>
@@ -319,7 +427,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Services</label>
         <div className="space-y-2">
-          {['Dinner Date', 'Travel Companion', 'Event Escort', 'Overnight'].map((service) => (
+          {['Dinner Date', 'Travel Companion', 'Event Escort', 'Overnight', 'GFE', 'PSE', 'Massage'].map((service) => (
             <div key={service} className="flex items-center">
               <Checkbox 
                 id={`service-${service}`}
@@ -343,6 +451,34 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
         </div>
       </div>
 
+      {/* Languages */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-2 text-foreground">Languages</label>
+        <div className="space-y-2">
+          {['English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Russian', 'Japanese', 'Chinese', 'Arabic'].map((language) => (
+            <div key={language} className="flex items-center">
+              <Checkbox 
+                id={`language-${language}`}
+                checked={filters.languages?.includes(language)}
+                onCheckedChange={(checked) => {
+                  const languages = filters.languages || [];
+                  const newLanguages = checked === true
+                    ? [...languages, language]
+                    : languages.filter((l: string) => l !== language);
+                  onFilterChange({ ...filters, languages: newLanguages });
+                }}
+              />
+              <label 
+                htmlFor={`language-${language}`} 
+                className="ml-2 text-sm text-foreground"
+              >
+                {language}
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Additional Attributes */}
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Additional</label>
@@ -354,6 +490,14 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
               onCheckedChange={(checked) => onFilterChange({ ...filters, verifiedOnly: checked === true })}
             />
             <label htmlFor="verified" className="ml-2 text-sm text-foreground">Verified Only</label>
+          </div>
+          <div className="flex items-center">
+            <Checkbox 
+              id="featured"
+              checked={filters.featuredOnly}
+              onCheckedChange={(checked) => onFilterChange({ ...filters, featuredOnly: checked === true })}
+            />
+            <label htmlFor="featured" className="ml-2 text-sm text-foreground">Featured Only</label>
           </div>
           <div className="flex items-center">
             <Checkbox 
@@ -371,6 +515,14 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
             />
             <label htmlFor="piercings" className="ml-2 text-sm text-foreground">Has Piercings</label>
           </div>
+          <div className="flex items-center">
+            <Checkbox 
+              id="activeToday"
+              checked={filters.activeToday}
+              onCheckedChange={(checked) => onFilterChange({ ...filters, activeToday: checked === true })}
+            />
+            <label htmlFor="activeToday" className="ml-2 text-sm text-foreground">Active Today</label>
+          </div>
         </div>
       </div>
       
@@ -379,18 +531,28 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
         onClick={() => onFilterChange({ 
           location: '',
           ethnicity: '',
+          nationality: '',
           body_type: '',
           hair_color: '',
           eye_color: '',
           cup_size: '',
+          smoking: '',
+          drinking: '',
           ageMin: 18,
           ageMax: 50,
+          heightMin: 150,
+          heightMax: 190,
+          weightMin: 40,
+          weightMax: 100,
           priceMin: 100,
           priceMax: 1000,
           services: [],
+          languages: [],
           verifiedOnly: false,
+          featuredOnly: false,
           tattoos: false,
           piercings: false,
+          activeToday: false,
           searchQuery: ''
         })}
       >
@@ -440,18 +602,28 @@ const Directory = () => {
   const [filters, setFilters] = useState({
     location: initialLocation,
     ethnicity: '',
+    nationality: '',
     body_type: '',
     hair_color: '',
     eye_color: '',
     cup_size: '',
+    smoking: '',
+    drinking: '',
     ageMin: 18,
     ageMax: 50,
+    heightMin: 150,
+    heightMax: 190,
+    weightMin: 40,
+    weightMax: 100,
     priceMin: 100,
     priceMax: 1000,
     services: [],
+    languages: [],
     verifiedOnly: false,
+    featuredOnly: false,
     tattoos: false,
     piercings: false,
+    activeToday: false,
     searchQuery: ''
   });
   
@@ -514,6 +686,10 @@ const Directory = () => {
     if (filters.ethnicity && escort.ethnicity !== filters.ethnicity) {
       return false;
     }
+
+    if (filters.nationality && escort.nationality !== filters.nationality) {
+      return false;
+    }
     
     if (filters.body_type && escort.body_type !== filters.body_type) {
       return false;
@@ -530,8 +706,20 @@ const Directory = () => {
     if (filters.cup_size && escort.cup_size !== filters.cup_size) {
       return false;
     }
+
+    if (filters.smoking && escort.smoking !== filters.smoking) {
+      return false;
+    }
+
+    if (filters.drinking && escort.drinking !== filters.drinking) {
+      return false;
+    }
     
     if (filters.verifiedOnly && !escort.verified) {
+      return false;
+    }
+
+    if (filters.featuredOnly && !escort.featured) {
       return false;
     }
     
@@ -542,6 +730,38 @@ const Directory = () => {
     if (filters.piercings && !escort.piercings) {
       return false;
     }
+
+    if (filters.activeToday) {
+      const today = new Date();
+      const lastActive = new Date(escort.last_active);
+      const diffTime = Math.abs(today.getTime() - lastActive.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays > 1) {
+        return false;
+      }
+    }
+
+    // Filter by services
+    if (filters.services && filters.services.length > 0) {
+      const escortServices = escort.services?.toLowerCase() || '';
+      const hasService = filters.services.some((service: string) => 
+        escortServices.includes(service.toLowerCase())
+      );
+      if (!hasService) {
+        return false;
+      }
+    }
+
+    // Filter by languages
+    if (filters.languages && filters.languages.length > 0) {
+      const escortLanguages = escort.languages?.toLowerCase() || '';
+      const hasLanguage = filters.languages.some((language: string) => 
+        escortLanguages.includes(language.toLowerCase())
+      );
+      if (!hasLanguage) {
+        return false;
+      }
+    }
     
     if (filters.searchQuery) {
       const query = filters.searchQuery.toLowerCase();
@@ -551,7 +771,8 @@ const Directory = () => {
         escort.location?.toLowerCase().includes(query) ||
         escort.services?.toLowerCase().includes(query) ||
         escort.ethnicity?.toLowerCase().includes(query) ||
-        escort.body_type?.toLowerCase().includes(query)
+        escort.body_type?.toLowerCase().includes(query) ||
+        escort.nationality?.toLowerCase().includes(query)
       );
     }
     
@@ -585,6 +806,10 @@ const Directory = () => {
         const aName = a.display_name || a.username || '';
         const bName = b.display_name || b.username || '';
         return aName.localeCompare(bName);
+      case 'last-active':
+        return new Date(b.last_active).getTime() - new Date(a.last_active).getTime();
+      case 'view-count':
+        return (b.view_count || 0) - (a.view_count || 0);
       default:
         return 0;
     }
@@ -640,7 +865,7 @@ const Directory = () => {
             <Search className="h-5 w-5 text-muted-foreground mx-2" />
             <Input 
               type="text" 
-              placeholder="Search by name, location, ethnicity, or service..."
+              placeholder="Search by name, location, ethnicity, service, or nationality..."
               className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-transparent bg-card text-foreground"
               value={filters.searchQuery}
               onChange={(e) => setFilters({ ...filters, searchQuery: e.target.value })}
@@ -662,13 +887,15 @@ const Directory = () => {
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">Sort by:</span>
                   <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="w-40">
+                    <SelectTrigger className="w-48">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="featured">Featured</SelectItem>
-                      <SelectItem value="rating">Rating</SelectItem>
+                      <SelectItem value="rating">Highest Rated</SelectItem>
                       <SelectItem value="newest">Newest</SelectItem>
+                      <SelectItem value="last-active">Recently Active</SelectItem>
+                      <SelectItem value="view-count">Most Viewed</SelectItem>
                       <SelectItem value="name">Name A-Z</SelectItem>
                       <SelectItem value="age-asc">Age (Youngest)</SelectItem>
                       <SelectItem value="age-desc">Age (Oldest)</SelectItem>
