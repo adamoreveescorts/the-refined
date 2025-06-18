@@ -179,7 +179,7 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
         return;
       }
 
-      // Create trial agency subscription
+      // Create trial agency subscription - use 'monthly' billing cycle with 0 price
       const trialEnd = new Date();
       trialEnd.setDate(trialEnd.getDate() + 7); // 7 days from now
 
@@ -189,9 +189,9 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
           agency_id: currentSession.user.id,
           total_seats: seats,
           used_seats: 0,
-          price_per_seat: 0,
+          price_per_seat: 0, // Free trial
           subscription_tier: 'platinum',
-          billing_cycle: 'trial',
+          billing_cycle: 'monthly', // Use valid billing cycle
           status: 'active',
           current_period_start: new Date().toISOString(),
           current_period_end: trialEnd.toISOString(),

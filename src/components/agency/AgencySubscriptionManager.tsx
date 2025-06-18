@@ -109,7 +109,8 @@ const AgencySubscriptionManager = ({
     return total.toString();
   };
 
-  const isTrialSubscription = subscription?.billing_cycle === 'trial';
+  // Check if this is a trial subscription (price_per_seat = 0 and period end within 7 days of start)
+  const isTrialSubscription = subscription?.price_per_seat === 0 && subscription?.current_period_end;
   const trialEndDate = subscription?.current_period_end ? new Date(subscription.current_period_end) : null;
   const daysLeft = trialEndDate ? Math.ceil((trialEndDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0;
 
