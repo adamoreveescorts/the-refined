@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import SubscriptionTierSelector, { SubscriptionTier } from "./SubscriptionTierSelector";
 import FreeTrialConfirmDialog from "./FreeTrialConfirmDialog";
+import AgencySubscriptionSetup from "./AgencySubscriptionSetup";
 
 interface StripePaymentFlowProps {
   role: "escort" | "agency";
@@ -79,15 +80,6 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
 
       console.log("Creating checkout with tier:", tier);
 
-      // Handle agency subscriptions differently
-      if (role === 'agency' && tier.perSeat) {
-        // For agency subscriptions, show success and redirect to dashboard
-        toast.success("Please complete your subscription setup in the agency dashboard");
-        // Redirect to agency dashboard instead of payment complete
-        window.location.href = '/agency/dashboard';
-        return;
-      }
-
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { role, tier: tier.id },
         headers: {
@@ -122,6 +114,63 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
     }
   };
 
+  const handleAgencySubscriptionCreate = async (seats: number, billingCycle: string) => {
+    setIsLoading(true);
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error("Session error:", sessionError);
+        throw new Error("Failed to get authentication session");
+      }
+      
+      const currentSession = session || userSession;
+      
+      if (!currentSession?.access_token) {
+        console.error("No session or access token found");
+        toast.error("Please log in to continue");
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('create-agency-subscription', {
+        body: {
+          agencyId: currentSession.user.id,
+          seats,
+          billingCycle,
+          pricePerSeat: getPricePerSeat(billingCycle) * 100 // Convert to cents
+        },
+        headers: {
+          Authorization: `Bearer ${currentSession.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, '_blank');
+        toast.success("Redirected to Stripe checkout. Complete your payment to activate your agency subscription.");
+        onPaymentComplete();
+      } else {
+        throw new Error("No checkout URL received");
+      }
+    } catch (error: any) {
+      console.error("Agency subscription error:", error);
+      toast.error(error.message || "Failed to create agency subscription");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getPricePerSeat = (billingCycle: string) => {
+    const pricing = {
+      weekly: 15,
+      monthly: 79,
+      quarterly: 189,
+      yearly: 399
+    };
+    return pricing[billingCycle as keyof typeof pricing] || 79;
+  };
+
   const handleTrialActivated = () => {
     checkSubscriptionStatus();
     onPaymentComplete();
@@ -142,12 +191,19 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <SubscriptionTierSelector 
-            onTierSelect={handleTierSelect}
-            role={role}
-            currentTier={subscriptionInfo?.subscription_tier}
-            hasUsedTrial={subscriptionInfo?.has_used_trial}
-          />
+          {role === 'agency' ? (
+            <AgencySubscriptionSetup 
+              onSubscriptionCreate={handleAgencySubscriptionCreate}
+              isLoading={isLoading}
+            />
+          ) : (
+            <SubscriptionTierSelector 
+              onTierSelect={handleTierSelect}
+              role={role}
+              currentTier={subscriptionInfo?.subscription_tier}
+              hasUsedTrial={subscriptionInfo?.has_used_trial}
+            />
+          )}
           
           <div className="flex justify-center">
             <button 
