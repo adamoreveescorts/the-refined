@@ -143,6 +143,7 @@ export type Database = {
           body_type: string | null
           created_at: string
           cup_size: string | null
+          dinner_rate: string | null
           display_name: string | null
           drinking: string | null
           email: string | null
@@ -152,12 +153,14 @@ export type Database = {
           gallery_images: string[] | null
           hair_color: string | null
           height: string | null
+          hourly_rate: string | null
           id: string
           is_active: boolean | null
           languages: string | null
           last_active: string | null
           location: string | null
           nationality: string | null
+          overnight_rate: string | null
           payment_status: string | null
           piercings: boolean | null
           profile_picture: string | null
@@ -169,6 +172,7 @@ export type Database = {
           status: string | null
           tags: string | null
           tattoos: boolean | null
+          two_hour_rate: string | null
           updated_at: string
           username: string | null
           verified: boolean | null
@@ -182,6 +186,7 @@ export type Database = {
           body_type?: string | null
           created_at?: string
           cup_size?: string | null
+          dinner_rate?: string | null
           display_name?: string | null
           drinking?: string | null
           email?: string | null
@@ -191,12 +196,14 @@ export type Database = {
           gallery_images?: string[] | null
           hair_color?: string | null
           height?: string | null
+          hourly_rate?: string | null
           id: string
           is_active?: boolean | null
           languages?: string | null
           last_active?: string | null
           location?: string | null
           nationality?: string | null
+          overnight_rate?: string | null
           payment_status?: string | null
           piercings?: boolean | null
           profile_picture?: string | null
@@ -208,6 +215,7 @@ export type Database = {
           status?: string | null
           tags?: string | null
           tattoos?: boolean | null
+          two_hour_rate?: string | null
           updated_at?: string
           username?: string | null
           verified?: boolean | null
@@ -221,6 +229,7 @@ export type Database = {
           body_type?: string | null
           created_at?: string
           cup_size?: string | null
+          dinner_rate?: string | null
           display_name?: string | null
           drinking?: string | null
           email?: string | null
@@ -230,12 +239,14 @@ export type Database = {
           gallery_images?: string[] | null
           hair_color?: string | null
           height?: string | null
+          hourly_rate?: string | null
           id?: string
           is_active?: boolean | null
           languages?: string | null
           last_active?: string | null
           location?: string | null
           nationality?: string | null
+          overnight_rate?: string | null
           payment_status?: string | null
           piercings?: boolean | null
           profile_picture?: string | null
@@ -247,6 +258,7 @@ export type Database = {
           status?: string | null
           tags?: string | null
           tattoos?: boolean | null
+          two_hour_rate?: string | null
           updated_at?: string
           username?: string | null
           verified?: boolean | null
