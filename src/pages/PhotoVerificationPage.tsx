@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,12 +8,14 @@ import CameraCapture from '@/components/verification/CameraCapture';
 import VerificationStatus from '@/components/verification/VerificationStatus';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, ArrowLeft } from 'lucide-react';
+import { Shield, ArrowLeft, TestTube } from 'lucide-react';
+import { testVerificationWorkflow, createTestPhoto } from '@/utils/verificationTestHelper';
 
 const PhotoVerificationPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [testing, setTesting] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [subscription, setSubscription] = useState<any>(null);
@@ -102,11 +103,11 @@ const PhotoVerificationPage = () => {
         .eq('user_id', session.user.id)
         .order('created_at', { ascending: false })
         .limit(1)
-        .maybeSingle(); // Use maybeSingle to avoid errors when no data
+        .maybeSingle();
 
       if (verificationError) {
         console.error('PhotoVerificationPage: Error fetching verification:', verificationError);
-        // Don't fail completely, just continue without verification data
+        toast.error('Failed to check verification status');
       }
 
       console.log('PhotoVerificationPage: Existing verification:', verificationData);
@@ -178,7 +179,7 @@ const PhotoVerificationPage = () => {
       
     } catch (error) {
       console.error('PhotoVerificationPage: Upload error:', error);
-      toast.error('Failed to submit verification photo. Please try again.');
+      toast.error(`Failed to submit verification photo: ${error.message}`);
     } finally {
       setUploading(false);
     }
@@ -192,6 +193,36 @@ const PhotoVerificationPage = () => {
   const cancelCapture = () => {
     console.log('PhotoVerificationPage: Cancelling camera capture');
     setShowCamera(false);
+  };
+
+  const handleTestWorkflow = async () => {
+    setTesting(true);
+    console.log('🧪 Testing photo verification workflow...');
+    
+    try {
+      const testResult = await testVerificationWorkflow();
+      
+      if (testResult.success) {
+        toast.success('✅ Verification workflow test passed!');
+        console.log('Test results:', testResult.data);
+        
+        // Show test results in console for debugging
+        if (testResult.data) {
+          console.log('Can verify:', testResult.data.canVerify);
+          console.log('User role:', testResult.data.user.role);
+          console.log('Subscription tier:', testResult.data.subscription.subscription_tier);
+          console.log('Existing verification:', testResult.data.existingVerification?.status);
+        }
+      } else {
+        toast.error(`❌ Test failed: ${testResult.error}`);
+        console.error('Test failed:', testResult.error);
+      }
+    } catch (error) {
+      console.error('Test error:', error);
+      toast.error('Test encountered an error');
+    } finally {
+      setTesting(false);
+    }
   };
 
   if (loading) {
@@ -221,12 +252,28 @@ const PhotoVerificationPage = () => {
               Back to Profile
             </Button>
             
-            <h1 className="text-3xl font-serif font-bold text-foreground mb-2">
-              Photo Verification
-            </h1>
-            <p className="text-muted-foreground">
-              Verify your identity to access premium features and build trust with clients
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-serif font-bold text-foreground mb-2">
+                  Photo Verification
+                </h1>
+                <p className="text-muted-foreground">
+                  Verify your identity to access premium features and build trust with clients
+                </p>
+              </div>
+              
+              {process.env.NODE_ENV === 'development' && (
+                <Button 
+                  variant="outline" 
+                  onClick={handleTestWorkflow}
+                  disabled={testing}
+                  className="ml-4"
+                >
+                  <TestTube className="h-4 w-4 mr-2" />
+                  {testing ? 'Testing...' : 'Test Workflow'}
+                </Button>
+              )}
+            </div>
           </div>
 
           {uploading && (
