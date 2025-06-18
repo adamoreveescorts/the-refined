@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -321,12 +322,12 @@ const ProfileEditModal = ({ profile, open, onOpenChange, onProfileUpdate }: Prof
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="ethnicity">Ethnicity</Label>
-                  <Select value={formData.ethnicity} onValueChange={(value) => setFormData({ ...formData, ethnicity: value })}>
+                  <Select value={formData.ethnicity || "not_specified"} onValueChange={(value) => setFormData({ ...formData, ethnicity: value === "not_specified" ? "" : value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select ethnicity" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Not specified</SelectItem>
+                      <SelectItem value="not_specified">Not specified</SelectItem>
                       <SelectItem value="Asian">Asian</SelectItem>
                       <SelectItem value="Black">Black</SelectItem>
                       <SelectItem value="Caucasian">Caucasian</SelectItem>
@@ -341,12 +342,12 @@ const ProfileEditModal = ({ profile, open, onOpenChange, onProfileUpdate }: Prof
 
                 <div>
                   <Label htmlFor="body_type">Body Type</Label>
-                  <Select value={formData.body_type} onValueChange={(value) => setFormData({ ...formData, body_type: value })}>
+                  <Select value={formData.body_type || "not_specified"} onValueChange={(value) => setFormData({ ...formData, body_type: value === "not_specified" ? "" : value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select body type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Not specified</SelectItem>
+                      <SelectItem value="not_specified">Not specified</SelectItem>
                       <SelectItem value="Petite">Petite</SelectItem>
                       <SelectItem value="Slim">Slim</SelectItem>
                       <SelectItem value="Athletic">Athletic</SelectItem>
@@ -360,12 +361,12 @@ const ProfileEditModal = ({ profile, open, onOpenChange, onProfileUpdate }: Prof
 
                 <div>
                   <Label htmlFor="hair_color">Hair Color</Label>
-                  <Select value={formData.hair_color} onValueChange={(value) => setFormData({ ...formData, hair_color: value })}>
+                  <Select value={formData.hair_color || "not_specified"} onValueChange={(value) => setFormData({ ...formData, hair_color: value === "not_specified" ? "" : value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select hair color" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Not specified</SelectItem>
+                      <SelectItem value="not_specified">Not specified</SelectItem>
                       <SelectItem value="Blonde">Blonde</SelectItem>
                       <SelectItem value="Brunette">Brunette</SelectItem>
                       <SelectItem value="Black">Black</SelectItem>
@@ -379,12 +380,12 @@ const ProfileEditModal = ({ profile, open, onOpenChange, onProfileUpdate }: Prof
 
                 <div>
                   <Label htmlFor="eye_color">Eye Color</Label>
-                  <Select value={formData.eye_color} onValueChange={(value) => setFormData({ ...formData, eye_color: value })}>
+                  <Select value={formData.eye_color || "not_specified"} onValueChange={(value) => setFormData({ ...formData, eye_color: value === "not_specified" ? "" : value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select eye color" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Not specified</SelectItem>
+                      <SelectItem value="not_specified">Not specified</SelectItem>
                       <SelectItem value="Blue">Blue</SelectItem>
                       <SelectItem value="Brown">Brown</SelectItem>
                       <SelectItem value="Green">Green</SelectItem>
@@ -397,12 +398,12 @@ const ProfileEditModal = ({ profile, open, onOpenChange, onProfileUpdate }: Prof
 
                 <div>
                   <Label htmlFor="cup_size">Cup Size</Label>
-                  <Select value={formData.cup_size} onValueChange={(value) => setFormData({ ...formData, cup_size: value })}>
+                  <Select value={formData.cup_size || "not_specified"} onValueChange={(value) => setFormData({ ...formData, cup_size: value === "not_specified" ? "" : value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select cup size" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Not specified</SelectItem>
+                      <SelectItem value="not_specified">Not specified</SelectItem>
                       <SelectItem value="A">A</SelectItem>
                       <SelectItem value="B">B</SelectItem>
                       <SelectItem value="C">C</SelectItem>
@@ -458,12 +459,12 @@ const ProfileEditModal = ({ profile, open, onOpenChange, onProfileUpdate }: Prof
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="smoking">Smoking</Label>
-                  <Select value={formData.smoking} onValueChange={(value) => setFormData({ ...formData, smoking: value })}>
+                  <Select value={formData.smoking || "not_specified"} onValueChange={(value) => setFormData({ ...formData, smoking: value === "not_specified" ? "" : value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select option" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Not specified</SelectItem>
+                      <SelectItem value="not_specified">Not specified</SelectItem>
                       <SelectItem value="Non-smoker">Non-smoker</SelectItem>
                       <SelectItem value="Light smoker">Light smoker</SelectItem>
                       <SelectItem value="Social smoker">Social smoker</SelectItem>
@@ -474,12 +475,12 @@ const ProfileEditModal = ({ profile, open, onOpenChange, onProfileUpdate }: Prof
 
                 <div>
                   <Label htmlFor="drinking">Drinking</Label>
-                  <Select value={formData.drinking} onValueChange={(value) => setFormData({ ...formData, drinking: value })}>
+                  <Select value={formData.drinking || "not_specified"} onValueChange={(value) => setFormData({ ...formData, drinking: value === "not_specified" ? "" : value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select option" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Not specified</SelectItem>
+                      <SelectItem value="not_specified">Not specified</SelectItem>
                       <SelectItem value="Non-drinker">Non-drinker</SelectItem>
                       <SelectItem value="Light drinker">Light drinker</SelectItem>
                       <SelectItem value="Social drinker">Social drinker</SelectItem>
