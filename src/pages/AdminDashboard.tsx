@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -110,7 +111,7 @@ const AdminDashboard = () => {
 
         {/* Stats Overview */}
         <div className="mb-8">
-          <AdminStats />
+          <AdminStats profiles={profiles} />
         </div>
 
         {/* Data Cleanup Section */}
