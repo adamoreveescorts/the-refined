@@ -84,9 +84,9 @@ const NavBar = () => {
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-3">
               <img 
-                src="/lovable-uploads/914e2b93-bab1-4461-98df-d6e671f505b9.png" 
+                src="/lovable-uploads/c7f73a42-f6fb-425c-9093-0b7af0c553c2.png" 
                 alt="Adam or Eve Escorts"
-                className="h-14 w-auto"
+                className="h-42 w-auto"
               />
               <span className="text-xl font-bold text-foreground">Adam or Eve Escorts</span>
             </Link>
