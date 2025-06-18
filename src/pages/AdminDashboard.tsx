@@ -14,6 +14,7 @@ import ProfileManagementTable from '@/components/admin/ProfileManagementTable';
 import AdminStats from '@/components/admin/AdminStats';
 import AdminMessagingTab from '@/components/admin/AdminMessagingTab';
 import VerificationManagementTab from '@/components/admin/VerificationManagementTab';
+import ProfileDataCleanup from '@/components/admin/ProfileDataCleanup';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -98,126 +99,135 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-gray-50">
       <NavBar />
       
-      <main className="flex-grow bg-background py-8">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Manage escort profiles and platform content</p>
-          </div>
-
-          <AdminStats profiles={profiles} />
-
-          <Tabs defaultValue="profiles" className="mt-8">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="profiles">Profile Management</TabsTrigger>
-              <TabsTrigger value="verifications">Verifications</TabsTrigger>
-              <TabsTrigger value="messaging">Messaging</TabsTrigger>
-              <TabsTrigger value="content">Content Management</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="profiles" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>Profile Management</span>
-                    <div className="flex gap-2">
-                      <div className="relative">
-                        <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                          placeholder="Search profiles..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className="pl-10 w-64"
-                        />
-                      </div>
-                      <select
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                        className="px-3 py-2 border border-border rounded-md bg-background"
-                      >
-                        <option value="all">All Status</option>
-                        <option value="pending">Pending</option>
-                        <option value="approved">Approved</option>
-                        <option value="rejected">Rejected</option>
-                        <option value="inactive">Inactive</option>
-                      </select>
-                    </div>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ProfileManagementTable 
-                    profiles={filteredProfiles}
-                    onProfileUpdate={fetchProfiles}
-                  />
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="verifications" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Shield className="h-5 w-5 mr-2" />
-                    Photo Verification Management
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    Review and approve photo verifications from escorts and agencies
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <VerificationManagementTab />
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="messaging" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <MessageSquare className="h-5 w-5 mr-2" />
-                    Message Management
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    View and respond to conversations as escorts
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <AdminMessagingTab />
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="content" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Content Management</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">Content management features coming soon...</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="analytics" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Analytics</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">Analytics dashboard coming soon...</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+      <main className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
+          <p className="text-gray-600">Manage profiles, verifications, and platform statistics</p>
         </div>
+
+        {/* Stats Overview */}
+        <div className="mb-8">
+          <AdminStats />
+        </div>
+
+        {/* Data Cleanup Section */}
+        <div className="mb-8">
+          <div className="flex justify-center">
+            <ProfileDataCleanup />
+          </div>
+        </div>
+
+        {/* Management Tabs */}
+        <Tabs defaultValue="profiles" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="profiles">Profile Management</TabsTrigger>
+            <TabsTrigger value="verifications">Verifications</TabsTrigger>
+            <TabsTrigger value="messaging">Messaging</TabsTrigger>
+            <TabsTrigger value="content">Content Management</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="profiles" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Profile Management</span>
+                  <div className="flex gap-2">
+                    <div className="relative">
+                      <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        placeholder="Search profiles..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10 w-64"
+                      />
+                    </div>
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      className="px-3 py-2 border border-border rounded-md bg-background"
+                    >
+                      <option value="all">All Status</option>
+                      <option value="pending">Pending</option>
+                      <option value="approved">Approved</option>
+                      <option value="rejected">Rejected</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ProfileManagementTable 
+                  profiles={filteredProfiles}
+                  onProfileUpdate={fetchProfiles}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="verifications" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Shield className="h-5 w-5 mr-2" />
+                  Photo Verification Management
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Review and approve photo verifications from escorts and agencies
+                </p>
+              </CardHeader>
+              <CardContent>
+                <VerificationManagementTab />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="messaging" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <MessageSquare className="h-5 w-5 mr-2" />
+                  Message Management
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  View and respond to conversations as escorts
+                </p>
+              </CardHeader>
+              <CardContent>
+                <AdminMessagingTab />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="content" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Content Management</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">Content management features coming soon...</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="analytics" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Analytics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">Analytics dashboard coming soon...</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </main>
       
       <Footer />
