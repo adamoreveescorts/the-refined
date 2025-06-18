@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -81,11 +82,11 @@ const NavBar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-3">
+            <Link to="/" className="flex items-center space-x-2">
               <img 
                 src="/lovable-uploads/c7f73a42-f6fb-425c-9093-0b7af0c553c2.png" 
                 alt="Adam or Eve Escorts"
-                className="h-16 w-auto"
+                className="h-32 w-auto"
               />
               <span className="text-xl font-bold text-foreground">Adam or Eve Escorts</span>
             </Link>
