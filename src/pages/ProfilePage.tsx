@@ -5,11 +5,10 @@ import { toast } from 'sonner';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Check, Clock, Heart, MapPin, MessageSquare, Star, User, Mail, Phone } from 'lucide-react';
+import { Calendar, Check, Clock, Heart, MapPin, Star, Mail, Phone } from 'lucide-react';
 import { MessageButton } from '@/components/messaging/MessageButton';
 
 interface RatesData {
@@ -20,9 +19,7 @@ interface RatesData {
 }
 
 const ProfilePage = () => {
-  const {
-    id
-  } = useParams();
+  const { id } = useParams();
   const [escort, setEscort] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -159,6 +156,7 @@ const ProfilePage = () => {
     }
     return rates;
   };
+
   if (loading) {
     return <div className="min-h-screen flex flex-col">
         <NavBar />
@@ -171,6 +169,7 @@ const ProfilePage = () => {
         <Footer />
       </div>;
   }
+
   if (!escort) {
     return <div className="min-h-screen flex flex-col">
         <NavBar />
@@ -193,7 +192,9 @@ const ProfilePage = () => {
   // Parse rates from text format instead of JSON
   const rates = parseRatesFromText(escort.rates || '');
   const ratingCount = generateRatingCount(escort.rating || 4.5);
-  return <div className="min-h-screen flex flex-col">
+
+  return (
+    <div className="min-h-screen flex flex-col">
       <NavBar />
       
       <main className="flex-grow bg-gray-50 py-8">
@@ -215,71 +216,96 @@ const ProfilePage = () => {
               </div>
               
               {/* Thumbnail Gallery */}
-              {images.length > 1 && <div className="flex gap-3 overflow-x-auto pb-2">
-                  {images.map((image: string, index: number) => <button key={index} className={`flex-shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 ${index === activeImageIndex ? 'border-gold' : 'border-transparent'}`} onClick={() => setActiveImageIndex(index)}>
+              {images.length > 1 && (
+                <div className="flex gap-3 overflow-x-auto pb-2">
+                  {images.map((image: string, index: number) => (
+                    <button 
+                      key={index} 
+                      className={`flex-shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 ${index === activeImageIndex ? 'border-gold' : 'border-transparent'}`} 
+                      onClick={() => setActiveImageIndex(index)}
+                    >
                       <img src={image} alt={`${escort.display_name || escort.username} thumbnail ${index + 1}`} className="w-full h-full object-cover" />
-                    </button>)}
-                </div>}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             
             {/* Profile Info Section */}
-            <div className="lg:w-1/2">
+            <div className="lg:w-1/2 space-y-6">
               {/* Header with Name and Actions */}
-              <div className="flex justify-between items-start mb-4">
+              <div className="flex justify-between items-start">
                 <div>
                   <div className="flex items-center gap-2">
                     <h1 className="text-3xl font-serif font-bold text-navy">{escort.display_name || escort.username}</h1>
-                    {escort.verified && <Badge variant="outline" className="flex items-center border-green-500 text-green-600 text-xs">
+                    {escort.verified && (
+                      <Badge variant="outline" className="flex items-center border-green-500 text-green-600 text-xs">
                         <Check className="h-3 w-3 mr-1" />
                         Verified
-                      </Badge>}
-                    {escort.featured && <Badge variant="outline" className="flex items-center border-gold text-gold text-xs">
+                      </Badge>
+                    )}
+                    {escort.featured && (
+                      <Badge variant="outline" className="flex items-center border-gold text-gold text-xs">
                         <Star className="h-3 w-3 mr-1" />
                         Featured
-                      </Badge>}
+                      </Badge>
+                    )}
                   </div>
                   <div className="flex items-center gap-2 text-charcoal mt-1">
                     <span className="flex items-center">
                       <MapPin className="h-4 w-4 mr-1" />
                       {escort.location || 'Location not specified'}
                     </span>
-                    {escort.age && <>
+                    {escort.age && (
+                      <>
                         <span>•</span>
                         <span>{escort.age} years</span>
-                      </>}
+                      </>
+                    )}
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => setIsFavorite(!isFavorite)} className={`${isFavorite ? 'text-red-500 bg-red-50' : 'text-gray-400'} hover:bg-gray-100`}>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => setIsFavorite(!isFavorite)} 
+                  className={`${isFavorite ? 'text-red-500 bg-red-50' : 'text-gray-400'} hover:bg-gray-100`}
+                >
                   <Heart className={`h-5 w-5 ${isFavorite ? 'fill-red-500' : ''}`} />
                 </Button>
               </div>
               
               {/* Rating */}
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2">
                 <div className="flex">
-                  {[...Array(5)].map((_, i) => <Star key={i} className={`h-4 w-4 ${i < Math.floor(escort.rating || 4.5) ? 'text-gold fill-gold' : 'text-gray-300'}`} />)}
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className={`h-4 w-4 ${i < Math.floor(escort.rating || 4.5) ? 'text-gold fill-gold' : 'text-gray-300'}`} />
+                  ))}
                 </div>
                 <span className="font-medium">{escort.rating || 4.5}</span>
                 <span className="text-gray-500">({ratingCount} ratings)</span>
               </div>
               
-              <Tabs defaultValue="about" className="w-full">
-                <TabsList className="grid grid-cols-3 mb-4">
-                  <TabsTrigger value="about">About</TabsTrigger>
-                  <TabsTrigger value="details">Details</TabsTrigger>
-                  <TabsTrigger value="rates">Rates</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="about" className="space-y-4">
+              {/* About Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">About</CardTitle>
+                </CardHeader>
+                <CardContent>
                   <div className="prose max-w-none">
                     <p className="text-charcoal whitespace-pre-line">
                       {escort.bio || 'No biography available.'}
                     </p>
                   </div>
-                </TabsContent>
-                
-                <TabsContent value="details">
-                  <div className="grid grid-cols-2 gap-y-4 gap-x-8 mb-6">
+                </CardContent>
+              </Card>
+
+              {/* Details Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-y-4 gap-x-8">
                     <div>
                       <p className="text-sm text-gray-600 font-medium">Height</p>
                       <p className="text-gray-900 font-medium">{escort.height || 'Not specified'}</p>
@@ -290,74 +316,104 @@ const ProfilePage = () => {
                     </div>
                   </div>
                   
-                  {languages.length > 0 && <>
-                      <Separator className="my-4" />
-                      <div className="mb-6">
+                  {languages.length > 0 && (
+                    <>
+                      <Separator />
+                      <div>
                         <p className="text-sm text-gray-600 font-medium mb-2">Languages</p>
                         <div className="flex flex-wrap gap-2">
-                          {languages.map((language, index) => <Badge key={index} variant="outline" className="bg-zinc-900">{language}</Badge>)}
+                          {languages.map((language, index) => (
+                            <Badge key={index} variant="outline" className="bg-zinc-900">
+                              {language}
+                            </Badge>
+                          ))}
                         </div>
                       </div>
-                    </>}
+                    </>
+                  )}
                   
-                  {services.length > 0 && <div>
-                      <p className="text-sm text-gray-600 font-medium mb-2">Services Offered</p>
-                      <div className="flex flex-wrap gap-2">
-                        {services.map((service, index) => <Badge key={index} variant="secondary">{service}</Badge>)}
+                  {services.length > 0 && (
+                    <>
+                      <Separator />
+                      <div>
+                        <p className="text-sm text-gray-600 font-medium mb-2">Services Offered</p>
+                        <div className="flex flex-wrap gap-2">
+                          {services.map((service, index) => (
+                            <Badge key={index} variant="secondary">
+                              {service}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
-                    </div>}
+                    </>
+                  )}
                   
-                  {escort.availability && <>
-                      <Separator className="my-4" />
+                  {escort.availability && (
+                    <>
+                      <Separator />
                       <div>
                         <p className="text-sm text-gray-600 font-medium mb-2">Availability</p>
                         <p className="text-gray-900">{escort.availability}</p>
                       </div>
-                    </>}
-                </TabsContent>
-                
-                <TabsContent value="rates">
-                  <Card>
-                    <CardContent className="p-0">
-                      <div className="divide-y">
-                        {rates.hourly && <div className="flex justify-between items-center p-4">
-                            <div className="flex items-center">
-                              <Clock className="h-5 w-5 mr-2 text-gold" />
-                              <span>1 Hour</span>
-                            </div>
-                            <span className="font-medium">${rates.hourly}</span>
-                          </div>}
-                        {rates.twoHours && <div className="flex justify-between items-center p-4">
-                            <div className="flex items-center">
-                              <Clock className="h-5 w-5 mr-2 text-gold" />
-                              <span>2 Hours</span>
-                            </div>
-                            <span className="font-medium">${rates.twoHours}</span>
-                          </div>}
-                        {rates.dinner && <div className="flex justify-between items-center p-4">
-                            <div className="flex items-center">
-                              <Calendar className="h-5 w-5 mr-2 text-gold" />
-                              <span>Dinner Date</span>
-                            </div>
-                            <span className="font-medium">${rates.dinner}</span>
-                          </div>}
-                        {rates.overnight && <div className="flex justify-between items-center p-4">
-                            <div className="flex items-center">
-                              <Calendar className="h-5 w-5 mr-2 text-gold" />
-                              <span>Overnight</span>
-                            </div>
-                            <span className="font-medium">${rates.overnight}</span>
-                          </div>}
-                        {!rates.hourly && !rates.twoHours && !rates.dinner && !rates.overnight && <div className="p-4 text-center text-gray-500">
-                            <p>Rates not specified. Please contact for pricing.</p>
-                          </div>}
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Rates Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Rates</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="divide-y">
+                    {rates.hourly && (
+                      <div className="flex justify-between items-center p-4">
+                        <div className="flex items-center">
+                          <Clock className="h-5 w-5 mr-2 text-gold" />
+                          <span>1 Hour</span>
+                        </div>
+                        <span className="font-medium">${rates.hourly}</span>
                       </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              </Tabs>
+                    )}
+                    {rates.twoHours && (
+                      <div className="flex justify-between items-center p-4">
+                        <div className="flex items-center">
+                          <Clock className="h-5 w-5 mr-2 text-gold" />
+                          <span>2 Hours</span>
+                        </div>
+                        <span className="font-medium">${rates.twoHours}</span>
+                      </div>
+                    )}
+                    {rates.dinner && (
+                      <div className="flex justify-between items-center p-4">
+                        <div className="flex items-center">
+                          <Calendar className="h-5 w-5 mr-2 text-gold" />
+                          <span>Dinner Date</span>
+                        </div>
+                        <span className="font-medium">${rates.dinner}</span>
+                      </div>
+                    )}
+                    {rates.overnight && (
+                      <div className="flex justify-between items-center p-4">
+                        <div className="flex items-center">
+                          <Calendar className="h-5 w-5 mr-2 text-gold" />
+                          <span>Overnight</span>
+                        </div>
+                        <span className="font-medium">${rates.overnight}</span>
+                      </div>
+                    )}
+                    {!rates.hourly && !rates.twoHours && !rates.dinner && !rates.overnight && (
+                      <div className="p-4 text-center text-gray-500">
+                        <p>Rates not specified. Please contact for pricing.</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
               
-              <div className="mt-6 flex flex-col gap-4">
+              {/* Contact Actions */}
+              <div className="flex flex-col gap-4">
                 <MessageButton escortId={escort.id} escortName={escort.display_name || escort.username} />
                 
                 <div className="grid grid-cols-2 gap-3">
@@ -390,6 +446,8 @@ const ProfilePage = () => {
       </main>
       
       <Footer />
-    </div>;
+    </div>
+  );
 };
+
 export default ProfilePage;
