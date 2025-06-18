@@ -43,78 +43,92 @@ const AddEscortDialog = ({
 
     setLoading(true);
     try {
-      // First, check if a profile with this email already exists
+      // Check if an invitation already exists for this email
+      const { data: existingInvitation, error: invitationError } = await supabase
+        .from('escort_invitations')
+        .select('id, status')
+        .eq('agency_id', agencyId)
+        .eq('email', email.toLowerCase())
+        .single();
+
+      if (invitationError && invitationError.code !== 'PGRST116') {
+        throw invitationError;
+      }
+
+      if (existingInvitation) {
+        if (existingInvitation.status === 'pending') {
+          toast.error('An invitation has already been sent to this email address');
+          return;
+        } else if (existingInvitation.status === 'accepted') {
+          toast.error('This escort is already part of your agency');
+          return;
+        }
+      }
+
+      // Check if a profile with this email already exists and is associated with another agency
       const { data: existingProfile, error: profileError } = await supabase
         .from('profiles')
         .select('id, role, agency_id')
         .eq('email', email.toLowerCase())
         .single();
 
-      let escortId: string;
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error('Error checking existing profile:', profileError);
+      }
 
       if (existingProfile) {
-        // Profile exists, check if it's available
         if (existingProfile.role !== 'escort') {
           toast.error('This email is associated with a non-escort account');
           return;
         }
         
-        if (existingProfile.agency_id) {
+        if (existingProfile.agency_id && existingProfile.agency_id !== agencyId) {
           toast.error('This escort is already associated with another agency');
           return;
         }
-
-        escortId = existingProfile.id;
-        
-        // Update the existing profile to link to this agency
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ agency_id: agencyId })
-          .eq('id', escortId);
-
-        if (updateError) throw updateError;
-      } else {
-        // Generate a UUID for the new profile
-        const newId = crypto.randomUUID();
-        
-        // Create new escort profile
-        const { data: newProfile, error: createError } = await supabase
-          .from('profiles')
-          .insert({
-            id: newId,
-            email: email.toLowerCase(),
-            display_name: displayName,
-            role: 'escort',
-            agency_id: agencyId,
-            status: 'pending',
-            is_active: false
-          })
-          .select('id')
-          .single();
-
-        if (createError) throw createError;
-        escortId = newProfile.id;
       }
 
-      // Create the agency-escort relationship
-      const { error: relationError } = await supabase
-        .from('agency_escorts')
+      // Create the invitation
+      const { error: createError } = await supabase
+        .from('escort_invitations')
         .insert({
           agency_id: agencyId,
-          escort_id: escortId,
+          email: email.toLowerCase(),
+          display_name: displayName,
           status: 'pending'
         });
 
-      if (relationError) throw relationError;
+      if (createError) throw createError;
 
-      toast.success('Escort added successfully! They will receive an invitation to complete their profile.');
+      // Send invitation email via edge function
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          await supabase.functions.invoke('send-escort-invitation', {
+            body: {
+              email: email.toLowerCase(),
+              displayName: displayName,
+              agencyId: agencyId
+            },
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          });
+        }
+      } catch (emailError) {
+        console.error('Error sending invitation email:', emailError);
+        // Don't fail the whole process if email fails
+        toast.success('Invitation created successfully! (Email sending failed - please contact the escort directly)');
+      }
+
+      toast.success('Invitation sent successfully! The escort will receive an email to join your agency.');
       onEscortAdded();
       onOpenChange(false);
       setEmail('');
       setDisplayName('');
     } catch (error) {
-      console.error('Error adding escort:', error);
-      toast.error('Failed to add escort');
+      console.error('Error sending invitation:', error);
+      toast.error('Failed to send invitation');
     } finally {
       setLoading(false);
     }
@@ -126,7 +140,7 @@ const AddEscortDialog = ({
         <DialogHeader>
           <DialogTitle className="flex items-center">
             <UserPlus className="h-5 w-5 mr-2" />
-            Add New Escort
+            Invite New Escort
           </DialogTitle>
         </DialogHeader>
         
@@ -164,9 +178,15 @@ const AddEscortDialog = ({
             </p>
             {availableSeats <= 0 && (
               <p className="text-sm text-red-600 mt-1">
-                No available seats. Please upgrade your subscription to add more escorts.
+                No available seats. Please upgrade your subscription to invite more escorts.
               </p>
             )}
+          </div>
+
+          <div className="bg-blue-50 p-3 rounded-md">
+            <p className="text-sm text-blue-800">
+              An invitation email will be sent to the escort. They will need to sign up and accept the invitation to join your agency.
+            </p>
           </div>
 
           <DialogFooter>
@@ -183,7 +203,7 @@ const AddEscortDialog = ({
               disabled={loading || availableSeats <= 0}
               className="bg-secondary hover:bg-secondary/90"
             >
-              {loading ? 'Adding...' : 'Add Escort'}
+              {loading ? 'Sending...' : 'Send Invitation'}
             </Button>
           </DialogFooter>
         </form>

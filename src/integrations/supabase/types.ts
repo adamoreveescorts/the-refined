@@ -152,6 +152,56 @@ export type Database = {
           },
         ]
       }
+      escort_invitations: {
+        Row: {
+          accepted_at: string | null
+          agency_id: string
+          created_at: string
+          display_name: string | null
+          email: string
+          expires_at: string
+          id: string
+          invitation_token: string
+          invited_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          agency_id: string
+          created_at?: string
+          display_name?: string | null
+          email: string
+          expires_at?: string
+          id?: string
+          invitation_token?: string
+          invited_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          agency_id?: string
+          created_at?: string
+          display_name?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          invitation_token?: string
+          invited_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escort_invitations_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           admin_reply: boolean | null

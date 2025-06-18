@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Plus, Settings, CreditCard, Crown } from 'lucide-react';
+import { Users, Plus, Settings, CreditCard, Crown, Mail } from 'lucide-react';
 import EscortManagementTable from './EscortManagementTable';
+import InvitationManagementTable from './InvitationManagementTable';
 import AddEscortDialog from './AddEscortDialog';
 import AgencySubscriptionManager from './AgencySubscriptionManager';
 
@@ -17,6 +18,7 @@ interface AgencyDashboardProps {
 
 const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
   const [escorts, setEscorts] = useState([]);
+  const [invitations, setInvitations] = useState([]);
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAddEscort, setShowAddEscort] = useState(false);
@@ -50,6 +52,16 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
       if (escortError) throw escortError;
       setEscorts(escortData || []);
 
+      // Fetch escort invitations
+      const { data: invitationData, error: invitationError } = await supabase
+        .from('escort_invitations')
+        .select('*')
+        .eq('agency_id', agencyId)
+        .order('invited_at', { ascending: false });
+
+      if (invitationError) throw invitationError;
+      setInvitations(invitationData || []);
+
       // Fetch agency subscription
       const { data: subData, error: subError } = await supabase
         .from('agency_subscriptions')
@@ -81,6 +93,8 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
     return subscription.used_seats < subscription.total_seats;
   };
 
+  const pendingInvitations = invitations.filter(inv => inv.status === 'pending').length;
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -101,12 +115,12 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
           className="bg-secondary hover:bg-secondary/90"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Add Escort
+          Invite Escort
         </Button>
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
@@ -136,7 +150,19 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
-              <Settings className="h-8 w-8 text-blue-500" />
+              <Mail className="h-8 w-8 text-blue-500" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-muted-foreground">Pending Invites</p>
+                <p className="text-2xl font-bold">{pendingInvitations}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <Settings className="h-8 w-8 text-purple-500" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-muted-foreground">Available Seats</p>
                 <p className="text-2xl font-bold">
@@ -166,6 +192,11 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
       <Tabs defaultValue="escorts" className="space-y-4">
         <TabsList>
           <TabsTrigger value="escorts">Escort Management</TabsTrigger>
+          <TabsTrigger value="invitations">
+            Invitations {pendingInvitations > 0 && (
+              <Badge className="ml-2 bg-blue-500 text-white">{pendingInvitations}</Badge>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="subscription">Subscription & Billing</TabsTrigger>
         </TabsList>
 
@@ -178,6 +209,21 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
               <EscortManagementTable 
                 escorts={escorts} 
                 onEscortUpdate={fetchAgencyData}
+                agencyId={agencyId}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="invitations">
+          <Card>
+            <CardHeader>
+              <CardTitle>Escort Invitations</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <InvitationManagementTable 
+                invitations={invitations}
+                onInvitationUpdate={fetchAgencyData}
                 agencyId={agencyId}
               />
             </CardContent>
