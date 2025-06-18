@@ -6,10 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Plus, Settings, CreditCard, Crown, Mail } from 'lucide-react';
+import { Users, Plus, Settings, CreditCard, Crown, Mail, UserPlus } from 'lucide-react';
 import EscortManagementTable from './EscortManagementTable';
 import InvitationManagementTable from './InvitationManagementTable';
 import AddEscortDialog from './AddEscortDialog';
+import DirectAddEscortDialog from './DirectAddEscortDialog';
 import AgencySubscriptionManager from './AgencySubscriptionManager';
 
 interface AgencyDashboardProps {
@@ -22,6 +23,7 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAddEscort, setShowAddEscort] = useState(false);
+  const [showDirectAddEscort, setShowDirectAddEscort] = useState(false);
 
   useEffect(() => {
     fetchAgencyData();
@@ -109,14 +111,24 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-foreground">Agency Dashboard</h1>
-        <Button
-          onClick={() => setShowAddEscort(true)}
-          disabled={!canAddMoreEscorts()}
-          className="bg-secondary hover:bg-secondary/90"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Invite Escort
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => setShowDirectAddEscort(true)}
+            disabled={!canAddMoreEscorts()}
+            className="bg-secondary hover:bg-secondary/90"
+          >
+            <UserPlus className="h-4 w-4 mr-2" />
+            Add Escort
+          </Button>
+          <Button
+            onClick={() => setShowAddEscort(true)}
+            disabled={!canAddMoreEscorts()}
+            variant="outline"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Invite Escort
+          </Button>
+        </div>
       </div>
 
       {/* Overview Cards */}
@@ -242,6 +254,14 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
       <AddEscortDialog
         open={showAddEscort}
         onOpenChange={setShowAddEscort}
+        agencyId={agencyId}
+        onEscortAdded={fetchAgencyData}
+        availableSeats={subscription ? subscription.total_seats - subscription.used_seats : 0}
+      />
+
+      <DirectAddEscortDialog
+        open={showDirectAddEscort}
+        onOpenChange={setShowDirectAddEscort}
         agencyId={agencyId}
         onEscortAdded={fetchAgencyData}
         availableSeats={subscription ? subscription.total_seats - subscription.used_seats : 0}
