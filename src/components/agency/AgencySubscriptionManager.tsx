@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { CreditCard, Plus, Minus, Settings } from 'lucide-react';
+import { CreditCard, Plus, Minus, Settings, Crown, Calendar } from 'lucide-react';
 
 interface AgencySubscriptionManagerProps {
   agencyId: string;
@@ -109,24 +109,53 @@ const AgencySubscriptionManager = ({
     return total.toString();
   };
 
+  const isTrialSubscription = subscription?.billing_cycle === 'trial';
+  const trialEndDate = subscription?.current_period_end ? new Date(subscription.current_period_end) : null;
+  const daysLeft = trialEndDate ? Math.ceil((trialEndDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0;
+
   return (
     <div className="space-y-6">
       {/* Current Subscription Status */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
-            <CreditCard className="h-5 w-5 mr-2" />
+            {isTrialSubscription ? <Crown className="h-5 w-5 mr-2 text-secondary" /> : <CreditCard className="h-5 w-5 mr-2" />}
             Current Subscription
           </CardTitle>
         </CardHeader>
         <CardContent>
           {subscription ? (
             <div className="space-y-4">
+              {isTrialSubscription && (
+                <div className="bg-secondary/10 border border-secondary/20 rounded-lg p-4 mb-4">
+                  <div className="flex items-center mb-2">
+                    <Crown className="h-4 w-4 text-secondary mr-2" />
+                    <span className="font-semibold text-secondary">Free Trial Active</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Days Remaining</p>
+                      <p className="text-lg font-semibold text-secondary">{Math.max(0, daysLeft)} days</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Trial Ends</p>
+                      <p className="text-lg font-semibold">{trialEndDate?.toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  {daysLeft <= 3 && daysLeft > 0 && (
+                    <div className="mt-3 p-2 bg-orange-50 border border-orange-200 rounded text-sm text-orange-800">
+                      <Calendar className="h-4 w-4 inline mr-1" />
+                      Your trial expires soon. Choose a plan below to continue.
+                    </div>
+                  )}
+                </div>
+              )}
+              
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Status</p>
                   <Badge className={subscription.status === 'active' ? 'bg-green-500' : 'bg-orange-500'}>
-                    {subscription.status}
+                    {isTrialSubscription ? 'Free Trial' : subscription.status}
                   </Badge>
                 </div>
                 <div>
@@ -139,16 +168,20 @@ const AgencySubscriptionManager = ({
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Billing Cycle</p>
-                  <p className="text-lg font-semibold capitalize">{subscription.billing_cycle}</p>
+                  <p className="text-lg font-semibold capitalize">
+                    {isTrialSubscription ? 'Trial' : subscription.billing_cycle}
+                  </p>
                 </div>
               </div>
               
-              <div className="flex gap-2">
-                <Button onClick={handleManageSubscription} variant="outline">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Manage Subscription
-                </Button>
-              </div>
+              {!isTrialSubscription && (
+                <div className="flex gap-2">
+                  <Button onClick={handleManageSubscription} variant="outline">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Manage Subscription
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-center py-6">
@@ -162,9 +195,14 @@ const AgencySubscriptionManager = ({
       {/* Subscription Plans */}
       <Card>
         <CardHeader>
-          <CardTitle>Subscription Plans</CardTitle>
+          <CardTitle>
+            {isTrialSubscription ? 'Upgrade Your Plan' : 'Subscription Plans'}
+          </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Choose your billing cycle and number of escort seats
+            {isTrialSubscription 
+              ? 'Choose a plan to continue after your trial ends'
+              : 'Choose your billing cycle and number of escort seats'
+            }
           </p>
         </CardHeader>
         <CardContent>

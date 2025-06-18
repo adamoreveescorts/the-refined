@@ -4,10 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Minus, Users } from 'lucide-react';
+import { Plus, Minus, Users, Crown } from 'lucide-react';
 
 interface AgencySubscriptionSetupProps {
   onSubscriptionCreate: (seats: number, billingCycle: string) => void;
+  onTrialActivate: (seats: number) => void;
   isLoading: boolean;
 }
 
@@ -18,7 +19,7 @@ const PRICING = {
   yearly: 399
 };
 
-const AgencySubscriptionSetup = ({ onSubscriptionCreate, isLoading }: AgencySubscriptionSetupProps) => {
+const AgencySubscriptionSetup = ({ onSubscriptionCreate, onTrialActivate, isLoading }: AgencySubscriptionSetupProps) => {
   const [seats, setSeats] = useState(1);
 
   const calculateMonthlyTotal = (seats: number, cycle: string) => {
@@ -38,8 +39,61 @@ const AgencySubscriptionSetup = ({ onSubscriptionCreate, isLoading }: AgencySubs
           Agency Subscription Setup
         </h2>
         <p className="text-muted-foreground">
-          Choose your billing cycle and number of escort seats to get started
+          Start with a free trial or choose your billing cycle and number of escort seats
         </p>
+      </div>
+
+      {/* Free Trial Option */}
+      <Card className="border-secondary bg-secondary/5">
+        <CardHeader>
+          <CardTitle className="flex items-center text-secondary">
+            <Crown className="h-5 w-5 mr-2" />
+            Free 7-Day Trial
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-secondary mb-2">
+                FREE for 7 days
+              </div>
+              <p className="text-lg font-semibold mb-2">
+                Up to 5 escort seats included
+              </p>
+              <p className="text-sm text-muted-foreground mb-4">
+                Full access to all premium features • No credit card required
+              </p>
+              <Button
+                onClick={() => onTrialActivate(5)}
+                disabled={isLoading}
+                className="w-full bg-secondary hover:bg-secondary/90 text-white"
+                size="lg"
+              >
+                {isLoading ? 'Activating...' : 'Start Free Trial'}
+              </Button>
+            </div>
+            <div className="bg-muted p-3 rounded-lg">
+              <h4 className="font-medium mb-2 text-sm">Trial includes:</h4>
+              <ul className="text-xs text-muted-foreground space-y-1">
+                <li>• Manage up to 5 escort profiles</li>
+                <li>• All Platinum features for each escort</li>
+                <li>• Agency dashboard with analytics</li>
+                <li>• Full 7 days of premium access</li>
+                <li>• No automatic billing after trial</li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Divider */}
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">Or choose a paid plan</span>
+        </div>
       </div>
 
       {/* Seat Selection */}
