@@ -18,66 +18,95 @@ const ChoosePlan = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkUserAndRole = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) {
-          toast.error("Please log in first");
-          navigate("/auth");
-          return;
-        }
-
-        setUser(session.user);
-
-        // Get user profile to check role
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('role, payment_status')
-          .eq('id', session.user.id)
-          .single();
-
-        if (error) {
-          console.error("Error fetching profile:", error);
-          toast.error("Error loading profile");
-          return;
-        }
-
-        if (!profile) {
-          toast.error("Profile not found");
-          navigate("/auth");
-          return;
-        }
-
-        // If user is a client or already has completed payment, redirect to home
-        if (profile.role === 'client' || profile.payment_status === 'completed') {
-          navigate("/");
-          return;
-        }
-
-        setUserRole(profile.role as UserRole);
-        
-        // For escorts and agencies, show the payment flow
-        if (profile.role === 'escort' || profile.role === 'agency') {
-          setShowPaymentFlow(true);
-        }
-
-      } catch (error) {
-        console.error("Error checking user:", error);
-        toast.error("Error loading page");
-        navigate("/auth");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     checkUserAndRole();
   }, [navigate]);
+
+  const checkUserAndRole = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error("Please log in first");
+        navigate("/auth");
+        return;
+      }
+
+      setUser(session.user);
+
+      // Get user profile to check role and subscription status
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('role, payment_status')
+        .eq('id', session.user.id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching profile:", error);
+        toast.error("Error loading profile");
+        return;
+      }
+
+      if (!profile) {
+        toast.error("Profile not found");
+        navigate("/auth");
+        return;
+      }
+
+      setUserRole(profile.role as UserRole);
+
+      // Handle different user roles and payment statuses
+      if (profile.role === 'client') {
+        // Clients don't need subscriptions, redirect to home
+        navigate("/");
+        return;
+      }
+
+      if (profile.role === 'agency') {
+        // For agencies, check if they have an active subscription
+        const { data: agencySubscription } = await supabase
+          .from('agency_subscriptions')
+          .select('status, billing_cycle')
+          .eq('agency_id', session.user.id)
+          .single();
+
+        if (agencySubscription?.status === 'active') {
+          // Agency has active subscription, redirect to dashboard
+          navigate("/agency/dashboard");
+          return;
+        } else {
+          // Agency needs subscription, show payment flow
+          setShowPaymentFlow(true);
+        }
+      } else if (profile.role === 'escort') {
+        // For escorts, check payment status
+        if (profile.payment_status === 'completed') {
+          navigate("/");
+          return;
+        } else {
+          // Escort needs subscription, show payment flow
+          setShowPaymentFlow(true);
+        }
+      }
+
+    } catch (error) {
+      console.error("Error checking user:", error);
+      toast.error("Error loading page");
+      navigate("/auth");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handlePaymentComplete = async () => {
     setShowPaymentFlow(false);
     toast.success("Plan selected successfully! Welcome to Adam or Eve Escorts.");
-    navigate("/");
+    
+    // Redirect based on user role
+    if (userRole === 'agency') {
+      navigate("/agency/dashboard");
+    } else {
+      navigate("/");
+    }
   };
 
   const handlePaymentCancel = () => {
@@ -115,7 +144,10 @@ const ChoosePlan = () => {
             Welcome to Adam or Eve Escorts!
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Your email has been verified. Now choose your subscription plan to get started.
+            {userRole === 'agency' 
+              ? "Choose your agency subscription plan to start managing escorts."
+              : "Your email has been verified. Now choose your subscription plan to get started."
+            }
           </p>
         </div>
 

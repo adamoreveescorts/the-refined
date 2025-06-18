@@ -47,6 +47,19 @@ const AgencyDashboardPage = () => {
         return;
       }
 
+      // Check if agency has active subscription
+      const { data: agencySubscription } = await supabase
+        .from('agency_subscriptions')
+        .select('status')
+        .eq('agency_id', session.user.id)
+        .single();
+
+      if (!agencySubscription || agencySubscription.status !== 'active') {
+        toast.error("Active subscription required. Please choose a plan to continue.");
+        navigate("/choose-plan");
+        return;
+      }
+
       setAgencyId(profile.id);
     } catch (error) {
       console.error("Agency access error:", error);

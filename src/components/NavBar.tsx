@@ -13,6 +13,7 @@ const NavBar = () => {
   const [user, setUser] = useState(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
 
   // Check for user session on component mount
   useEffect(() => {
@@ -33,6 +34,7 @@ const NavBar = () => {
         } else {
           setUnreadCount(0);
           setUserRole(null);
+          setHasActiveSubscription(false);
         }
       }
     );
@@ -50,6 +52,19 @@ const NavBar = () => {
 
       if (!error && data) {
         setUserRole(data.role);
+        
+        // Check subscription status for agencies
+        if (data.role === 'agency') {
+          const { data: agencySubscription } = await supabase
+            .from('agency_subscriptions')
+            .select('status')
+            .eq('agency_id', userId)
+            .single();
+          
+          setHasActiveSubscription(agencySubscription?.status === 'active');
+        } else {
+          setHasActiveSubscription(true); // Non-agencies don't need subscription checks for dashboard access
+        }
       }
     } catch (error) {
       console.error('Error fetching user role:', error);
@@ -96,6 +111,15 @@ const NavBar = () => {
     }
   };
 
+  const handleDashboardClick = (e: React.MouseEvent) => {
+    // For agencies without active subscription, redirect to pricing
+    if (userRole === 'agency' && !hasActiveSubscription) {
+      e.preventDefault();
+      navigate('/choose-plan');
+      return;
+    }
+  };
+
   const getRoleDashboardLink = () => {
     switch (userRole) {
       case 'agency':
@@ -110,7 +134,7 @@ const NavBar = () => {
   const getRoleDashboardLabel = () => {
     switch (userRole) {
       case 'agency':
-        return 'Agency Dashboard';
+        return hasActiveSubscription ? 'Agency Dashboard' : 'Choose Plan';
       case 'admin':
         return 'Admin Dashboard';
       default:
@@ -180,7 +204,7 @@ const NavBar = () => {
                     )}
                   </Button>
                 </Link>
-                <Link to={getRoleDashboardLink()}>
+                <Link to={getRoleDashboardLink()} onClick={handleDashboardClick}>
                   <Button variant="outline" size="sm" className="flex items-center">
                     {getRoleDashboardIcon()}
                     {getRoleDashboardLabel()}
@@ -250,7 +274,7 @@ const NavBar = () => {
                   </Link>
                 </div>
                 <div className="flex items-center px-3">
-                  <Link to={getRoleDashboardLink()} className="w-full">
+                  <Link to={getRoleDashboardLink()} className="w-full" onClick={handleDashboardClick}>
                     <Button variant="outline" className="w-full">
                       {getRoleDashboardIcon()}
                       {getRoleDashboardLabel()}
