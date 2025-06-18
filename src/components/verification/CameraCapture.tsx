@@ -1,5 +1,5 @@
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Camera, RotateCcw, Check } from 'lucide-react';
@@ -14,73 +14,166 @@ const CameraCapture = ({ onPhotoCapture, onCancel }: CameraCaptureProps) => {
   const [isStreaming, setIsStreaming] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
+  const [cameraError, setCameraError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
+  // Clean up stream when component unmounts
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
   const startCamera = async () => {
+    console.log('Starting camera...');
+    setCameraError(null);
+    
     try {
+      // Check if camera is available
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera not supported by this browser');
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { 
           width: { ideal: 1280 },
           height: { ideal: 720 },
           facingMode: 'user'
-        }
+        },
+        audio: false
       });
+      
+      console.log('Camera stream obtained:', stream);
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
-        setIsStreaming(true);
+        
+        // Wait for video to load before setting streaming state
+        videoRef.current.onloadedmetadata = () => {
+          console.log('Video metadata loaded');
+          if (videoRef.current) {
+            videoRef.current.play()
+              .then(() => {
+                console.log('Video playing successfully');
+                setIsStreaming(true);
+              })
+              .catch((playError) => {
+                console.error('Error playing video:', playError);
+                setCameraError('Failed to start video playback');
+                toast.error('Failed to start video playback');
+              });
+          }
+        };
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
-      toast.error('Unable to access camera. Please check your permissions.');
+      let errorMessage = 'Unable to access camera';
+      
+      if (error instanceof Error) {
+        if (error.name === 'NotAllowedError') {
+          errorMessage = 'Camera permission denied. Please allow camera access and try again.';
+        } else if (error.name === 'NotFoundError') {
+          errorMessage = 'No camera found. Please ensure a camera is connected.';
+        } else if (error.name === 'NotReadableError') {
+          errorMessage = 'Camera is already in use by another application.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      setCameraError(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
   const stopCamera = () => {
+    console.log('Stopping camera...');
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current.getTracks().forEach(track => {
+        console.log('Stopping track:', track.kind);
+        track.stop();
+      });
       streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
     }
     setIsStreaming(false);
   };
 
   const capturePhoto = useCallback(() => {
-    if (!videoRef.current || !canvasRef.current) return;
+    console.log('Capturing photo...');
+    if (!videoRef.current || !canvasRef.current) {
+      console.error('Video or canvas ref not available');
+      return;
+    }
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
 
-    if (!context) return;
+    if (!context) {
+      console.error('Could not get canvas context');
+      return;
+    }
+
+    // Check if video is ready
+    if (video.videoWidth === 0 || video.videoHeight === 0) {
+      console.error('Video not ready for capture');
+      toast.error('Video not ready. Please wait a moment and try again.');
+      return;
+    }
 
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     
+    console.log('Drawing video to canvas:', video.videoWidth, 'x', video.videoHeight);
     context.drawImage(video, 0, 0);
     
     canvas.toBlob((blob) => {
       if (blob) {
+        console.log('Photo captured, blob size:', blob.size);
         const photoUrl = URL.createObjectURL(blob);
         setCapturedPhoto(photoUrl);
         setPhotoBlob(blob);
         stopCamera();
+      } else {
+        console.error('Failed to create blob from canvas');
+        toast.error('Failed to capture photo. Please try again.');
       }
     }, 'image/jpeg', 0.8);
   }, []);
 
   const retakePhoto = () => {
+    console.log('Retaking photo...');
+    if (capturedPhoto) {
+      URL.revokeObjectURL(capturedPhoto);
+    }
     setCapturedPhoto(null);
     setPhotoBlob(null);
+    setCameraError(null);
     startCamera();
   };
 
   const confirmPhoto = () => {
+    console.log('Confirming photo...');
     if (photoBlob) {
       onPhotoCapture(photoBlob);
     }
+  };
+
+  const handleCancel = () => {
+    console.log('Cancelling camera capture...');
+    stopCamera();
+    if (capturedPhoto) {
+      URL.revokeObjectURL(capturedPhoto);
+    }
+    onCancel();
   };
 
   return (
@@ -95,6 +188,12 @@ const CameraCapture = ({ onPhotoCapture, onCancel }: CameraCaptureProps) => {
             Make sure your face is clearly visible and well-lit.
           </p>
         </div>
+
+        {cameraError && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <p className="text-sm text-red-800 text-center">{cameraError}</p>
+          </div>
+        )}
 
         <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
           {!isStreaming && !capturedPhoto && (
@@ -113,6 +212,7 @@ const CameraCapture = ({ onPhotoCapture, onCancel }: CameraCaptureProps) => {
               playsInline
               muted
               className="w-full h-full object-cover"
+              style={{ transform: 'scaleX(-1)' }}
             />
           )}
 
@@ -130,7 +230,7 @@ const CameraCapture = ({ onPhotoCapture, onCancel }: CameraCaptureProps) => {
         <div className="flex justify-center gap-4">
           {isStreaming && (
             <>
-              <Button variant="outline" onClick={onCancel}>
+              <Button variant="outline" onClick={handleCancel}>
                 Cancel
               </Button>
               <Button onClick={capturePhoto}>
@@ -151,6 +251,12 @@ const CameraCapture = ({ onPhotoCapture, onCancel }: CameraCaptureProps) => {
                 Use This Photo
               </Button>
             </>
+          )}
+
+          {!isStreaming && !capturedPhoto && cameraError && (
+            <Button variant="outline" onClick={handleCancel}>
+              Back
+            </Button>
           )}
         </div>
       </CardContent>
