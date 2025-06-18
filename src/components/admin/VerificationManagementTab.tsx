@@ -37,22 +37,37 @@ const VerificationManagementTab = () => {
 
   const fetchVerifications = async () => {
     try {
-      const { data, error } = await supabase
+      // First get verification records
+      const { data: verificationsData, error: verificationsError } = await supabase
         .from('photo_verifications')
-        .select(`
-          *,
-          profiles!photo_verifications_user_id_fkey (
-            display_name,
-            email,
-            username,
-            profile_picture,
-            role
-          )
-        `)
+        .select('*')
         .order('submitted_at', { ascending: false });
 
-      if (error) throw error;
-      setVerifications(data || []);
+      if (verificationsError) throw verificationsError;
+
+      // Then get user profiles separately to avoid foreign key issues
+      if (verificationsData && verificationsData.length > 0) {
+        const userIds = verificationsData.map(v => v.user_id);
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, display_name, email, username, profile_picture, role')
+          .in('id', userIds);
+
+        if (profilesError) {
+          console.error('Error fetching profiles:', profilesError);
+          // Continue without profile data rather than failing completely
+        }
+
+        // Manually join the data
+        const verificationsWithProfiles = verificationsData.map(verification => ({
+          ...verification,
+          profiles: profilesData?.find(profile => profile.id === verification.user_id) || null
+        }));
+
+        setVerifications(verificationsWithProfiles);
+      } else {
+        setVerifications([]);
+      }
     } catch (error) {
       console.error('Error fetching verifications:', error);
       toast.error('Error loading verifications');
@@ -63,9 +78,15 @@ const VerificationManagementTab = () => {
 
   const getVerificationPhoto = async (path: string) => {
     try {
-      const { data } = await supabase.storage
+      const { data, error } = await supabase.storage
         .from('verification-photos')
         .createSignedUrl(path, 3600); // 1 hour expiry
+      
+      if (error) {
+        console.error('Error creating signed URL:', error);
+        return null;
+      }
+      
       return data?.signedUrl || null;
     } catch (error) {
       console.error('Error getting signed URL:', error);
@@ -161,10 +182,10 @@ const VerificationManagementTab = () => {
                     </div>
                     <div>
                       <p className="font-medium">
-                        {verification.profiles?.display_name || verification.profiles?.username || 'Unknown'}
+                        {verification.profiles?.display_name || verification.profiles?.username || 'Unknown User'}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {verification.profiles?.email}
+                        {verification.profiles?.email || 'No email'}
                       </p>
                     </div>
                   </div>
@@ -239,13 +260,27 @@ const VerificationReviewModal = ({
 }: any) => {
   const [verificationPhotoUrl, setVerificationPhotoUrl] = useState<string | null>(null);
   const [loadingPhoto, setLoadingPhoto] = useState(true);
+  const [photoError, setPhotoError] = useState(false);
 
   useEffect(() => {
     if (verification?.verification_photo_url) {
-      getVerificationPhoto(verification.verification_photo_url).then(url => {
-        setVerificationPhotoUrl(url);
-        setLoadingPhoto(false);
-      });
+      setLoadingPhoto(true);
+      setPhotoError(false);
+      getVerificationPhoto(verification.verification_photo_url)
+        .then(url => {
+          if (url) {
+            setVerificationPhotoUrl(url);
+          } else {
+            setPhotoError(true);
+          }
+        })
+        .catch(error => {
+          console.error('Error loading verification photo:', error);
+          setPhotoError(true);
+        })
+        .finally(() => {
+          setLoadingPhoto(false);
+        });
     }
   }, [verification]);
 
@@ -264,6 +299,10 @@ const VerificationReviewModal = ({
                 src={verification.profile_photo_url} 
                 alt="Profile" 
                 className="w-full aspect-square object-cover rounded-lg border"
+                onError={(e) => {
+                  console.error('Profile photo failed to load');
+                  e.currentTarget.style.display = 'none';
+                }}
               />
             ) : (
               <div className="w-full aspect-square bg-muted rounded-lg flex items-center justify-center">
@@ -282,15 +321,20 @@ const VerificationReviewModal = ({
               <div className="w-full aspect-square bg-muted rounded-lg flex items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold"></div>
               </div>
+            ) : photoError ? (
+              <div className="w-full aspect-square bg-muted rounded-lg flex items-center justify-center">
+                <p className="text-muted-foreground">Failed to load verification photo</p>
+              </div>
             ) : verificationPhotoUrl ? (
               <img 
                 src={verificationPhotoUrl} 
                 alt="Verification" 
                 className="w-full aspect-square object-cover rounded-lg border"
+                onError={() => setPhotoError(true)}
               />
             ) : (
               <div className="w-full aspect-square bg-muted rounded-lg flex items-center justify-center">
-                <p className="text-muted-foreground">Failed to load photo</p>
+                <p className="text-muted-foreground">No verification photo</p>
               </div>
             )}
           </CardContent>
@@ -314,7 +358,7 @@ const VerificationReviewModal = ({
           disabled={updating}
         >
           <XCircle className="h-4 w-4 mr-2" />
-          Reject
+          {updating ? 'Updating...' : 'Reject'}
         </Button>
         <Button 
           onClick={onApprove}
@@ -322,7 +366,7 @@ const VerificationReviewModal = ({
           className="bg-green-500 hover:bg-green-600"
         >
           <CheckCircle className="h-4 w-4 mr-2" />
-          Approve
+          {updating ? 'Updating...' : 'Approve'}
         </Button>
       </div>
     </div>

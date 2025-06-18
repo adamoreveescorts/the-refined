@@ -26,14 +26,19 @@ const PhotoVerificationPage = () => {
   }, []);
 
   const checkAccess = async () => {
+    console.log('PhotoVerificationPage: Starting access check...');
+    
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
+        console.log('PhotoVerificationPage: No session found');
         toast.error('Please log in to access verification');
         navigate('/auth');
         return;
       }
+
+      console.log('PhotoVerificationPage: Session found, user ID:', session.user.id);
 
       // Get user profile
       const { data: profile, error: profileError } = await supabase
@@ -43,22 +48,25 @@ const PhotoVerificationPage = () => {
         .single();
 
       if (profileError) {
-        console.error('Error fetching profile:', profileError);
+        console.error('PhotoVerificationPage: Error fetching profile:', profileError);
         toast.error('Failed to load profile');
         navigate('/user-profile');
         return;
       }
 
+      console.log('PhotoVerificationPage: Profile loaded:', profile.role);
       setUserProfile(profile);
 
       // Check if user is escort or agency
       if (profile.role !== 'escort' && profile.role !== 'agency') {
+        console.log('PhotoVerificationPage: User role not eligible:', profile.role);
         toast.error('Photo verification is only available for escorts and agencies');
         navigate('/user-profile');
         return;
       }
 
       // Check subscription status
+      console.log('PhotoVerificationPage: Checking subscription...');
       const { data: subData, error: subError } = await supabase.functions.invoke('check-subscription', {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
@@ -66,39 +74,51 @@ const PhotoVerificationPage = () => {
       });
 
       if (subError) {
-        console.error('Error checking subscription:', subError);
+        console.error('PhotoVerificationPage: Error checking subscription:', subError);
         toast.error('Failed to check subscription status');
         navigate('/user-profile');
         return;
       }
 
+      console.log('PhotoVerificationPage: Subscription data:', subData);
       setSubscription(subData);
 
       // Check if user has access to verification (Platinum or Trial)
       const hasAccess = subData.subscription_tier === 'Platinum' || subData.is_trial_active;
       
       if (!hasAccess) {
+        console.log('PhotoVerificationPage: No access - tier:', subData.subscription_tier, 'trial:', subData.is_trial_active);
         toast.error('Photo verification requires a Platinum subscription or active trial');
         navigate('/user-profile');
         return;
       }
 
+      console.log('PhotoVerificationPage: Access granted, checking existing verification...');
+
       // Check existing verification
-      const { data: verificationData } = await supabase
+      const { data: verificationData, error: verificationError } = await supabase
         .from('photo_verifications')
         .select('*')
         .eq('user_id', session.user.id)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle(); // Use maybeSingle to avoid errors when no data
 
+      if (verificationError) {
+        console.error('PhotoVerificationPage: Error fetching verification:', verificationError);
+        // Don't fail completely, just continue without verification data
+      }
+
+      console.log('PhotoVerificationPage: Existing verification:', verificationData);
       setVerification(verificationData);
       
       // Can start verification if no pending verification exists
-      setCanStartVerification(!verificationData || verificationData.status === 'rejected');
+      const canStart = !verificationData || verificationData.status === 'rejected';
+      console.log('PhotoVerificationPage: Can start verification:', canStart);
+      setCanStartVerification(canStart);
       
     } catch (error) {
-      console.error('Access check error:', error);
+      console.error('PhotoVerificationPage: Access check error:', error);
       toast.error('An error occurred');
       navigate('/user-profile');
     } finally {
@@ -107,6 +127,7 @@ const PhotoVerificationPage = () => {
   };
 
   const handlePhotoCapture = async (photoBlob: Blob) => {
+    console.log('PhotoVerificationPage: Starting photo upload, blob size:', photoBlob.size);
     setUploading(true);
     
     try {
@@ -115,6 +136,8 @@ const PhotoVerificationPage = () => {
 
       // Upload photo to storage
       const fileName = `${session.user.id}/${Date.now()}.jpg`;
+      console.log('PhotoVerificationPage: Uploading to path:', fileName);
+      
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('verification-photos')
         .upload(fileName, photoBlob, {
@@ -122,26 +145,39 @@ const PhotoVerificationPage = () => {
           upsert: false
         });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('PhotoVerificationPage: Upload error:', uploadError);
+        throw uploadError;
+      }
+
+      console.log('PhotoVerificationPage: Photo uploaded successfully:', uploadData.path);
 
       // Save verification record
+      const verificationData = {
+        user_id: session.user.id,
+        verification_photo_url: uploadData.path,
+        profile_photo_url: userProfile?.profile_picture || null,
+        status: 'pending'
+      };
+
+      console.log('PhotoVerificationPage: Saving verification record:', verificationData);
+
       const { error: insertError } = await supabase
         .from('photo_verifications')
-        .insert({
-          user_id: session.user.id,
-          verification_photo_url: uploadData.path,
-          profile_photo_url: userProfile?.profile_picture || null,
-          status: 'pending'
-        });
+        .insert(verificationData);
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error('PhotoVerificationPage: Database insert error:', insertError);
+        throw insertError;
+      }
 
+      console.log('PhotoVerificationPage: Verification record saved successfully');
       toast.success('Verification photo submitted successfully! Review typically takes 24-48 hours.');
       setShowCamera(false);
       checkAccess(); // Refresh data
       
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error('PhotoVerificationPage: Upload error:', error);
       toast.error('Failed to submit verification photo. Please try again.');
     } finally {
       setUploading(false);
@@ -149,10 +185,12 @@ const PhotoVerificationPage = () => {
   };
 
   const startVerification = () => {
+    console.log('PhotoVerificationPage: Starting camera capture');
     setShowCamera(true);
   };
 
   const cancelCapture = () => {
+    console.log('PhotoVerificationPage: Cancelling camera capture');
     setShowCamera(false);
   };
 
@@ -163,7 +201,7 @@ const PhotoVerificationPage = () => {
         <div className="flex-grow flex items-center justify-center">
           <div className="text-center">
             <div className="w-16 h-16 border-4 border-secondary border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="mt-4 text-foreground">Loading...</p>
+            <p className="mt-4 text-foreground">Loading verification status...</p>
           </div>
         </div>
         <Footer />
@@ -237,6 +275,10 @@ const PhotoVerificationPage = () => {
                           src={userProfile.profile_picture} 
                           alt="Profile" 
                           className="w-32 h-32 rounded-lg object-cover border"
+                          onError={(e) => {
+                            console.error('Profile picture failed to load');
+                            e.currentTarget.style.display = 'none';
+                          }}
                         />
                       </div>
                     )}
