@@ -74,10 +74,14 @@ const AddEscortDialog = ({
 
         if (updateError) throw updateError;
       } else {
+        // Generate a UUID for the new profile
+        const newId = crypto.randomUUID();
+        
         // Create new escort profile
         const { data: newProfile, error: createError } = await supabase
           .from('profiles')
           .insert({
+            id: newId,
             email: email.toLowerCase(),
             display_name: displayName,
             role: 'escort',

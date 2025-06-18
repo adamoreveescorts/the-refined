@@ -81,9 +81,10 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
 
       // Handle agency subscriptions differently
       if (role === 'agency' && tier.perSeat) {
-        // For agency subscriptions, redirect to agency dashboard for seat selection
-        toast.success("Redirecting to agency dashboard for subscription setup");
-        onPaymentComplete();
+        // For agency subscriptions, show success and redirect to dashboard
+        toast.success("Please complete your subscription setup in the agency dashboard");
+        // Redirect to agency dashboard instead of payment complete
+        window.location.href = '/agency/dashboard';
         return;
       }
 

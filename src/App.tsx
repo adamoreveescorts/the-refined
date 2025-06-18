@@ -23,6 +23,7 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Cookies from "./pages/Cookies";
 import NotFound from "./pages/NotFound";
+import AgencyDashboardPage from "./pages/AgencyDashboardPage";
 import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ function App() {
               <Route path="/auth" element={<Auth />} />
               <Route path="/user-profile" element={<UserProfilePage />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/agency/dashboard" element={<AgencyDashboardPage />} />
               <Route path="/photo-verification" element={<PhotoVerificationPage />} />
               <Route path="/messages" element={<MessagesPage />} />
               <Route path="/choose-plan" element={<ChoosePlan />} />

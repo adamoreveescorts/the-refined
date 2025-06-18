@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Menu, X, Search, UserRound, Inbox } from 'lucide-react';
+import { Menu, X, Search, UserRound, Inbox, Building2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -11,6 +11,7 @@ const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
 
   // Check for user session on component mount
@@ -19,6 +20,7 @@ const NavBar = () => {
       setUser(session?.user || null);
       if (session?.user) {
         fetchUnreadCount(session.user.id);
+        fetchUserRole(session.user.id);
       }
     });
 
@@ -27,14 +29,32 @@ const NavBar = () => {
         setUser(session?.user || null);
         if (session?.user) {
           fetchUnreadCount(session.user.id);
+          fetchUserRole(session.user.id);
         } else {
           setUnreadCount(0);
+          setUserRole(null);
         }
       }
     );
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const fetchUserRole = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .single();
+
+      if (!error && data) {
+        setUserRole(data.role);
+      }
+    } catch (error) {
+      console.error('Error fetching user role:', error);
+    }
+  };
 
   const fetchUnreadCount = async (userId: string) => {
     try {
@@ -73,6 +93,39 @@ const NavBar = () => {
     } else {
       toast.success('Logged out successfully');
       navigate('/');
+    }
+  };
+
+  const getRoleDashboardLink = () => {
+    switch (userRole) {
+      case 'agency':
+        return '/agency/dashboard';
+      case 'admin':
+        return '/admin';
+      default:
+        return '/user-profile';
+    }
+  };
+
+  const getRoleDashboardLabel = () => {
+    switch (userRole) {
+      case 'agency':
+        return 'Agency Dashboard';
+      case 'admin':
+        return 'Admin Dashboard';
+      default:
+        return 'My Profile';
+    }
+  };
+
+  const getRoleDashboardIcon = () => {
+    switch (userRole) {
+      case 'agency':
+        return <Building2 className="h-4 w-4 mr-2" />;
+      case 'admin':
+        return <UserRound className="h-4 w-4 mr-2" />;
+      default:
+        return <UserRound className="h-4 w-4 mr-2" />;
     }
   };
 
@@ -127,10 +180,10 @@ const NavBar = () => {
                     )}
                   </Button>
                 </Link>
-                <Link to="/user-profile">
+                <Link to={getRoleDashboardLink()}>
                   <Button variant="outline" size="sm" className="flex items-center">
-                    <UserRound className="h-4 w-4 mr-2" />
-                    My Profile
+                    {getRoleDashboardIcon()}
+                    {getRoleDashboardLabel()}
                   </Button>
                 </Link>
                 <Button size="sm" className="btn-gold" onClick={handleLogout}>
@@ -197,10 +250,10 @@ const NavBar = () => {
                   </Link>
                 </div>
                 <div className="flex items-center px-3">
-                  <Link to="/user-profile" className="w-full">
+                  <Link to={getRoleDashboardLink()} className="w-full">
                     <Button variant="outline" className="w-full">
-                      <UserRound className="h-4 w-4 mr-2" />
-                      My Profile
+                      {getRoleDashboardIcon()}
+                      {getRoleDashboardLabel()}
                     </Button>
                   </Link>
                 </div>
