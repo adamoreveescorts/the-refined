@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -288,11 +289,11 @@ const ProfilePage = () => {
               {/* About Section */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">About</CardTitle>
+                  <CardTitle className="text-lg text-card-foreground">About</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="prose max-w-none">
-                    <p className="text-charcoal whitespace-pre-line">
+                    <p className="text-card-foreground whitespace-pre-line">
                       {escort.bio || 'No biography available.'}
                     </p>
                   </div>
@@ -302,17 +303,17 @@ const ProfilePage = () => {
               {/* Details Section */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Details</CardTitle>
+                  <CardTitle className="text-lg text-card-foreground">Details</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-y-4 gap-x-8">
                     <div>
-                      <p className="text-sm text-gray-600 font-medium">Height</p>
-                      <p className="text-gray-900 font-medium">{escort.height || 'Not specified'}</p>
+                      <p className="text-sm text-muted-foreground font-medium">Height</p>
+                      <p className="text-card-foreground font-medium">{escort.height || 'Not specified'}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600 font-medium">Age</p>
-                      <p className="text-gray-900 font-medium">{escort.age || 'Not specified'}</p>
+                      <p className="text-sm text-muted-foreground font-medium">Age</p>
+                      <p className="text-card-foreground font-medium">{escort.age || 'Not specified'}</p>
                     </div>
                   </div>
                   
@@ -320,10 +321,10 @@ const ProfilePage = () => {
                     <>
                       <Separator />
                       <div>
-                        <p className="text-sm text-gray-600 font-medium mb-2">Languages</p>
+                        <p className="text-sm text-muted-foreground font-medium mb-2">Languages</p>
                         <div className="flex flex-wrap gap-2">
                           {languages.map((language, index) => (
-                            <Badge key={index} variant="outline" className="bg-zinc-900">
+                            <Badge key={index} variant="outline" className="text-foreground border-border">
                               {language}
                             </Badge>
                           ))}
@@ -336,7 +337,7 @@ const ProfilePage = () => {
                     <>
                       <Separator />
                       <div>
-                        <p className="text-sm text-gray-600 font-medium mb-2">Services Offered</p>
+                        <p className="text-sm text-muted-foreground font-medium mb-2">Services Offered</p>
                         <div className="flex flex-wrap gap-2">
                           {services.map((service, index) => (
                             <Badge key={index} variant="secondary">
@@ -352,8 +353,8 @@ const ProfilePage = () => {
                     <>
                       <Separator />
                       <div>
-                        <p className="text-sm text-gray-600 font-medium mb-2">Availability</p>
-                        <p className="text-gray-900">{escort.availability}</p>
+                        <p className="text-sm text-muted-foreground font-medium mb-2">Availability</p>
+                        <p className="text-card-foreground">{escort.availability}</p>
                       </div>
                     </>
                   )}
@@ -363,49 +364,49 @@ const ProfilePage = () => {
               {/* Rates Section */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Rates</CardTitle>
+                  <CardTitle className="text-lg text-card-foreground">Rates</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
-                  <div className="divide-y">
+                  <div className="divide-y divide-border">
                     {rates.hourly && (
                       <div className="flex justify-between items-center p-4">
                         <div className="flex items-center">
                           <Clock className="h-5 w-5 mr-2 text-gold" />
-                          <span>1 Hour</span>
+                          <span className="text-card-foreground">1 Hour</span>
                         </div>
-                        <span className="font-medium">${rates.hourly}</span>
+                        <span className="font-medium text-card-foreground">${rates.hourly}</span>
                       </div>
                     )}
                     {rates.twoHours && (
                       <div className="flex justify-between items-center p-4">
                         <div className="flex items-center">
                           <Clock className="h-5 w-5 mr-2 text-gold" />
-                          <span>2 Hours</span>
+                          <span className="text-card-foreground">2 Hours</span>
                         </div>
-                        <span className="font-medium">${rates.twoHours}</span>
+                        <span className="font-medium text-card-foreground">${rates.twoHours}</span>
                       </div>
                     )}
                     {rates.dinner && (
                       <div className="flex justify-between items-center p-4">
                         <div className="flex items-center">
                           <Calendar className="h-5 w-5 mr-2 text-gold" />
-                          <span>Dinner Date</span>
+                          <span className="text-card-foreground">Dinner Date</span>
                         </div>
-                        <span className="font-medium">${rates.dinner}</span>
+                        <span className="font-medium text-card-foreground">${rates.dinner}</span>
                       </div>
                     )}
                     {rates.overnight && (
                       <div className="flex justify-between items-center p-4">
                         <div className="flex items-center">
                           <Calendar className="h-5 w-5 mr-2 text-gold" />
-                          <span>Overnight</span>
+                          <span className="text-card-foreground">Overnight</span>
                         </div>
-                        <span className="font-medium">${rates.overnight}</span>
+                        <span className="font-medium text-card-foreground">${rates.overnight}</span>
                       </div>
                     )}
                     {!rates.hourly && !rates.twoHours && !rates.dinner && !rates.overnight && (
-                      <div className="p-4 text-center text-gray-500">
-                        <p>Rates not specified. Please contact for pricing.</p>
+                      <div className="p-4 text-center">
+                        <p className="text-muted-foreground">Rates not specified. Please contact for pricing.</p>
                       </div>
                     )}
                   </div>
