@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,22 +10,21 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Check, Clock, Heart, MapPin, Star, Mail, Phone } from 'lucide-react';
 import { MessageButton } from '@/components/messaging/MessageButton';
-
 interface RatesData {
   hourly?: string;
   twoHours?: string;
   dinner?: string;
   overnight?: string;
 }
-
 const ProfilePage = () => {
-  const { id } = useParams();
+  const {
+    id
+  } = useParams();
   const [escort, setEscort] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [requestingContact, setRequestingContact] = useState<'email' | 'phone' | null>(null);
-
   useEffect(() => {
     const fetchProfile = async () => {
       if (!id) return;
@@ -55,35 +53,31 @@ const ProfilePage = () => {
     };
     fetchProfile();
   }, [id]);
-
   const handleContactRequest = async (type: 'email' | 'phone') => {
     setRequestingContact(type);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (!user) {
         toast.error('Please log in to request contact information');
         return;
       }
 
       // Get or create conversation
-      let { data: conversation } = await supabase
-        .from('conversations')
-        .select('id')
-        .eq('client_id', user.id)
-        .eq('escort_id', escort.id)
-        .single();
-
+      let {
+        data: conversation
+      } = await supabase.from('conversations').select('id').eq('client_id', user.id).eq('escort_id', escort.id).single();
       if (!conversation) {
-        const { data: newConversation, error } = await supabase
-          .from('conversations')
-          .insert({
-            client_id: user.id,
-            escort_id: escort.id
-          })
-          .select('id')
-          .single();
-
+        const {
+          data: newConversation,
+          error
+        } = await supabase.from('conversations').insert({
+          client_id: user.id,
+          escort_id: escort.id
+        }).select('id').single();
         if (error) {
           console.error('Error creating conversation:', error);
           toast.error('Failed to send request');
@@ -93,24 +87,19 @@ const ProfilePage = () => {
       }
 
       // Send the contact request message
-      const message = type === 'email' 
-        ? `Hi ${escort.display_name || escort.username}, I would like to request your email address for further communication. Thank you!`
-        : `Hi ${escort.display_name || escort.username}, I would like to request your phone number for further communication. Thank you!`;
-
-      const { error } = await supabase
-        .from('messages')
-        .insert({
-          conversation_id: conversation.id,
-          sender_id: user.id,
-          content: message
-        });
-
+      const message = type === 'email' ? `Hi ${escort.display_name || escort.username}, I would like to request your email address for further communication. Thank you!` : `Hi ${escort.display_name || escort.username}, I would like to request your phone number for further communication. Thank you!`;
+      const {
+        error
+      } = await supabase.from('messages').insert({
+        conversation_id: conversation.id,
+        sender_id: user.id,
+        content: message
+      });
       if (error) {
         console.error('Error sending contact request:', error);
         toast.error('Failed to send request');
         return;
       }
-
       toast.success(`${type === 'email' ? 'Email' : 'Phone number'} request sent successfully!`);
     } catch (error) {
       console.error('Error:', error);
@@ -157,7 +146,6 @@ const ProfilePage = () => {
     }
     return rates;
   };
-
   if (loading) {
     return <div className="min-h-screen flex flex-col">
         <NavBar />
@@ -170,7 +158,6 @@ const ProfilePage = () => {
         <Footer />
       </div>;
   }
-
   if (!escort) {
     return <div className="min-h-screen flex flex-col">
         <NavBar />
@@ -193,9 +180,7 @@ const ProfilePage = () => {
   // Parse rates from text format instead of JSON
   const rates = parseRatesFromText(escort.rates || '');
   const ratingCount = generateRatingCount(escort.rating || 4.5);
-
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       <NavBar />
       
       <main className="flex-grow bg-gray-50 py-8">
@@ -217,19 +202,11 @@ const ProfilePage = () => {
               </div>
               
               {/* Thumbnail Gallery */}
-              {images.length > 1 && (
-                <div className="flex gap-3 overflow-x-auto pb-2">
-                  {images.map((image: string, index: number) => (
-                    <button 
-                      key={index} 
-                      className={`flex-shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 ${index === activeImageIndex ? 'border-gold' : 'border-transparent'}`} 
-                      onClick={() => setActiveImageIndex(index)}
-                    >
+              {images.length > 1 && <div className="flex gap-3 overflow-x-auto pb-2">
+                  {images.map((image: string, index: number) => <button key={index} className={`flex-shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 ${index === activeImageIndex ? 'border-gold' : 'border-transparent'}`} onClick={() => setActiveImageIndex(index)}>
                       <img src={image} alt={`${escort.display_name || escort.username} thumbnail ${index + 1}`} className="w-full h-full object-cover" />
-                    </button>
-                  ))}
-                </div>
-              )}
+                    </button>)}
+                </div>}
             </div>
             
             {/* Profile Info Section */}
@@ -239,38 +216,27 @@ const ProfilePage = () => {
                 <div>
                   <div className="flex items-center gap-2">
                     <h1 className="text-3xl font-serif font-bold text-navy">{escort.display_name || escort.username}</h1>
-                    {escort.verified && (
-                      <Badge variant="outline" className="flex items-center border-green-500 text-green-600 text-xs">
+                    {escort.verified && <Badge variant="outline" className="flex items-center border-green-500 text-green-600 text-xs">
                         <Check className="h-3 w-3 mr-1" />
                         Verified
-                      </Badge>
-                    )}
-                    {escort.featured && (
-                      <Badge variant="outline" className="flex items-center border-gold text-gold text-xs">
+                      </Badge>}
+                    {escort.featured && <Badge variant="outline" className="flex items-center border-gold text-gold text-xs">
                         <Star className="h-3 w-3 mr-1" />
                         Featured
-                      </Badge>
-                    )}
+                      </Badge>}
                   </div>
                   <div className="flex items-center gap-2 text-charcoal mt-1">
                     <span className="flex items-center">
                       <MapPin className="h-4 w-4 mr-1" />
                       {escort.location || 'Location not specified'}
                     </span>
-                    {escort.age && (
-                      <>
+                    {escort.age && <>
                         <span>•</span>
                         <span>{escort.age} years</span>
-                      </>
-                    )}
+                      </>}
                   </div>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => setIsFavorite(!isFavorite)} 
-                  className={`${isFavorite ? 'text-red-500 bg-red-50' : 'text-gray-400'} hover:bg-gray-100`}
-                >
+                <Button variant="ghost" size="icon" onClick={() => setIsFavorite(!isFavorite)} className={`${isFavorite ? 'text-red-500 bg-red-50' : 'text-gray-400'} hover:bg-gray-100`}>
                   <Heart className={`h-5 w-5 ${isFavorite ? 'fill-red-500' : ''}`} />
                 </Button>
               </div>
@@ -278,11 +244,9 @@ const ProfilePage = () => {
               {/* Rating */}
               <div className="flex items-center gap-2">
                 <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className={`h-4 w-4 ${i < Math.floor(escort.rating || 4.5) ? 'text-gold fill-gold' : 'text-gray-300'}`} />
-                  ))}
+                  {[...Array(5)].map((_, i) => <Star key={i} className={`h-4 w-4 ${i < Math.floor(escort.rating || 4.5) ? 'text-gold fill-gold' : 'text-gray-300'}`} />)}
                 </div>
-                <span className="font-medium">{escort.rating || 4.5}</span>
+                <span className="font-medium text-slate-950">{escort.rating || 4.5}</span>
                 <span className="text-gray-500">({ratingCount} ratings)</span>
               </div>
               
@@ -317,47 +281,37 @@ const ProfilePage = () => {
                     </div>
                   </div>
                   
-                  {languages.length > 0 && (
-                    <>
+                  {languages.length > 0 && <>
                       <Separator />
                       <div>
                         <p className="text-sm text-muted-foreground font-medium mb-2">Languages</p>
                         <div className="flex flex-wrap gap-2">
-                          {languages.map((language, index) => (
-                            <Badge key={index} variant="outline" className="text-foreground border-border">
+                          {languages.map((language, index) => <Badge key={index} variant="outline" className="text-foreground border-border">
                               {language}
-                            </Badge>
-                          ))}
+                            </Badge>)}
                         </div>
                       </div>
-                    </>
-                  )}
+                    </>}
                   
-                  {services.length > 0 && (
-                    <>
+                  {services.length > 0 && <>
                       <Separator />
                       <div>
                         <p className="text-sm text-muted-foreground font-medium mb-2">Services Offered</p>
                         <div className="flex flex-wrap gap-2">
-                          {services.map((service, index) => (
-                            <Badge key={index} variant="secondary">
+                          {services.map((service, index) => <Badge key={index} variant="secondary">
                               {service}
-                            </Badge>
-                          ))}
+                            </Badge>)}
                         </div>
                       </div>
-                    </>
-                  )}
+                    </>}
                   
-                  {escort.availability && (
-                    <>
+                  {escort.availability && <>
                       <Separator />
                       <div>
                         <p className="text-sm text-muted-foreground font-medium mb-2">Availability</p>
                         <p className="text-card-foreground">{escort.availability}</p>
                       </div>
-                    </>
-                  )}
+                    </>}
                 </CardContent>
               </Card>
 
@@ -368,47 +322,37 @@ const ProfilePage = () => {
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="divide-y divide-border">
-                    {rates.hourly && (
-                      <div className="flex justify-between items-center p-4">
+                    {rates.hourly && <div className="flex justify-between items-center p-4">
                         <div className="flex items-center">
                           <Clock className="h-5 w-5 mr-2 text-gold" />
                           <span className="text-card-foreground">1 Hour</span>
                         </div>
                         <span className="font-medium text-card-foreground">${rates.hourly}</span>
-                      </div>
-                    )}
-                    {rates.twoHours && (
-                      <div className="flex justify-between items-center p-4">
+                      </div>}
+                    {rates.twoHours && <div className="flex justify-between items-center p-4">
                         <div className="flex items-center">
                           <Clock className="h-5 w-5 mr-2 text-gold" />
                           <span className="text-card-foreground">2 Hours</span>
                         </div>
                         <span className="font-medium text-card-foreground">${rates.twoHours}</span>
-                      </div>
-                    )}
-                    {rates.dinner && (
-                      <div className="flex justify-between items-center p-4">
+                      </div>}
+                    {rates.dinner && <div className="flex justify-between items-center p-4">
                         <div className="flex items-center">
                           <Calendar className="h-5 w-5 mr-2 text-gold" />
                           <span className="text-card-foreground">Dinner Date</span>
                         </div>
                         <span className="font-medium text-card-foreground">${rates.dinner}</span>
-                      </div>
-                    )}
-                    {rates.overnight && (
-                      <div className="flex justify-between items-center p-4">
+                      </div>}
+                    {rates.overnight && <div className="flex justify-between items-center p-4">
                         <div className="flex items-center">
                           <Calendar className="h-5 w-5 mr-2 text-gold" />
                           <span className="text-card-foreground">Overnight</span>
                         </div>
                         <span className="font-medium text-card-foreground">${rates.overnight}</span>
-                      </div>
-                    )}
-                    {!rates.hourly && !rates.twoHours && !rates.dinner && !rates.overnight && (
-                      <div className="p-4 text-center">
+                      </div>}
+                    {!rates.hourly && !rates.twoHours && !rates.dinner && !rates.overnight && <div className="p-4 text-center">
                         <p className="text-muted-foreground">Rates not specified. Please contact for pricing.</p>
-                      </div>
-                    )}
+                      </div>}
                   </div>
                 </CardContent>
               </Card>
@@ -418,24 +362,12 @@ const ProfilePage = () => {
                 <MessageButton escortId={escort.id} escortName={escort.display_name || escort.username} />
                 
                 <div className="grid grid-cols-2 gap-3">
-                  <Button 
-                    variant="outline" 
-                    size="lg"
-                    onClick={() => handleContactRequest('email')}
-                    disabled={requestingContact === 'email'}
-                    className="flex items-center justify-center"
-                  >
+                  <Button variant="outline" size="lg" onClick={() => handleContactRequest('email')} disabled={requestingContact === 'email'} className="flex items-center justify-center">
                     <Mail className="h-4 w-4 mr-2" />
                     {requestingContact === 'email' ? 'Sending...' : 'Request Email'}
                   </Button>
                   
-                  <Button 
-                    variant="outline" 
-                    size="lg"
-                    onClick={() => handleContactRequest('phone')}
-                    disabled={requestingContact === 'phone'}
-                    className="flex items-center justify-center"
-                  >
+                  <Button variant="outline" size="lg" onClick={() => handleContactRequest('phone')} disabled={requestingContact === 'phone'} className="flex items-center justify-center">
                     <Phone className="h-4 w-4 mr-2" />
                     {requestingContact === 'phone' ? 'Sending...' : 'Request Phone'}
                   </Button>
@@ -447,8 +379,6 @@ const ProfilePage = () => {
       </main>
       
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default ProfilePage;
