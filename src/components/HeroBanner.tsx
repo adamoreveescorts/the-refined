@@ -190,7 +190,94 @@ const FilterSheet = ({ onFilterChange, filters }: { onFilterChange: any, filters
     );
   }
 
-  return null; // Desktop filters would go in a sidebar if needed
+  return null; // Desktop filters are now handled separately
+};
+
+const DesktopFilters = ({ onFilterChange, filters }: { onFilterChange: any, filters: any }) => {
+  return (
+    <div className="hidden md:flex items-center gap-4 mb-4 p-4 bg-white/10 backdrop-blur-md rounded-lg">
+      {/* Location */}
+      <div className="flex-1">
+        <Input 
+          type="text" 
+          placeholder="Enter city or region"
+          value={filters.location || ''}
+          onChange={(e) => onFilterChange({ ...filters, location: e.target.value })}
+          className="bg-white/20 border-white/30 text-white placeholder:text-white/70"
+        />
+      </div>
+      
+      {/* Ethnicity */}
+      <div className="flex-1">
+        <Select value={filters.ethnicity || 'all'} onValueChange={(value) => onFilterChange({ ...filters, ethnicity: value === 'all' ? '' : value })}>
+          <SelectTrigger className="bg-white/20 border-white/30 text-white">
+            <SelectValue placeholder="Select ethnicity" />
+          </SelectTrigger>
+          <SelectContent className="bg-white/95 backdrop-blur z-50">
+            <SelectItem value="all">All Ethnicities</SelectItem>
+            <SelectItem value="Asian">Asian</SelectItem>
+            <SelectItem value="Black">Black</SelectItem>
+            <SelectItem value="Caucasian">Caucasian</SelectItem>
+            <SelectItem value="Hispanic">Hispanic</SelectItem>
+            <SelectItem value="Indian">Indian</SelectItem>
+            <SelectItem value="Middle Eastern">Middle Eastern</SelectItem>
+            <SelectItem value="Mixed">Mixed</SelectItem>
+            <SelectItem value="Other">Other</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Body Type */}
+      <div className="flex-1">
+        <Select value={filters.body_type || 'all'} onValueChange={(value) => onFilterChange({ ...filters, body_type: value === 'all' ? '' : value })}>
+          <SelectTrigger className="bg-white/20 border-white/30 text-white">
+            <SelectValue placeholder="Select body type" />
+          </SelectTrigger>
+          <SelectContent className="bg-white/95 backdrop-blur z-50">
+            <SelectItem value="all">All Body Types</SelectItem>
+            <SelectItem value="Petite">Petite</SelectItem>
+            <SelectItem value="Slim">Slim</SelectItem>
+            <SelectItem value="Athletic">Athletic</SelectItem>
+            <SelectItem value="Average">Average</SelectItem>
+            <SelectItem value="Curvy">Curvy</SelectItem>
+            <SelectItem value="Full Figured">Full Figured</SelectItem>
+            <SelectItem value="BBW">BBW</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Sort */}
+      <div className="flex-1">
+        <Select value={filters.sortBy || 'featured'} onValueChange={(value) => onFilterChange({ ...filters, sortBy: value })}>
+          <SelectTrigger className="bg-white/20 border-white/30 text-white">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent className="bg-white/95 backdrop-blur z-50">
+            <SelectItem value="featured">Featured</SelectItem>
+            <SelectItem value="rating">Rating</SelectItem>
+            <SelectItem value="newest">Newest</SelectItem>
+            <SelectItem value="name">Name A-Z</SelectItem>
+            <SelectItem value="age-asc">Age (Youngest)</SelectItem>
+            <SelectItem value="age-desc">Age (Oldest)</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      
+      <Button 
+        className="bg-white/20 text-white border-white/30 hover:bg-white/30"
+        variant="outline"
+        onClick={() => onFilterChange({ 
+          location: '',
+          ethnicity: '',
+          body_type: '',
+          searchQuery: '',
+          sortBy: 'featured'
+        })}
+      >
+        Reset
+      </Button>
+    </div>
+  );
 };
 
 const HeroBanner = () => {
@@ -353,8 +440,8 @@ const HeroBanner = () => {
                   Featured Escorts
                 </h2>
                 
-                {/* Search and Filter Controls */}
-                <div className="flex items-center gap-2">
+                {/* Search and Filter Controls - Mobile Only */}
+                <div className="flex items-center gap-2 md:hidden">
                   {/* Search Input */}
                   <div className="relative">
                     <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/70" />
@@ -370,6 +457,25 @@ const HeroBanner = () => {
                   {/* Filter Button */}
                   <FilterSheet onFilterChange={setFilters} filters={filters} />
                 </div>
+              </div>
+              
+              {/* Desktop Search Bar */}
+              <div className="hidden md:flex items-center gap-4 mb-4 px-2 sm:px-0">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/70" />
+                  <Input 
+                    type="text" 
+                    placeholder="Search escorts..."
+                    className="pl-10 bg-white/20 border-white/30 text-white placeholder:text-white/70"
+                    value={filters.searchQuery}
+                    onChange={(e) => setFilters({ ...filters, searchQuery: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              {/* Desktop Filters */}
+              <div className="px-2 sm:px-0">
+                <DesktopFilters onFilterChange={setFilters} filters={filters} />
               </div>
               
               {/* Results count */}
