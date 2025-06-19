@@ -504,6 +504,10 @@ export type Database = {
         Args: { user_id: string }
         Returns: boolean
       }
+      is_agency: {
+        Args: { user_id?: string }
+        Returns: boolean
+      }
     }
     Enums: {
       user_role: "escort" | "client" | "agency" | "admin"
