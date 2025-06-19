@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import NavBar from "@/components/NavBar";
 import HeroBanner from "@/components/HeroBanner";
+import FeaturedSection from "@/components/FeaturedSection";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import LocationsSection from "@/components/LocationsSection";
 import TestimonialSection from "@/components/TestimonialSection";
@@ -47,6 +48,9 @@ const Index = () => {
       <NavBar />
       <main className="flex-grow">
         <HeroBanner />
+        <div className="animate-on-scroll opacity-0" style={{ transitionDelay: '0.1s' }}>
+          <FeaturedSection />
+        </div>
         <div className="animate-on-scroll opacity-0" style={{ transitionDelay: '0.2s' }}>
           <WhyChooseUs />
         </div>
