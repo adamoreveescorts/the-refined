@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Heart, Star, Check, Search, Filter } from 'lucide-react';
+import { Star, Check, Search, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
@@ -31,14 +31,6 @@ const EscortCard = ({ escort }: { escort: any }) => {
             alt={escort.display_name || escort.username} 
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          {/* Favorites button */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="absolute top-2 right-2 bg-white/20 backdrop-blur-md hover:bg-white/30 rounded-full p-1.5"
-          >
-            <Heart className="h-4 w-4 text-white" />
-          </Button>
           
           {/* Featured badge */}
           {escort.featured && (
