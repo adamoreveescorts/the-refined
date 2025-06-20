@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -136,6 +135,7 @@ const EscortCard = ({ escort, index }: { escort: any, index: number }) => {
 
 const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filters: any }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -145,10 +145,27 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
     return () => clearTimeout(timer);
   }, []);
 
+  const handleFilterChange = (newFilters: any) => {
+    // Store current scroll position
+    const currentScrollTop = scrollContainerRef.current?.scrollTop || 0;
+    
+    onFilterChange(newFilters);
+    
+    // Restore scroll position after a brief delay to allow for re-render
+    setTimeout(() => {
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTop = currentScrollTop;
+      }
+    }, 0);
+  };
+
   const FilterContent = () => (
-    <div className={`bg-card rounded-lg shadow-md p-4 sticky top-20 transition-all duration-500 max-h-[80vh] overflow-y-auto ${
-      isVisible ? 'animate-fade-in opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
-    }`}>
+    <div 
+      ref={scrollContainerRef}
+      className={`bg-card rounded-lg shadow-md p-4 sticky top-20 transition-all duration-500 max-h-[80vh] overflow-y-auto ${
+        isVisible ? 'animate-fade-in opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
+      }`}
+    >
       <h3 className="font-medium text-lg mb-4 text-foreground">Filters</h3>
       
       {/* Location */}
@@ -158,7 +175,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
           type="text" 
           placeholder="Enter city or region"
           value={filters.location || ''}
-          onChange={(e) => onFilterChange({ ...filters, location: e.target.value })}
+          onChange={(e) => handleFilterChange({ ...filters, location: e.target.value })}
           className="bg-background border-border text-foreground"
         />
       </div>
@@ -166,7 +183,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       {/* Ethnicity */}
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Ethnicity</label>
-        <Select value={filters.ethnicity || 'all'} onValueChange={(value) => onFilterChange({ ...filters, ethnicity: value === 'all' ? '' : value })}>
+        <Select value={filters.ethnicity || 'all'} onValueChange={(value) => handleFilterChange({ ...filters, ethnicity: value === 'all' ? '' : value })}>
           <SelectTrigger>
             <SelectValue placeholder="Select ethnicity" />
           </SelectTrigger>
@@ -187,7 +204,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       {/* Nationality */}
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Nationality</label>
-        <Select value={filters.nationality || 'all'} onValueChange={(value) => onFilterChange({ ...filters, nationality: value === 'all' ? '' : value })}>
+        <Select value={filters.nationality || 'all'} onValueChange={(value) => handleFilterChange({ ...filters, nationality: value === 'all' ? '' : value })}>
           <SelectTrigger>
             <SelectValue placeholder="Select nationality" />
           </SelectTrigger>
@@ -216,7 +233,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       {/* Body Type */}
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Body Type</label>
-        <Select value={filters.body_type || 'all'} onValueChange={(value) => onFilterChange({ ...filters, body_type: value === 'all' ? '' : value })}>
+        <Select value={filters.body_type || 'all'} onValueChange={(value) => handleFilterChange({ ...filters, body_type: value === 'all' ? '' : value })}>
           <SelectTrigger>
             <SelectValue placeholder="Select body type" />
           </SelectTrigger>
@@ -236,7 +253,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       {/* Hair Color */}
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Hair Color</label>
-        <Select value={filters.hair_color || 'all'} onValueChange={(value) => onFilterChange({ ...filters, hair_color: value === 'all' ? '' : value })}>
+        <Select value={filters.hair_color || 'all'} onValueChange={(value) => handleFilterChange({ ...filters, hair_color: value === 'all' ? '' : value })}>
           <SelectTrigger>
             <SelectValue placeholder="Select hair color" />
           </SelectTrigger>
@@ -256,7 +273,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       {/* Eye Color */}
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Eye Color</label>
-        <Select value={filters.eye_color || 'all'} onValueChange={(value) => onFilterChange({ ...filters, eye_color: value === 'all' ? '' : value })}>
+        <Select value={filters.eye_color || 'all'} onValueChange={(value) => handleFilterChange({ ...filters, eye_color: value === 'all' ? '' : value })}>
           <SelectTrigger>
             <SelectValue placeholder="Select eye color" />
           </SelectTrigger>
@@ -275,7 +292,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       {/* Cup Size */}
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Cup Size</label>
-        <Select value={filters.cup_size || 'all'} onValueChange={(value) => onFilterChange({ ...filters, cup_size: value === 'all' ? '' : value })}>
+        <Select value={filters.cup_size || 'all'} onValueChange={(value) => handleFilterChange({ ...filters, cup_size: value === 'all' ? '' : value })}>
           <SelectTrigger>
             <SelectValue placeholder="Select cup size" />
           </SelectTrigger>
@@ -295,7 +312,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       {/* Smoking */}
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Smoking</label>
-        <Select value={filters.smoking || 'all'} onValueChange={(value) => onFilterChange({ ...filters, smoking: value === 'all' ? '' : value })}>
+        <Select value={filters.smoking || 'all'} onValueChange={(value) => handleFilterChange({ ...filters, smoking: value === 'all' ? '' : value })}>
           <SelectTrigger>
             <SelectValue placeholder="Select smoking preference" />
           </SelectTrigger>
@@ -312,7 +329,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       {/* Drinking */}
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Drinking</label>
-        <Select value={filters.drinking || 'all'} onValueChange={(value) => onFilterChange({ ...filters, drinking: value === 'all' ? '' : value })}>
+        <Select value={filters.drinking || 'all'} onValueChange={(value) => handleFilterChange({ ...filters, drinking: value === 'all' ? '' : value })}>
           <SelectTrigger>
             <SelectValue placeholder="Select drinking preference" />
           </SelectTrigger>
@@ -330,7 +347,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Age Range</label>
         <div className="grid grid-cols-2 gap-2">
-          <Select value={filters.ageMin?.toString() || '18'} onValueChange={(value) => onFilterChange({ ...filters, ageMin: parseInt(value) })}>
+          <Select value={filters.ageMin?.toString() || '18'} onValueChange={(value) => handleFilterChange({ ...filters, ageMin: parseInt(value) })}>
             <SelectTrigger>
               <SelectValue placeholder="Min" />
             </SelectTrigger>
@@ -340,7 +357,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
               ))}
             </SelectContent>
           </Select>
-          <Select value={filters.ageMax?.toString() || '50'} onValueChange={(value) => onFilterChange({ ...filters, ageMax: parseInt(value) })}>
+          <Select value={filters.ageMax?.toString() || '50'} onValueChange={(value) => handleFilterChange({ ...filters, ageMax: parseInt(value) })}>
             <SelectTrigger>
               <SelectValue placeholder="Max" />
             </SelectTrigger>
@@ -357,7 +374,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Height Range (cm)</label>
         <div className="grid grid-cols-2 gap-2">
-          <Select value={filters.heightMin?.toString() || '150'} onValueChange={(value) => onFilterChange({ ...filters, heightMin: parseInt(value) })}>
+          <Select value={filters.heightMin?.toString() || '150'} onValueChange={(value) => handleFilterChange({ ...filters, heightMin: parseInt(value) })}>
             <SelectTrigger>
               <SelectValue placeholder="Min" />
             </SelectTrigger>
@@ -367,7 +384,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
               ))}
             </SelectContent>
           </Select>
-          <Select value={filters.heightMax?.toString() || '190'} onValueChange={(value) => onFilterChange({ ...filters, heightMax: parseInt(value) })}>
+          <Select value={filters.heightMax?.toString() || '190'} onValueChange={(value) => handleFilterChange({ ...filters, heightMax: parseInt(value) })}>
             <SelectTrigger>
               <SelectValue placeholder="Max" />
             </SelectTrigger>
@@ -384,7 +401,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Weight Range (kg)</label>
         <div className="grid grid-cols-2 gap-2">
-          <Select value={filters.weightMin?.toString() || '40'} onValueChange={(value) => onFilterChange({ ...filters, weightMin: parseInt(value) })}>
+          <Select value={filters.weightMin?.toString() || '40'} onValueChange={(value) => handleFilterChange({ ...filters, weightMin: parseInt(value) })}>
             <SelectTrigger>
               <SelectValue placeholder="Min" />
             </SelectTrigger>
@@ -394,7 +411,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
               ))}
             </SelectContent>
           </Select>
-          <Select value={filters.weightMax?.toString() || '100'} onValueChange={(value) => onFilterChange({ ...filters, weightMax: parseInt(value) })}>
+          <Select value={filters.weightMax?.toString() || '100'} onValueChange={(value) => handleFilterChange({ ...filters, weightMax: parseInt(value) })}>
             <SelectTrigger>
               <SelectValue placeholder="Max" />
             </SelectTrigger>
@@ -411,7 +428,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Price Range ($)</label>
         <div className="grid grid-cols-2 gap-2">
-          <Select value={filters.priceMin?.toString() || '100'} onValueChange={(value) => onFilterChange({ ...filters, priceMin: parseInt(value) })}>
+          <Select value={filters.priceMin?.toString() || '100'} onValueChange={(value) => handleFilterChange({ ...filters, priceMin: parseInt(value) })}>
             <SelectTrigger>
               <SelectValue placeholder="Min" />
             </SelectTrigger>
@@ -421,7 +438,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
               ))}
             </SelectContent>
           </Select>
-          <Select value={filters.priceMax?.toString() || '1000'} onValueChange={(value) => onFilterChange({ ...filters, priceMax: parseInt(value) })}>
+          <Select value={filters.priceMax?.toString() || '1000'} onValueChange={(value) => handleFilterChange({ ...filters, priceMax: parseInt(value) })}>
             <SelectTrigger>
               <SelectValue placeholder="Max" />
             </SelectTrigger>
@@ -448,7 +465,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
                   const newServices = checked === true
                     ? [...services, service]
                     : services.filter((s: string) => s !== service);
-                  onFilterChange({ ...filters, services: newServices });
+                  handleFilterChange({ ...filters, services: newServices });
                 }}
               />
               <label 
@@ -476,7 +493,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
                   const newLanguages = checked === true
                     ? [...languages, language]
                     : languages.filter((l: string) => l !== language);
-                  onFilterChange({ ...filters, languages: newLanguages });
+                  handleFilterChange({ ...filters, languages: newLanguages });
                 }}
               />
               <label 
@@ -498,7 +515,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
             <Checkbox 
               id="verified"
               checked={filters.verifiedOnly}
-              onCheckedChange={(checked) => onFilterChange({ ...filters, verifiedOnly: checked === true })}
+              onCheckedChange={(checked) => handleFilterChange({ ...filters, verifiedOnly: checked === true })}
             />
             <label htmlFor="verified" className="ml-2 text-sm text-foreground">Verified Only</label>
           </div>
@@ -506,7 +523,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
             <Checkbox 
               id="featured"
               checked={filters.featuredOnly}
-              onCheckedChange={(checked) => onFilterChange({ ...filters, featuredOnly: checked === true })}
+              onCheckedChange={(checked) => handleFilterChange({ ...filters, featuredOnly: checked === true })}
             />
             <label htmlFor="featured" className="ml-2 text-sm text-foreground">Featured Only</label>
           </div>
@@ -514,7 +531,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
             <Checkbox 
               id="tattoos"
               checked={filters.tattoos}
-              onCheckedChange={(checked) => onFilterChange({ ...filters, tattoos: checked === true })}
+              onCheckedChange={(checked) => handleFilterChange({ ...filters, tattoos: checked === true })}
             />
             <label htmlFor="tattoos" className="ml-2 text-sm text-foreground">Has Tattoos</label>
           </div>
@@ -522,7 +539,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
             <Checkbox 
               id="piercings"
               checked={filters.piercings}
-              onCheckedChange={(checked) => onFilterChange({ ...filters, piercings: checked === true })}
+              onCheckedChange={(checked) => handleFilterChange({ ...filters, piercings: checked === true })}
             />
             <label htmlFor="piercings" className="ml-2 text-sm text-foreground">Has Piercings</label>
           </div>
@@ -530,7 +547,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
             <Checkbox 
               id="activeToday"
               checked={filters.activeToday}
-              onCheckedChange={(checked) => onFilterChange({ ...filters, activeToday: checked === true })}
+              onCheckedChange={(checked) => handleFilterChange({ ...filters, activeToday: checked === true })}
             />
             <label htmlFor="activeToday" className="ml-2 text-sm text-foreground">Active Today</label>
           </div>
@@ -539,7 +556,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       
       <Button 
         className="w-full btn-gold"
-        onClick={() => onFilterChange({ 
+        onClick={() => handleFilterChange({ 
           location: '',
           ethnicity: '',
           nationality: '',
