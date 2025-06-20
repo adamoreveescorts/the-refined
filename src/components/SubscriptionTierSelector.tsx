@@ -214,8 +214,9 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, rol
   };
 
   const isCurrentTier = (tierId: string) => {
-    if (currentTier === 'Basic' && tierId === 'basic') return true;
+    // Handle trial status explicitly
     if (currentTier === 'Trial' && tierId === 'trial') return true;
+    if (currentTier === 'Basic' && tierId === 'basic') return true;
     if (currentTier === 'Platinum' && tierId.startsWith('platinum_')) return true;
     return false;
   };

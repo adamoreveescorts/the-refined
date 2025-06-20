@@ -307,6 +307,37 @@ const UserProfilePage = () => {
     setShowEditProfile(false);
   };
 
+  // Helper function to get the current tier for SubscriptionTierSelector
+  const getCurrentTier = () => {
+    if (!subscription) return 'basic';
+    
+    // If user is on trial, return "Trial" as current tier
+    if (subscription.is_trial_active) {
+      return 'Trial';
+    }
+    
+    // Otherwise return the actual subscription tier
+    return subscription.subscription_tier;
+  };
+
+  // Helper function to get the selected tier for SubscriptionTierSelector
+  const getSelectedTier = () => {
+    if (!subscription) return 'basic';
+    
+    // If user is on trial, select the trial tier
+    if (subscription.is_trial_active) {
+      return 'trial';
+    }
+    
+    // For Platinum subscribers, default to monthly
+    if (subscription.subscription_tier === 'Platinum') {
+      return 'platinum_monthly';
+    }
+    
+    // For Basic subscribers
+    return 'basic';
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
@@ -481,7 +512,7 @@ const UserProfilePage = () => {
                       className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground" 
                       onClick={handleShowUpgrade}
                     >
-                      {subscription?.subscription_tier === 'Platinum' ? 'Manage Plan' : 'Upgrade Plan'}
+                      {subscription?.subscription_tier === 'Platinum' && !subscription?.is_trial_active ? 'Manage Plan' : 'Upgrade Plan'}
                     </Button>
                   )}
                 </div>
@@ -529,9 +560,10 @@ const UserProfilePage = () => {
                   <CardContent>
                     <SubscriptionTierSelector 
                       onTierSelect={handleUpgrade}
-                      selectedTier={subscription?.subscription_tier === 'Platinum' ? 'platinum_monthly' : 'basic'}
-                      currentTier={subscription?.subscription_tier}
+                      selectedTier={getSelectedTier()}
+                      currentTier={getCurrentTier()}
                       role={profile?.role as "escort" | "agency"}
+                      hasUsedTrial={subscription?.has_used_trial || false}
                     />
                   </CardContent>
                 </Card>
