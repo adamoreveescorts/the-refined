@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Check, Heart, Search, Filter, Star, X } from 'lucide-react';
+import { Check, Search, Filter, Star, X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Select,
@@ -80,14 +79,6 @@ const EscortCard = ({ escort, index }: { escort: any, index: number }) => {
             onLoad={() => setImageLoaded(true)}
             loading="lazy"
           />
-          {/* Favorites button */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="absolute top-2 right-2 bg-background/50 backdrop-blur-md hover:bg-background/80 rounded-full p-1.5 transition-all duration-300"
-          >
-            <Heart className="h-5 w-5 text-red-500" />
-          </Button>
           
           {/* Featured badge */}
           {escort.featured && (
