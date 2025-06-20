@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -250,9 +249,9 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
   };
 
   return (
-    <Card className="bg-white shadow-sm">
+    <Card className="bg-card shadow-sm border-border">
       <CardHeader>
-        <CardTitle className="text-navy">Edit Profile</CardTitle>
+        <CardTitle className="text-foreground">Edit Profile</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -260,7 +259,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
             {/* Profile Picture - Only for escorts/agencies */}
             {isEscortOrAgency && (
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Profile Picture</h3>
+                <h3 className="text-lg font-medium text-foreground">Profile Picture</h3>
                 <div className="flex items-center space-x-4">
                   <Avatar className="h-20 w-20">
                     <AvatarImage src={profilePicture} alt="Profile" />
@@ -289,7 +288,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                         </span>
                       </Button>
                     </label>
-                    <p className="text-sm text-gray-500 mt-1">Max 5MB, JPG/PNG only</p>
+                    <p className="text-sm text-muted-foreground mt-1">Max 5MB, JPG/PNG only</p>
                   </div>
                 </div>
               </div>
@@ -297,14 +296,14 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
 
             {/* Basic Information */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Basic Information</h3>
+              <h3 className="text-lg font-medium text-foreground">Basic Information</h3>
               
               <FormField
                 control={form.control}
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Username</FormLabel>
+                    <FormLabel className="text-foreground">Username</FormLabel>
                     <FormControl>
                       <Input placeholder="Enter your username" {...field} />
                     </FormControl>
@@ -318,7 +317,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                 name="display_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Display Name</FormLabel>
+                    <FormLabel className="text-foreground">Display Name</FormLabel>
                     <FormControl>
                       <Input placeholder="Enter your display name" {...field} />
                     </FormControl>
@@ -332,7 +331,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="text-foreground">Email</FormLabel>
                     <FormControl>
                       <Input placeholder="Enter your email" type="email" {...field} />
                     </FormControl>
@@ -358,7 +357,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                     name="bio"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Bio</FormLabel>
+                        <FormLabel className="text-foreground">Bio</FormLabel>
                         <FormControl>
                           <Textarea 
                             placeholder="Tell us about yourself..." 
@@ -366,7 +365,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                             {...field} 
                           />
                         </FormControl>
-                        <FormDescription>
+                        <FormDescription className="text-muted-foreground">
                           Share what makes you unique (max 1000 characters)
                         </FormDescription>
                         <FormMessage />
@@ -379,7 +378,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                     name="services"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Services Offered</FormLabel>
+                        <FormLabel className="text-foreground">Services Offered</FormLabel>
                         <FormControl>
                           <Textarea 
                             placeholder="Describe the services you offer..."
@@ -397,7 +396,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                     name="languages"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Languages</FormLabel>
+                        <FormLabel className="text-foreground">Languages</FormLabel>
                         <FormControl>
                           <Input placeholder="e.g., English, French, Spanish" {...field} />
                         </FormControl>
@@ -414,7 +413,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                       name="ethnicity"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Ethnicity</FormLabel>
+                          <FormLabel className="text-foreground">Ethnicity</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
@@ -442,7 +441,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                       name="body_type"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Body Type</FormLabel>
+                          <FormLabel className="text-foreground">Body Type</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
@@ -469,7 +468,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                       name="hair_color"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Hair Color</FormLabel>
+                          <FormLabel className="text-foreground">Hair Color</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
@@ -496,7 +495,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                       name="eye_color"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Eye Color</FormLabel>
+                          <FormLabel className="text-foreground">Eye Color</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
@@ -522,7 +521,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                       name="cup_size"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Cup Size</FormLabel>
+                          <FormLabel className="text-foreground">Cup Size</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
@@ -549,7 +548,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                       name="nationality"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nationality</FormLabel>
+                          <FormLabel className="text-foreground">Nationality</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., Australian" {...field} />
                           </FormControl>
@@ -566,7 +565,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                         checked={tattoos}
                         onCheckedChange={(checked) => setTattoos(checked === true)}
                       />
-                      <label htmlFor="tattoos" className="text-sm font-medium">Has Tattoos</label>
+                      <label htmlFor="tattoos" className="text-sm font-medium text-foreground">Has Tattoos</label>
                     </div>
                     
                     <div className="flex items-center space-x-2">
@@ -575,7 +574,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                         checked={piercings}
                         onCheckedChange={(checked) => setPiercings(checked === true)}
                       />
-                      <label htmlFor="piercings" className="text-sm font-medium">Has Piercings</label>
+                      <label htmlFor="piercings" className="text-sm font-medium text-foreground">Has Piercings</label>
                     </div>
                   </div>
                 </TabsContent>
@@ -587,7 +586,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                       name="age"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Age</FormLabel>
+                          <FormLabel className="text-foreground">Age</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., 25" type="number" {...field} />
                           </FormControl>
@@ -601,7 +600,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                       name="height"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Height</FormLabel>
+                          <FormLabel className="text-foreground">Height</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., 172cm or 5'6" {...field} />
                           </FormControl>
@@ -615,7 +614,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                       name="weight"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Weight</FormLabel>
+                          <FormLabel className="text-foreground">Weight</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., 55kg or 120lbs" {...field} />
                           </FormControl>
@@ -629,7 +628,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                       name="smoking"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Smoking</FormLabel>
+                          <FormLabel className="text-foreground">Smoking</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
@@ -653,7 +652,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                       name="drinking"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Drinking</FormLabel>
+                          <FormLabel className="text-foreground">Drinking</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
@@ -681,7 +680,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                       name="hourly_rate"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>1 Hour Rate ($)</FormLabel>
+                          <FormLabel className="text-foreground">1 Hour Rate ($)</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., 300" type="number" {...field} />
                           </FormControl>
@@ -695,7 +694,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                       name="two_hour_rate"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>2 Hours Rate ($)</FormLabel>
+                          <FormLabel className="text-foreground">2 Hours Rate ($)</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., 550" type="number" {...field} />
                           </FormControl>
@@ -709,7 +708,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                       name="dinner_rate"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Dinner Date Rate ($)</FormLabel>
+                          <FormLabel className="text-foreground">Dinner Date Rate ($)</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., 800" type="number" {...field} />
                           </FormControl>
@@ -723,7 +722,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                       name="overnight_rate"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Overnight Rate ($)</FormLabel>
+                          <FormLabel className="text-foreground">Overnight Rate ($)</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., 2000" type="number" {...field} />
                           </FormControl>
@@ -739,8 +738,8 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
             {/* Tags Section */}
             {isEscortOrAgency && (
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Tags</h3>
-                <p className="text-sm text-gray-500">Select tags that describe your services</p>
+                <h3 className="text-lg font-medium text-foreground">Tags</h3>
+                <p className="text-sm text-muted-foreground">Select tags that describe your services</p>
                 <div className="flex flex-wrap gap-2">
                   {commonTags.map((tag) => (
                     <Badge
@@ -749,7 +748,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                       className={`cursor-pointer ${
                         selectedTags.includes(tag) 
                           ? "bg-gold text-white hover:bg-gold/80" 
-                          : "hover:bg-gray-100"
+                          : "hover:bg-muted"
                       }`}
                       onClick={() => toggleTag(tag)}
                     >
