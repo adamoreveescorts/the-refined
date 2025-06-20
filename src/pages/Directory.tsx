@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -348,21 +347,23 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Age Range</label>
         <div className="grid grid-cols-2 gap-2">
-          <Select value={filters.ageMin?.toString() || '18'} onValueChange={(value) => handleFilterChange({ ...filters, ageMin: parseInt(value) })}>
+          <Select value={filters.ageMin?.toString() || ''} onValueChange={(value) => handleFilterChange({ ...filters, ageMin: value ? parseInt(value) : null })}>
             <SelectTrigger>
               <SelectValue placeholder="Min" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="">Any</SelectItem>
               {Array.from({ length: 43 }, (_, i) => i + 18).map(age => (
                 <SelectItem key={age} value={age.toString()}>{age}</SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Select value={filters.ageMax?.toString() || '50'} onValueChange={(value) => handleFilterChange({ ...filters, ageMax: parseInt(value) })}>
+          <Select value={filters.ageMax?.toString() || ''} onValueChange={(value) => handleFilterChange({ ...filters, ageMax: value ? parseInt(value) : null })}>
             <SelectTrigger>
               <SelectValue placeholder="Max" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="">Any</SelectItem>
               {Array.from({ length: 43 }, (_, i) => i + 18).map(age => (
                 <SelectItem key={age} value={age.toString()}>{age}</SelectItem>
               ))}
@@ -375,21 +376,23 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Height Range (cm)</label>
         <div className="grid grid-cols-2 gap-2">
-          <Select value={filters.heightMin?.toString() || '150'} onValueChange={(value) => handleFilterChange({ ...filters, heightMin: parseInt(value) })}>
+          <Select value={filters.heightMin?.toString() || ''} onValueChange={(value) => handleFilterChange({ ...filters, heightMin: value ? parseInt(value) : null })}>
             <SelectTrigger>
               <SelectValue placeholder="Min" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="">Any</SelectItem>
               {Array.from({ length: 13 }, (_, i) => (i * 5) + 140).map(height => (
                 <SelectItem key={height} value={height.toString()}>{height}cm</SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Select value={filters.heightMax?.toString() || '190'} onValueChange={(value) => handleFilterChange({ ...filters, heightMax: parseInt(value) })}>
+          <Select value={filters.heightMax?.toString() || ''} onValueChange={(value) => handleFilterChange({ ...filters, heightMax: value ? parseInt(value) : null })}>
             <SelectTrigger>
               <SelectValue placeholder="Max" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="">Any</SelectItem>
               {Array.from({ length: 13 }, (_, i) => (i * 5) + 140).map(height => (
                 <SelectItem key={height} value={height.toString()}>{height}cm</SelectItem>
               ))}
@@ -402,21 +405,23 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Weight Range (kg)</label>
         <div className="grid grid-cols-2 gap-2">
-          <Select value={filters.weightMin?.toString() || '40'} onValueChange={(value) => handleFilterChange({ ...filters, weightMin: parseInt(value) })}>
+          <Select value={filters.weightMin?.toString() || ''} onValueChange={(value) => handleFilterChange({ ...filters, weightMin: value ? parseInt(value) : null })}>
             <SelectTrigger>
               <SelectValue placeholder="Min" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="">Any</SelectItem>
               {Array.from({ length: 18 }, (_, i) => (i * 5) + 35).map(weight => (
                 <SelectItem key={weight} value={weight.toString()}>{weight}kg</SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Select value={filters.weightMax?.toString() || '100'} onValueChange={(value) => handleFilterChange({ ...filters, weightMax: parseInt(value) })}>
+          <Select value={filters.weightMax?.toString() || ''} onValueChange={(value) => handleFilterChange({ ...filters, weightMax: value ? parseInt(value) : null })}>
             <SelectTrigger>
               <SelectValue placeholder="Max" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="">Any</SelectItem>
               {Array.from({ length: 18 }, (_, i) => (i * 5) + 35).map(weight => (
                 <SelectItem key={weight} value={weight.toString()}>{weight}kg</SelectItem>
               ))}
@@ -429,21 +434,23 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Price Range ($)</label>
         <div className="grid grid-cols-2 gap-2">
-          <Select value={filters.priceMin?.toString() || '100'} onValueChange={(value) => handleFilterChange({ ...filters, priceMin: parseInt(value) })}>
+          <Select value={filters.priceMin?.toString() || ''} onValueChange={(value) => handleFilterChange({ ...filters, priceMin: value ? parseInt(value) : null })}>
             <SelectTrigger>
               <SelectValue placeholder="Min" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="">Any</SelectItem>
               {[100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 2000].map(price => (
                 <SelectItem key={price} value={price.toString()}>${price}</SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Select value={filters.priceMax?.toString() || '1000'} onValueChange={(value) => handleFilterChange({ ...filters, priceMax: parseInt(value) })}>
+          <Select value={filters.priceMax?.toString() || ''} onValueChange={(value) => handleFilterChange({ ...filters, priceMax: value ? parseInt(value) : null })}>
             <SelectTrigger>
               <SelectValue placeholder="Max" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="">Any</SelectItem>
               {[100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 2000].map(price => (
                 <SelectItem key={price} value={price.toString()}>${price}</SelectItem>
               ))}
@@ -567,14 +574,14 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
           cup_size: '',
           smoking: '',
           drinking: '',
-          ageMin: 18,
-          ageMax: 50,
-          heightMin: 150,
-          heightMax: 190,
-          weightMin: 40,
-          weightMax: 100,
-          priceMin: 100,
-          priceMax: 1000,
+          ageMin: null,
+          ageMax: null,
+          heightMin: null,
+          heightMax: null,
+          weightMin: null,
+          weightMax: null,
+          priceMin: null,
+          priceMax: null,
           services: [],
           languages: [],
           verifiedOnly: false,
@@ -638,14 +645,14 @@ const Directory = () => {
     cup_size: '',
     smoking: '',
     drinking: '',
-    ageMin: 18,
-    ageMax: 50,
-    heightMin: 150,
-    heightMax: 190,
-    weightMin: 40,
-    weightMax: 100,
-    priceMin: 100,
-    priceMax: 1000,
+    ageMin: null,
+    ageMax: null,
+    heightMin: null,
+    heightMax: null,
+    weightMin: null,
+    weightMax: null,
+    priceMin: null,
+    priceMax: null,
     services: [],
     languages: [],
     verifiedOnly: false,
@@ -744,52 +751,80 @@ const Directory = () => {
       return false;
     }
 
-    // Age range filtering
-    if (filters.ageMin || filters.ageMax) {
-      const escortAge = parseInt(escort.age);
-      if (!isNaN(escortAge)) {
-        if (filters.ageMin && escortAge < filters.ageMin) {
+    // Age range filtering - only apply if values are set
+    if (filters.ageMin !== null || filters.ageMax !== null) {
+      const escortAge = escort.age ? parseInt(escort.age.toString()) : null;
+      if (escortAge !== null && !isNaN(escortAge)) {
+        if (filters.ageMin !== null && escortAge < filters.ageMin) {
           return false;
         }
-        if (filters.ageMax && escortAge > filters.ageMax) {
-          return false;
-        }
-      }
-    }
-
-    // Height range filtering (assuming height is stored in cm)
-    if (filters.heightMin || filters.heightMax) {
-      const escortHeight = parseInt(escort.height);
-      if (!isNaN(escortHeight)) {
-        if (filters.heightMin && escortHeight < filters.heightMin) {
-          return false;
-        }
-        if (filters.heightMax && escortHeight > filters.heightMax) {
+        if (filters.ageMax !== null && escortAge > filters.ageMax) {
           return false;
         }
       }
     }
 
-    // Weight range filtering (assuming weight is stored in kg)
-    if (filters.weightMin || filters.weightMax) {
-      const escortWeight = parseInt(escort.weight);
-      if (!isNaN(escortWeight)) {
-        if (filters.weightMin && escortWeight < filters.weightMin) {
+    // Height range filtering - only apply if values are set
+    if (filters.heightMin !== null || filters.heightMax !== null) {
+      let escortHeight = null;
+      
+      if (escort.height) {
+        const heightStr = escort.height.toString();
+        // Try to parse as cm first
+        if (heightStr.includes('cm')) {
+          escortHeight = parseInt(heightStr.replace(/\D/g, ''));
+        } else if (heightStr.includes("'") || heightStr.includes('"')) {
+          // Parse feet and inches format like 5'6" or 5'6
+          const feetMatch = heightStr.match(/(\d+)'/);
+          const inchMatch = heightStr.match(/(\d+)"/);
+          if (feetMatch) {
+            const feet = parseInt(feetMatch[1]);
+            const inches = inchMatch ? parseInt(inchMatch[1]) : 0;
+            escortHeight = Math.round((feet * 12 + inches) * 2.54); // Convert to cm
+          }
+        } else {
+          // Try direct parsing as number (assume cm)
+          escortHeight = parseInt(heightStr);
+        }
+      }
+      
+      if (escortHeight !== null && !isNaN(escortHeight)) {
+        if (filters.heightMin !== null && escortHeight < filters.heightMin) {
           return false;
         }
-        if (filters.weightMax && escortWeight > filters.weightMax) {
+        if (filters.heightMax !== null && escortHeight > filters.heightMax) {
           return false;
         }
       }
     }
 
-    // Price range filtering
-    if (filters.priceMin || filters.priceMax) {
+    // Weight range filtering - only apply if values are set
+    if (filters.weightMin !== null || filters.weightMax !== null) {
+      let escortWeight = null;
+      
+      if (escort.weight) {
+        const weightStr = escort.weight.toString();
+        // Remove "kg" and other non-numeric characters, then parse
+        escortWeight = parseInt(weightStr.replace(/\D/g, ''));
+      }
+      
+      if (escortWeight !== null && !isNaN(escortWeight)) {
+        if (filters.weightMin !== null && escortWeight < filters.weightMin) {
+          return false;
+        }
+        if (filters.weightMax !== null && escortWeight > filters.weightMax) {
+          return false;
+        }
+      }
+    }
+
+    // Price range filtering - only apply if values are set
+    if (filters.priceMin !== null || filters.priceMax !== null) {
       let escortPrice = null;
       
       // Try to get price from hourly_rate first
       if (escort.hourly_rate) {
-        escortPrice = parseInt(escort.hourly_rate.replace(/\D/g, ''));
+        escortPrice = parseInt(escort.hourly_rate.toString().replace(/\D/g, ''));
       }
       
       // If no hourly_rate, try to extract from rates field
@@ -800,11 +835,11 @@ const Directory = () => {
         }
       }
       
-      if (escortPrice && !isNaN(escortPrice)) {
-        if (filters.priceMin && escortPrice < filters.priceMin) {
+      if (escortPrice !== null && !isNaN(escortPrice)) {
+        if (filters.priceMin !== null && escortPrice < filters.priceMin) {
           return false;
         }
-        if (filters.priceMax && escortPrice > filters.priceMax) {
+        if (filters.priceMax !== null && escortPrice > filters.priceMax) {
           return false;
         }
       }
