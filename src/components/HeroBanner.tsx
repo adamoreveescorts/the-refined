@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -99,7 +98,7 @@ const FilterSheet = ({ onFilterChange, filters }: { onFilterChange: any, filters
           <SelectTrigger className="bg-white/20 border-white/30 text-white">
             <SelectValue placeholder="Select ethnicity" />
           </SelectTrigger>
-          <SelectContent className="bg-white/95 backdrop-blur">
+          <SelectContent className="bg-white border border-gray-200 text-gray-900 z-50">
             <SelectItem value="all">All</SelectItem>
             <SelectItem value="Asian">Asian</SelectItem>
             <SelectItem value="Black">Black</SelectItem>
@@ -120,7 +119,7 @@ const FilterSheet = ({ onFilterChange, filters }: { onFilterChange: any, filters
           <SelectTrigger className="bg-white/20 border-white/30 text-white">
             <SelectValue placeholder="Select body type" />
           </SelectTrigger>
-          <SelectContent className="bg-white/95 backdrop-blur">
+          <SelectContent className="bg-white border border-gray-200 text-gray-900 z-50">
             <SelectItem value="all">All</SelectItem>
             <SelectItem value="Petite">Petite</SelectItem>
             <SelectItem value="Slim">Slim</SelectItem>
@@ -140,7 +139,7 @@ const FilterSheet = ({ onFilterChange, filters }: { onFilterChange: any, filters
           <SelectTrigger className="bg-white/20 border-white/30 text-white">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
-          <SelectContent className="bg-white/95 backdrop-blur">
+          <SelectContent className="bg-white border border-gray-200 text-gray-900 z-50">
             <SelectItem value="featured">Featured</SelectItem>
             <SelectItem value="rating">Rating</SelectItem>
             <SelectItem value="newest">Newest</SelectItem>
@@ -213,7 +212,7 @@ const DesktopFilters = ({ onFilterChange, filters }: { onFilterChange: any, filt
           <SelectTrigger className="bg-white/20 border-white/30 text-white">
             <SelectValue placeholder="Select ethnicity" />
           </SelectTrigger>
-          <SelectContent className="bg-white/95 backdrop-blur z-50">
+          <SelectContent className="bg-white border border-gray-200 text-gray-900 z-50">
             <SelectItem value="all">All Ethnicities</SelectItem>
             <SelectItem value="Asian">Asian</SelectItem>
             <SelectItem value="Black">Black</SelectItem>
@@ -233,7 +232,7 @@ const DesktopFilters = ({ onFilterChange, filters }: { onFilterChange: any, filt
           <SelectTrigger className="bg-white/20 border-white/30 text-white">
             <SelectValue placeholder="Select body type" />
           </SelectTrigger>
-          <SelectContent className="bg-white/95 backdrop-blur z-50">
+          <SelectContent className="bg-white border border-gray-200 text-gray-900 z-50">
             <SelectItem value="all">All Body Types</SelectItem>
             <SelectItem value="Petite">Petite</SelectItem>
             <SelectItem value="Slim">Slim</SelectItem>
@@ -252,7 +251,7 @@ const DesktopFilters = ({ onFilterChange, filters }: { onFilterChange: any, filt
           <SelectTrigger className="bg-white/20 border-white/30 text-white">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
-          <SelectContent className="bg-white/95 backdrop-blur z-50">
+          <SelectContent className="bg-white border border-gray-200 text-gray-900 z-50">
             <SelectItem value="featured">Featured</SelectItem>
             <SelectItem value="rating">Rating</SelectItem>
             <SelectItem value="newest">Newest</SelectItem>
