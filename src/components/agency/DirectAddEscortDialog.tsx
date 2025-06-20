@@ -75,8 +75,17 @@ const DirectAddEscortDialog = ({
       // Generate a UUID for the new escort profile
       const escortId = crypto.randomUUID();
 
+      console.log('Creating escort profile with data:', {
+        id: escortId,
+        role: 'escort',
+        agency_id: agencyId,
+        display_name: formData.display_name,
+        email: formData.email.toLowerCase(),
+        status: 'pending'
+      });
+
       // Create the escort profile directly
-      const { error: profileError } = await supabase
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .insert({
           id: escortId,
@@ -94,9 +103,15 @@ const DirectAddEscortDialog = ({
           is_active: false,
           verified: false,
           featured: false
-        });
+        })
+        .select();
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Profile creation error:', profileError);
+        throw profileError;
+      }
+
+      console.log('Profile created successfully:', profileData);
 
       // Create the agency-escort relationship
       const { error: relationError } = await supabase
@@ -108,7 +123,12 @@ const DirectAddEscortDialog = ({
           joined_at: new Date().toISOString()
         });
 
-      if (relationError) throw relationError;
+      if (relationError) {
+        console.error('Agency-escort relationship error:', relationError);
+        throw relationError;
+      }
+
+      console.log('Agency-escort relationship created successfully');
 
       toast.success('Escort profile created successfully! Profile pending admin approval.');
       onEscortAdded();
