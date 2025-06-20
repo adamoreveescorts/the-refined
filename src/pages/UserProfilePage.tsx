@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { UserRound, Calendar, Mail, Shield, User, CreditCard, Crown, Clock } from "lucide-react";
+import { UserRound, Calendar, Mail, Shield, User, CreditCard, Crown, Clock, ArrowLeft } from "lucide-react";
 import SubscriptionTierSelector from "@/components/SubscriptionTierSelector";
 import VerificationButton from "@/components/verification/VerificationButton";
 
@@ -123,7 +123,7 @@ const UserProfilePage = () => {
       // Check if user has a Stripe customer ID first
       if (!subscription?.stripe_customer_id) {
         toast.error("No payment method found. Please upgrade to a paid plan first.");
-        setShowUpgrade(true);
+        handleShowUpgrade();
         return;
       }
 
@@ -137,7 +137,7 @@ const UserProfilePage = () => {
         console.error("Portal error:", error);
         // If customer portal fails, offer alternative
         toast.error("Subscription management is not available at the moment. Please contact support or use the upgrade options below.");
-        setShowUpgrade(true);
+        handleShowUpgrade();
         return;
       }
 
@@ -146,7 +146,7 @@ const UserProfilePage = () => {
     } catch (error: any) {
       console.error("Portal error:", error);
       toast.error("Unable to access subscription management. Please use the upgrade options below.");
-      setShowUpgrade(true);
+      handleShowUpgrade();
     }
   };
 
@@ -179,6 +179,22 @@ const UserProfilePage = () => {
       console.error("Upgrade error:", error);
       toast.error(error.message || "Failed to process upgrade");
     }
+  };
+
+  // Helper functions for showing/hiding modals
+  const handleShowEditProfile = () => {
+    setShowUpgrade(false);
+    setShowEditProfile(true);
+  };
+
+  const handleShowUpgrade = () => {
+    setShowEditProfile(false);
+    setShowUpgrade(true);
+  };
+
+  const handleBackToProfile = () => {
+    setShowEditProfile(false);
+    setShowUpgrade(false);
   };
 
   const getSubscriptionStatusBadge = () => {
@@ -394,14 +410,14 @@ const UserProfilePage = () => {
                   <Button 
                     className="w-full" 
                     variant="outline"
-                    onClick={() => setShowEditProfile(true)}
+                    onClick={handleShowEditProfile}
                   >
                     Edit Profile
                   </Button>
                   {(profile?.role === 'escort' || profile?.role === 'agency') && (
                     <Button 
                       className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground" 
-                      onClick={() => setShowUpgrade(!showUpgrade)}
+                      onClick={handleShowUpgrade}
                     >
                       {subscription?.subscription_tier === 'Platinum' ? 'Manage Plan' : 'Upgrade Plan'}
                     </Button>
@@ -413,15 +429,40 @@ const UserProfilePage = () => {
             {/* Content Section */}
             <div className="md:col-span-2">
               {showEditProfile ? (
-                <EditProfileForm 
-                  profile={profile!}
-                  onProfileUpdate={handleProfileUpdate}
-                  onCancel={() => setShowEditProfile(false)}
-                />
+                <Card className="bg-card shadow-sm border-border">
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle className="text-foreground">Edit Profile</CardTitle>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={handleBackToProfile}
+                      className="flex items-center gap-2"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                      Back
+                    </Button>
+                  </CardHeader>
+                  <CardContent>
+                    <EditProfileForm 
+                      profile={profile!}
+                      onProfileUpdate={handleProfileUpdate}
+                      onCancel={handleBackToProfile}
+                    />
+                  </CardContent>
+                </Card>
               ) : showUpgrade && (profile?.role === 'escort' || profile?.role === 'agency') ? (
                 <Card className="bg-card shadow-sm border-border">
-                  <CardHeader>
+                  <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle className="text-foreground">Choose Your Plan</CardTitle>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={handleBackToProfile}
+                      className="flex items-center gap-2"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                      Back
+                    </Button>
                   </CardHeader>
                   <CardContent>
                     <SubscriptionTierSelector 
@@ -430,15 +471,6 @@ const UserProfilePage = () => {
                       currentTier={subscription?.subscription_tier}
                       role={profile?.role as "escort" | "agency"}
                     />
-                    <div className="mt-4">
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setShowUpgrade(false)}
-                        className="w-full"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
                   </CardContent>
                 </Card>
               ) : (
@@ -479,7 +511,7 @@ const UserProfilePage = () => {
                                     Manage Subscription
                                   </Button>
                                 ) : (
-                                  <Button className="bg-secondary hover:bg-secondary/90 text-secondary-foreground" onClick={() => setShowUpgrade(true)}>
+                                  <Button className="bg-secondary hover:bg-secondary/90 text-secondary-foreground" onClick={handleShowUpgrade}>
                                     Upgrade Plan
                                   </Button>
                                 )}
@@ -603,7 +635,7 @@ const UserProfilePage = () => {
                               </h3>
                               <Button 
                                 className="bg-secondary hover:bg-secondary/90 text-secondary-foreground"
-                                onClick={() => setShowEditProfile(true)}
+                                onClick={handleShowEditProfile}
                               >
                                 Manage Profile
                               </Button>
