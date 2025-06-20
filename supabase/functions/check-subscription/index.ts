@@ -53,6 +53,17 @@ serve(async (req) => {
 
     logStep("Current subscription record", currentSub);
 
+    // Check actual photo verification status
+    const { data: photoVerification } = await supabaseClient
+      .from("photo_verifications")
+      .select("status")
+      .eq("user_id", user.id)
+      .eq("status", "approved")
+      .single();
+
+    const isActuallyPhotoVerified = photoVerification?.status === "approved";
+    logStep("Photo verification check", { isActuallyPhotoVerified });
+
     // Check if subscription or trial has expired
     const now = new Date();
     let isExpired = false;
@@ -79,7 +90,7 @@ serve(async (req) => {
         subscription_type: 'free',
         is_trial_active: false,
         is_featured: false,
-        photo_verified: false,
+        photo_verified: isActuallyPhotoVerified, // Use actual verification status
         expires_at: null,
         subscription_end: null,
         updated_at: new Date().toISOString(),
@@ -91,7 +102,7 @@ serve(async (req) => {
         subscription_end: null,
         expires_at: null,
         is_featured: false,
-        photo_verified: false,
+        photo_verified: isActuallyPhotoVerified,
         subscription_type: 'free',
         is_trial_active: false,
         trial_expired: true
@@ -101,16 +112,16 @@ serve(async (req) => {
       });
     }
 
-    // If current subscription is trial and still active, return trial info with premium features
+    // If current subscription is trial and still active, return trial info
     if (currentSub?.is_trial_active && !isTrialExpired) {
-      logStep("Active trial found with premium features");
+      logStep("Active trial found");
       return new Response(JSON.stringify({
         subscribed: true,
-        subscription_tier: 'Trial',
+        subscription_tier: 'Platinum', // Trial gives Platinum features
         subscription_end: currentSub.trial_end_date,
         expires_at: currentSub.trial_end_date,
-        is_featured: true, // Premium feature enabled during trial
-        photo_verified: true, // Premium feature enabled during trial
+        is_featured: false, // Don't auto-feature trial users
+        photo_verified: isActuallyPhotoVerified, // Use actual verification status
         subscription_type: 'trial',
         is_trial_active: true,
         trial_days_remaining: Math.ceil((new Date(currentSub.trial_end_date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
@@ -136,7 +147,7 @@ serve(async (req) => {
       subscription_end: null,
       expires_at: null,
       is_featured: false,
-      photo_verified: false,
+      photo_verified: isActuallyPhotoVerified, // Use actual verification status
       is_trial_active: false,
       updated_at: new Date().toISOString(),
     };
@@ -164,8 +175,8 @@ serve(async (req) => {
           subscription_tier: 'Platinum',
           subscription_type: 'recurring',
           subscription_end: subscriptionEnd,
-          is_featured: true,
-          photo_verified: true,
+          is_featured: true, // Platinum subscribers can be featured
+          photo_verified: isActuallyPhotoVerified, // Use actual verification status
         };
       } else {
         // Check for recent successful one-time payments
@@ -209,8 +220,8 @@ serve(async (req) => {
               plan_price: latestPayment.amount,
               expires_at: expiresAt.toISOString(),
               subscription_end: expiresAt.toISOString(),
-              is_featured: true,
-              photo_verified: true,
+              is_featured: true, // Platinum subscribers can be featured
+              photo_verified: isActuallyPhotoVerified, // Use actual verification status
             };
             logStep("One-time payment still valid", subscriptionData);
           } else {
@@ -229,7 +240,7 @@ serve(async (req) => {
       subscriptionData.subscribed = false;
       subscriptionData.subscription_type = 'free';
       subscriptionData.is_featured = false;
-      subscriptionData.photo_verified = false;
+      subscriptionData.photo_verified = isActuallyPhotoVerified; // Use actual verification status
       subscriptionData.expires_at = null;
       subscriptionData.subscription_end = null;
     }

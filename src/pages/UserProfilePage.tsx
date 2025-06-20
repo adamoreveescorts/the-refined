@@ -25,11 +25,19 @@ interface UserProfile {
   is_active: boolean | null;
 }
 
+interface PhotoVerification {
+  id: string;
+  status: 'pending' | 'approved' | 'rejected';
+  submitted_at: string;
+  reviewed_at?: string;
+}
+
 const UserProfilePage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [subscription, setSubscription] = useState<any>(null);
+  const [photoVerification, setPhotoVerification] = useState<PhotoVerification | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
   
@@ -86,7 +94,10 @@ const UserProfilePage = () => {
 
       // Check subscription status for paid roles
       if (data.role === 'escort' || data.role === 'agency') {
-        await checkSubscriptionStatus(session);
+        await Promise.all([
+          checkSubscriptionStatus(session),
+          checkPhotoVerificationStatus(session.user.id)
+        ]);
       }
     } catch (error) {
       console.error("Profile error:", error);
@@ -109,6 +120,25 @@ const UserProfilePage = () => {
       }
     } catch (error) {
       console.error("Error checking subscription:", error);
+    }
+  };
+
+  const checkPhotoVerificationStatus = async (userId: string) => {
+    try {
+      const { data } = await supabase
+        .from('photo_verifications')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (data) {
+        setPhotoVerification(data);
+      }
+    } catch (error) {
+      // No verification found is fine
+      setPhotoVerification(null);
     }
   };
 
@@ -200,6 +230,10 @@ const UserProfilePage = () => {
   const getSubscriptionStatusBadge = () => {
     if (!subscription) return null;
     
+    if (subscription.is_trial_active) {
+      return <Badge className="bg-blue-500 text-white"><Clock className="h-3 w-3 mr-1" />Trial</Badge>;
+    }
+    
     if (subscription.subscription_tier === 'Platinum') {
       return <Badge className="bg-gold text-white"><Crown className="h-3 w-3 mr-1" />Platinum</Badge>;
     }
@@ -225,6 +259,11 @@ const UserProfilePage = () => {
   const getPlanDurationDisplay = () => {
     if (!subscription) return null;
     
+    if (subscription.is_trial_active) {
+      const daysLeft = Math.ceil((new Date(subscription.expires_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+      return `Trial: ${daysLeft} days remaining`;
+    }
+    
     if (subscription.subscription_type === 'recurring') {
       return subscription.subscription_end ? 
         `Renews on ${new Date(subscription.subscription_end).toLocaleDateString()}` :
@@ -238,8 +277,24 @@ const UserProfilePage = () => {
   };
 
   const isProfilePublic = () => {
-    // Profile is public if user has any subscription tier (Basic or Platinum)
-    return subscription?.subscription_tier === 'Basic' || subscription?.subscription_tier === 'Platinum';
+    // Profile is public if user has any active subscription (Basic, Platinum, or Trial)
+    return subscription && (
+      subscription.subscription_tier === 'Basic' || 
+      subscription.subscription_tier === 'Platinum' ||
+      subscription.is_trial_active
+    );
+  };
+
+  const isActuallyPhotoVerified = () => {
+    return photoVerification?.status === 'approved';
+  };
+
+  const isActuallyFeatured = () => {
+    // Featured status should be based on actual criteria, not just subscription
+    // For now, only Platinum subscribers with completed profiles are featured
+    return subscription?.subscription_tier === 'Platinum' && 
+           !subscription?.is_trial_active && 
+           profile?.is_active;
   };
 
   const handleProfileUpdate = (updatedProfile: any) => {
@@ -383,7 +438,8 @@ const UserProfilePage = () => {
                         </div>
                       </div>
 
-                      {subscription?.is_featured && (
+                      {/* Featured Status - only show if actually featured */}
+                      {isActuallyFeatured() && (
                         <div className="flex items-start">
                           <Crown className="h-5 w-5 mr-2 text-secondary" />
                           <div>
@@ -393,7 +449,8 @@ const UserProfilePage = () => {
                         </div>
                       )}
 
-                      {subscription?.photo_verified && (
+                      {/* Photo Verified Status - only show if actually verified */}
+                      {isActuallyPhotoVerified() && (
                         <div className="flex items-start">
                           <Shield className="h-5 w-5 mr-2 text-green-500" />
                           <div>
