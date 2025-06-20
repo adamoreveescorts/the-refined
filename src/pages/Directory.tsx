@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -741,6 +742,72 @@ const Directory = () => {
 
     if (filters.drinking && escort.drinking !== filters.drinking) {
       return false;
+    }
+
+    // Age range filtering
+    if (filters.ageMin || filters.ageMax) {
+      const escortAge = parseInt(escort.age);
+      if (!isNaN(escortAge)) {
+        if (filters.ageMin && escortAge < filters.ageMin) {
+          return false;
+        }
+        if (filters.ageMax && escortAge > filters.ageMax) {
+          return false;
+        }
+      }
+    }
+
+    // Height range filtering (assuming height is stored in cm)
+    if (filters.heightMin || filters.heightMax) {
+      const escortHeight = parseInt(escort.height);
+      if (!isNaN(escortHeight)) {
+        if (filters.heightMin && escortHeight < filters.heightMin) {
+          return false;
+        }
+        if (filters.heightMax && escortHeight > filters.heightMax) {
+          return false;
+        }
+      }
+    }
+
+    // Weight range filtering (assuming weight is stored in kg)
+    if (filters.weightMin || filters.weightMax) {
+      const escortWeight = parseInt(escort.weight);
+      if (!isNaN(escortWeight)) {
+        if (filters.weightMin && escortWeight < filters.weightMin) {
+          return false;
+        }
+        if (filters.weightMax && escortWeight > filters.weightMax) {
+          return false;
+        }
+      }
+    }
+
+    // Price range filtering
+    if (filters.priceMin || filters.priceMax) {
+      let escortPrice = null;
+      
+      // Try to get price from hourly_rate first
+      if (escort.hourly_rate) {
+        escortPrice = parseInt(escort.hourly_rate.replace(/\D/g, ''));
+      }
+      
+      // If no hourly_rate, try to extract from rates field
+      if (!escortPrice && escort.rates) {
+        const hourlyMatch = escort.rates.match(/\$?(\d+)(?:\/hour|\/hr|per hour)/i);
+        if (hourlyMatch) {
+          escortPrice = parseInt(hourlyMatch[1]);
+        }
+      }
+      
+      if (escortPrice && !isNaN(escortPrice)) {
+        if (filters.priceMin && escortPrice < filters.priceMin) {
+          return false;
+        }
+        if (filters.priceMax && escortPrice > filters.priceMax) {
+          return false;
+        }
+      }
     }
     
     if (filters.verifiedOnly && !escort.verified) {
