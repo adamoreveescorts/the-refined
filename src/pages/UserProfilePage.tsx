@@ -134,7 +134,12 @@ const UserProfilePage = () => {
         .single();
 
       if (data) {
-        setPhotoVerification(data);
+        setPhotoVerification({
+          id: data.id,
+          status: data.status as 'pending' | 'approved' | 'rejected',
+          submitted_at: data.submitted_at,
+          reviewed_at: data.reviewed_at
+        });
       }
     } catch (error) {
       // No verification found is fine
@@ -597,14 +602,14 @@ const UserProfilePage = () => {
                                   <div className="grid grid-cols-2 gap-2 text-sm">
                                     <div className="flex items-center">
                                       <Crown className="h-4 w-4 mr-2 text-secondary" />
-                                      <span className={subscription?.is_featured ? "text-green-600" : "text-muted-foreground"}>
-                                        Featured Profile {subscription?.is_featured ? "✓" : ""}
+                                      <span className={isActuallyFeatured() ? "text-green-600" : "text-muted-foreground"}>
+                                        Featured Profile {isActuallyFeatured() ? "✓" : ""}
                                       </span>
                                     </div>
                                     <div className="flex items-center">
                                       <Shield className="h-4 w-4 mr-2 text-green-500" />
-                                      <span className={subscription?.photo_verified ? "text-green-600" : "text-muted-foreground"}>
-                                        Photo Verified {subscription?.photo_verified ? "✓" : ""}
+                                      <span className={isActuallyPhotoVerified() ? "text-green-600" : "text-muted-foreground"}>
+                                        Photo Verified {isActuallyPhotoVerified() ? "✓" : ""}
                                       </span>
                                     </div>
                                   </div>
@@ -642,13 +647,6 @@ const UserProfilePage = () => {
                           <div>
                             <h3 className="font-medium mb-3 text-foreground">Change Password</h3>
                             <Button variant="outline">Update Password</Button>
-                          </div>
-                          
-                          <Separator />
-                          
-                          <div>
-                            <h3 className="font-medium mb-3 text-foreground">Notification Preferences</h3>
-                            <p className="text-muted-foreground mb-3">Coming soon</p>
                           </div>
                           
                           <Separator />
