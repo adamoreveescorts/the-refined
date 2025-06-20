@@ -46,6 +46,13 @@ const DirectAddEscortDialog = ({
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const generateUniqueEmail = (displayName: string, agencyId: string) => {
+    const escortId = crypto.randomUUID().slice(0, 8);
+    const sanitizedName = displayName.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const agencyPrefix = agencyId.slice(0, 8);
+    return `${sanitizedName || 'escort'}-${escortId}@agency-${agencyPrefix}.local`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -56,33 +63,38 @@ const DirectAddEscortDialog = ({
 
     setLoading(true);
     try {
-      // Check if email already exists
-      const { data: existingProfile, error: checkError } = await supabase
-        .from('profiles')
-        .select('id, email')
-        .eq('email', formData.email.toLowerCase())
-        .single();
-
-      if (checkError && checkError.code !== 'PGRST116') {
-        throw checkError;
-      }
-
-      if (existingProfile) {
-        toast.error('A profile with this email already exists');
-        return;
-      }
-
       // Generate a UUID for the new escort profile
       const escortId = crypto.randomUUID();
+      
+      // Use provided email or generate a unique one
+      const emailToUse = formData.email.trim() || generateUniqueEmail(formData.display_name, agencyId);
 
       console.log('Creating escort profile with data:', {
         id: escortId,
         role: 'escort',
         agency_id: agencyId,
         display_name: formData.display_name,
-        email: formData.email.toLowerCase(),
+        email: emailToUse,
         status: 'pending'
       });
+
+      // Check if email already exists (only if email was provided)
+      if (formData.email.trim()) {
+        const { data: existingProfile, error: checkError } = await supabase
+          .from('profiles')
+          .select('id, email')
+          .eq('email', formData.email.toLowerCase())
+          .single();
+
+        if (checkError && checkError.code !== 'PGRST116') {
+          throw checkError;
+        }
+
+        if (existingProfile) {
+          toast.error('A profile with this email already exists');
+          return;
+        }
+      }
 
       // Create the escort profile directly
       const { data: profileData, error: profileError } = await supabase
@@ -92,7 +104,7 @@ const DirectAddEscortDialog = ({
           role: 'escort',
           agency_id: agencyId,
           display_name: formData.display_name,
-          email: formData.email.toLowerCase(),
+          email: emailToUse.toLowerCase(),
           bio: formData.bio,
           age: formData.age,
           location: formData.location,
@@ -175,15 +187,17 @@ const DirectAddEscortDialog = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address *</Label>
+              <Label htmlFor="email">Email Address (Optional)</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="escort@example.com"
+                placeholder="escort@example.com (leave blank to auto-generate)"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
-                required
               />
+              <p className="text-xs text-muted-foreground">
+                If left blank, a unique email will be generated automatically
+              </p>
             </div>
           </div>
 
