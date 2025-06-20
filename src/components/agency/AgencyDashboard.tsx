@@ -11,6 +11,8 @@ import EscortManagementTable from './EscortManagementTable';
 import InvitationManagementTable from './InvitationManagementTable';
 import AddEscortDialog from './AddEscortDialog';
 import DirectAddEscortDialog from './DirectAddEscortDialog';
+import EscortEditModal from './EscortEditModal';
+import EscortPreviewModal from './EscortPreviewModal';
 import AgencySubscriptionManager from './AgencySubscriptionManager';
 
 interface AgencyDashboardProps {
@@ -24,6 +26,9 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
   const [loading, setLoading] = useState(true);
   const [showAddEscort, setShowAddEscort] = useState(false);
   const [showDirectAddEscort, setShowDirectAddEscort] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [selectedEscort, setSelectedEscort] = useState(null);
 
   useEffect(() => {
     fetchAgencyData();
@@ -46,6 +51,11 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
             status,
             is_active,
             location,
+            bio,
+            age,
+            height,
+            hourly_rate,
+            services,
             created_at
           )
         `)
@@ -82,6 +92,16 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEditEscort = (escort: any) => {
+    setSelectedEscort(escort);
+    setShowEditModal(true);
+  };
+
+  const handleViewEscort = (escort: any) => {
+    setSelectedEscort(escort);
+    setShowPreviewModal(true);
   };
 
   const getSubscriptionStatus = () => {
@@ -222,6 +242,8 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
                 escorts={escorts} 
                 onEscortUpdate={fetchAgencyData}
                 agencyId={agencyId}
+                onEditEscort={handleEditEscort}
+                onViewEscort={handleViewEscort}
               />
             </CardContent>
           </Card>
@@ -265,6 +287,19 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
         agencyId={agencyId}
         onEscortAdded={fetchAgencyData}
         availableSeats={subscription ? subscription.total_seats - subscription.used_seats : 0}
+      />
+
+      <EscortEditModal
+        open={showEditModal}
+        onOpenChange={setShowEditModal}
+        escort={selectedEscort}
+        onEscortUpdated={fetchAgencyData}
+      />
+
+      <EscortPreviewModal
+        open={showPreviewModal}
+        onOpenChange={setShowPreviewModal}
+        escort={selectedEscort}
       />
     </div>
   );

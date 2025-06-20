@@ -25,9 +25,17 @@ interface EscortManagementTableProps {
   escorts: any[];
   onEscortUpdate: () => void;
   agencyId: string;
+  onEditEscort: (escort: any) => void;
+  onViewEscort: (escort: any) => void;
 }
 
-const EscortManagementTable = ({ escorts, onEscortUpdate, agencyId }: EscortManagementTableProps) => {
+const EscortManagementTable = ({ 
+  escorts, 
+  onEscortUpdate, 
+  agencyId, 
+  onEditEscort,
+  onViewEscort 
+}: EscortManagementTableProps) => {
   const [loading, setLoading] = useState<string | null>(null);
 
   const updateEscortStatus = async (escortRelationId: string, status: string) => {
@@ -155,13 +163,13 @@ const EscortManagementTable = ({ escorts, onEscortUpdate, agencyId }: EscortMana
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem
-                        onClick={() => window.open(`/profile/${escort?.id}`, '_blank')}
+                        onClick={() => onViewEscort(escort)}
                       >
                         <Eye className="mr-2 h-4 w-4" />
                         View Profile
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => window.open(`/profile/${escort?.id}/edit`, '_blank')}
+                        onClick={() => onEditEscort(escort)}
                       >
                         <Edit className="mr-2 h-4 w-4" />
                         Edit Profile
