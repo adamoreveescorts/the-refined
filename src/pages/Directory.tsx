@@ -347,23 +347,23 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Age Range</label>
         <div className="grid grid-cols-2 gap-2">
-          <Select value={filters.ageMin?.toString() || ''} onValueChange={(value) => handleFilterChange({ ...filters, ageMin: value ? parseInt(value) : null })}>
+          <Select value={filters.ageMin?.toString() || 'all'} onValueChange={(value) => handleFilterChange({ ...filters, ageMin: value === 'all' ? null : parseInt(value) })}>
             <SelectTrigger>
               <SelectValue placeholder="Min" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any</SelectItem>
+              <SelectItem value="all">Any</SelectItem>
               {Array.from({ length: 43 }, (_, i) => i + 18).map(age => (
                 <SelectItem key={age} value={age.toString()}>{age}</SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Select value={filters.ageMax?.toString() || ''} onValueChange={(value) => handleFilterChange({ ...filters, ageMax: value ? parseInt(value) : null })}>
+          <Select value={filters.ageMax?.toString() || 'all'} onValueChange={(value) => handleFilterChange({ ...filters, ageMax: value === 'all' ? null : parseInt(value) })}>
             <SelectTrigger>
               <SelectValue placeholder="Max" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any</SelectItem>
+              <SelectItem value="all">Any</SelectItem>
               {Array.from({ length: 43 }, (_, i) => i + 18).map(age => (
                 <SelectItem key={age} value={age.toString()}>{age}</SelectItem>
               ))}
@@ -376,23 +376,23 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Height Range (cm)</label>
         <div className="grid grid-cols-2 gap-2">
-          <Select value={filters.heightMin?.toString() || ''} onValueChange={(value) => handleFilterChange({ ...filters, heightMin: value ? parseInt(value) : null })}>
+          <Select value={filters.heightMin?.toString() || 'all'} onValueChange={(value) => handleFilterChange({ ...filters, heightMin: value === 'all' ? null : parseInt(value) })}>
             <SelectTrigger>
               <SelectValue placeholder="Min" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any</SelectItem>
+              <SelectItem value="all">Any</SelectItem>
               {Array.from({ length: 13 }, (_, i) => (i * 5) + 140).map(height => (
                 <SelectItem key={height} value={height.toString()}>{height}cm</SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Select value={filters.heightMax?.toString() || ''} onValueChange={(value) => handleFilterChange({ ...filters, heightMax: value ? parseInt(value) : null })}>
+          <Select value={filters.heightMax?.toString() || 'all'} onValueChange={(value) => handleFilterChange({ ...filters, heightMax: value === 'all' ? null : parseInt(value) })}>
             <SelectTrigger>
               <SelectValue placeholder="Max" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any</SelectItem>
+              <SelectItem value="all">Any</SelectItem>
               {Array.from({ length: 13 }, (_, i) => (i * 5) + 140).map(height => (
                 <SelectItem key={height} value={height.toString()}>{height}cm</SelectItem>
               ))}
@@ -405,23 +405,23 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Weight Range (kg)</label>
         <div className="grid grid-cols-2 gap-2">
-          <Select value={filters.weightMin?.toString() || ''} onValueChange={(value) => handleFilterChange({ ...filters, weightMin: value ? parseInt(value) : null })}>
+          <Select value={filters.weightMin?.toString() || 'all'} onValueChange={(value) => handleFilterChange({ ...filters, weightMin: value === 'all' ? null : parseInt(value) })}>
             <SelectTrigger>
               <SelectValue placeholder="Min" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any</SelectItem>
+              <SelectItem value="all">Any</SelectItem>
               {Array.from({ length: 18 }, (_, i) => (i * 5) + 35).map(weight => (
                 <SelectItem key={weight} value={weight.toString()}>{weight}kg</SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Select value={filters.weightMax?.toString() || ''} onValueChange={(value) => handleFilterChange({ ...filters, weightMax: value ? parseInt(value) : null })}>
+          <Select value={filters.weightMax?.toString() || 'all'} onValueChange={(value) => handleFilterChange({ ...filters, weightMax: value === 'all' ? null : parseInt(value) })}>
             <SelectTrigger>
               <SelectValue placeholder="Max" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any</SelectItem>
+              <SelectItem value="all">Any</SelectItem>
               {Array.from({ length: 18 }, (_, i) => (i * 5) + 35).map(weight => (
                 <SelectItem key={weight} value={weight.toString()}>{weight}kg</SelectItem>
               ))}
@@ -434,23 +434,23 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Price Range ($)</label>
         <div className="grid grid-cols-2 gap-2">
-          <Select value={filters.priceMin?.toString() || ''} onValueChange={(value) => handleFilterChange({ ...filters, priceMin: value ? parseInt(value) : null })}>
+          <Select value={filters.priceMin?.toString() || 'all'} onValueChange={(value) => handleFilterChange({ ...filters, priceMin: value === 'all' ? null : parseInt(value) })}>
             <SelectTrigger>
               <SelectValue placeholder="Min" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any</SelectItem>
+              <SelectItem value="all">Any</SelectItem>
               {[100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 2000].map(price => (
                 <SelectItem key={price} value={price.toString()}>${price}</SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Select value={filters.priceMax?.toString() || ''} onValueChange={(value) => handleFilterChange({ ...filters, priceMax: value ? parseInt(value) : null })}>
+          <Select value={filters.priceMax?.toString() || 'all'} onValueChange={(value) => handleFilterChange({ ...filters, priceMax: value === 'all' ? null : parseInt(value) })}>
             <SelectTrigger>
               <SelectValue placeholder="Max" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any</SelectItem>
+              <SelectItem value="all">Any</SelectItem>
               {[100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 2000].map(price => (
                 <SelectItem key={price} value={price.toString()}>${price}</SelectItem>
               ))}
