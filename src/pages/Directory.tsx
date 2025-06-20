@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,7 +8,6 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Check, Search, Filter, Star, X } from 'lucide-react';
@@ -135,10 +135,6 @@ const EscortCard = ({ escort, index }: { escort: any, index: number }) => {
 };
 
 const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filters: any }) => {
-  const [ageRange, setAgeRange] = useState<number[]>([18, 50]);
-  const [priceRange, setPriceRange] = useState<number[]>([100, 1000]);
-  const [weightRange, setWeightRange] = useState<number[]>([40, 100]);
-  const [heightRange, setHeightRange] = useState<number[]>([150, 190]);
   const [isVisible, setIsVisible] = useState(false);
   
   useEffect(() => {
@@ -149,26 +145,6 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
     return () => clearTimeout(timer);
   }, []);
 
-  const handleAgeChange = (value: number[]) => {
-    setAgeRange(value);
-    onFilterChange({ ...filters, ageMin: value[0], ageMax: value[1] });
-  };
-  
-  const handlePriceChange = (value: number[]) => {
-    setPriceRange(value);
-    onFilterChange({ ...filters, priceMin: value[0], priceMax: value[1] });
-  };
-
-  const handleWeightChange = (value: number[]) => {
-    setWeightRange(value);
-    onFilterChange({ ...filters, weightMin: value[0], weightMax: value[1] });
-  };
-
-  const handleHeightChange = (value: number[]) => {
-    setHeightRange(value);
-    onFilterChange({ ...filters, heightMin: value[0], heightMax: value[1] });
-  };
-  
   const FilterContent = () => (
     <div className={`bg-card rounded-lg shadow-md p-4 sticky top-20 transition-all duration-500 max-h-[80vh] overflow-y-auto ${
       isVisible ? 'animate-fade-in opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
@@ -352,66 +328,110 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       
       {/* Age Range */}
       <div className="mb-6">
-        <label className="block text-sm font-medium mb-2 text-foreground">
-          Age Range: {ageRange[0]} - {ageRange[1]}
-        </label>
-        <Slider 
-          defaultValue={[18, 50]} 
-          min={18} 
-          max={60} 
-          step={1}
-          value={ageRange}
-          onValueChange={handleAgeChange}
-          className="mt-2"
-        />
+        <label className="block text-sm font-medium mb-2 text-foreground">Age Range</label>
+        <div className="grid grid-cols-2 gap-2">
+          <Select value={filters.ageMin?.toString() || '18'} onValueChange={(value) => onFilterChange({ ...filters, ageMin: parseInt(value) })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Min" />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 43 }, (_, i) => i + 18).map(age => (
+                <SelectItem key={age} value={age.toString()}>{age}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={filters.ageMax?.toString() || '50'} onValueChange={(value) => onFilterChange({ ...filters, ageMax: parseInt(value) })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Max" />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 43 }, (_, i) => i + 18).map(age => (
+                <SelectItem key={age} value={age.toString()}>{age}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Height Range */}
       <div className="mb-6">
-        <label className="block text-sm font-medium mb-2 text-foreground">
-          Height Range: {heightRange[0]}cm - {heightRange[1]}cm
-        </label>
-        <Slider 
-          defaultValue={[150, 190]} 
-          min={140} 
-          max={200} 
-          step={5}
-          value={heightRange}
-          onValueChange={handleHeightChange}
-          className="mt-2"
-        />
+        <label className="block text-sm font-medium mb-2 text-foreground">Height Range (cm)</label>
+        <div className="grid grid-cols-2 gap-2">
+          <Select value={filters.heightMin?.toString() || '150'} onValueChange={(value) => onFilterChange({ ...filters, heightMin: parseInt(value) })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Min" />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 13 }, (_, i) => (i * 5) + 140).map(height => (
+                <SelectItem key={height} value={height.toString()}>{height}cm</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={filters.heightMax?.toString() || '190'} onValueChange={(value) => onFilterChange({ ...filters, heightMax: parseInt(value) })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Max" />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 13 }, (_, i) => (i * 5) + 140).map(height => (
+                <SelectItem key={height} value={height.toString()}>{height}cm</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Weight Range */}
       <div className="mb-6">
-        <label className="block text-sm font-medium mb-2 text-foreground">
-          Weight Range: {weightRange[0]}kg - {weightRange[1]}kg
-        </label>
-        <Slider 
-          defaultValue={[40, 100]} 
-          min={35} 
-          max={120} 
-          step={5}
-          value={weightRange}
-          onValueChange={handleWeightChange}
-          className="mt-2"
-        />
+        <label className="block text-sm font-medium mb-2 text-foreground">Weight Range (kg)</label>
+        <div className="grid grid-cols-2 gap-2">
+          <Select value={filters.weightMin?.toString() || '40'} onValueChange={(value) => onFilterChange({ ...filters, weightMin: parseInt(value) })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Min" />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 18 }, (_, i) => (i * 5) + 35).map(weight => (
+                <SelectItem key={weight} value={weight.toString()}>{weight}kg</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={filters.weightMax?.toString() || '100'} onValueChange={(value) => onFilterChange({ ...filters, weightMax: parseInt(value) })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Max" />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 18 }, (_, i) => (i * 5) + 35).map(weight => (
+                <SelectItem key={weight} value={weight.toString()}>{weight}kg</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       
       {/* Price Range */}
       <div className="mb-6">
-        <label className="block text-sm font-medium mb-2 text-foreground">
-          Price Range: ${priceRange[0]} - ${priceRange[1]}
-        </label>
-        <Slider 
-          defaultValue={[100, 1000]} 
-          min={100} 
-          max={2000} 
-          step={50}
-          value={priceRange}
-          onValueChange={handlePriceChange}
-          className="mt-2"
-        />
+        <label className="block text-sm font-medium mb-2 text-foreground">Price Range ($)</label>
+        <div className="grid grid-cols-2 gap-2">
+          <Select value={filters.priceMin?.toString() || '100'} onValueChange={(value) => onFilterChange({ ...filters, priceMin: parseInt(value) })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Min" />
+            </SelectTrigger>
+            <SelectContent>
+              {[100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 2000].map(price => (
+                <SelectItem key={price} value={price.toString()}>${price}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={filters.priceMax?.toString() || '1000'} onValueChange={(value) => onFilterChange({ ...filters, priceMax: parseInt(value) })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Max" />
+            </SelectTrigger>
+            <SelectContent>
+              {[100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 2000].map(price => (
+                <SelectItem key={price} value={price.toString()}>${price}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       
       {/* Services */}
