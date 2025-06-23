@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -62,7 +61,7 @@ const ProfileSetup = () => {
         return;
       }
 
-      // Check if setup is already completed
+      // Check if setup is already completed - use setup_completed instead
       if (profile?.setup_completed) {
         toast.info("Your profile is already set up!");
         navigate("/");

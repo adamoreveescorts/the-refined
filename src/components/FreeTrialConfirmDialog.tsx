@@ -51,6 +51,19 @@ const FreeTrialConfirmDialog = ({ open, onOpenChange, role, onTrialActivated }: 
       }
 
       toast.success("Free trial activated! You now have 7 days of premium features.");
+      
+      // For escorts, make sure payment_status is set so they can proceed to profile setup
+      if (role === 'escort') {
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ payment_status: 'completed' })
+          .eq('id', session.user.id);
+          
+        if (updateError) {
+          console.error("Error updating payment status:", updateError);
+        }
+      }
+      
       onTrialActivated();
       onOpenChange(false);
     } catch (error: any) {
