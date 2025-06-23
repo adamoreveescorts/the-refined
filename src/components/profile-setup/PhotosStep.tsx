@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Upload, X, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { useUserRole } from '@/hooks/useUserRole';
 
 interface PhotosStepProps {
   profileData: any;
@@ -15,20 +16,26 @@ interface PhotosStepProps {
 }
 
 const PhotosStep = ({ profileData, onUpdate, onComplete }: PhotosStepProps) => {
+  const { user } = useUserRole();
   const [profilePicture, setProfilePicture] = useState(profileData.profile_picture || '');
   const [galleryImages, setGalleryImages] = useState<string[]>(profileData.gallery_images || []);
   const [isUploading, setIsUploading] = useState(false);
 
   const uploadImage = async (file: File): Promise<string> => {
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random()}.${fileExt}`;
-    const filePath = `profile-images/${fileName}`;
+    const filePath = `${user.id}/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
       .from('profile-images')
       .upload(filePath, file);
 
     if (uploadError) {
+      console.error('Upload error:', uploadError);
       throw uploadError;
     }
 
@@ -43,6 +50,11 @@ const PhotosStep = ({ profileData, onUpdate, onComplete }: PhotosStepProps) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (!user) {
+      toast.error('Please log in to upload images');
+      return;
+    }
+
     if (file.size > 5 * 1024 * 1024) {
       toast.error('File size must be less than 5MB');
       return;
@@ -55,7 +67,7 @@ const PhotosStep = ({ profileData, onUpdate, onComplete }: PhotosStepProps) => {
       toast.success('Profile picture uploaded successfully!');
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Error uploading image');
+      toast.error('Error uploading image. Please try again.');
     } finally {
       setIsUploading(false);
     }
@@ -64,6 +76,11 @@ const PhotosStep = ({ profileData, onUpdate, onComplete }: PhotosStepProps) => {
   const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
+
+    if (!user) {
+      toast.error('Please log in to upload images');
+      return;
+    }
 
     if (galleryImages.length + files.length > 10) {
       toast.error('Maximum 10 gallery images allowed');
@@ -84,7 +101,7 @@ const PhotosStep = ({ profileData, onUpdate, onComplete }: PhotosStepProps) => {
       toast.success(`${files.length} image(s) uploaded successfully!`);
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Error uploading images');
+      toast.error('Error uploading images. Please try again.');
     } finally {
       setIsUploading(false);
     }

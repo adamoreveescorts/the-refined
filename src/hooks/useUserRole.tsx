@@ -8,6 +8,8 @@ interface UserProfile {
   role: 'escort' | 'client' | 'agency' | 'admin';
   display_name?: string;
   email?: string;
+  setup_completed?: boolean;
+  payment_status?: string;
 }
 
 interface UserRoleContextType {
@@ -34,7 +36,7 @@ export const UserRoleProvider = ({ children }: { children: React.ReactNode }) =>
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, role, display_name, email')
+        .select('id, role, display_name, email, setup_completed, payment_status')
         .eq('id', userId)
         .single();
 
