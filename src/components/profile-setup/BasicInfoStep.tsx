@@ -87,7 +87,7 @@ const BasicInfoStep = ({ profileData, onUpdate, onComplete }: BasicInfoStepProps
             id="height"
             value={formData.height}
             onChange={(e) => setFormData(prev => ({ ...prev, height: e.target.value }))}
-            placeholder="5'6\""
+            placeholder="5'6&quot;"
           />
         </div>
 
