@@ -909,7 +909,7 @@ const Directory = () => {
     }
     
     return true;
-  };
+  });
   
   // Sort escorts
   const sortedEscorts = [...filteredEscorts].sort((a, b) => {
