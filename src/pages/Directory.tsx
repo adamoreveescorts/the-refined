@@ -694,18 +694,16 @@ const Directory = () => {
   const fetchEscorts = async () => {
     try {
       setLoading(true);
-      // Simplified visibility: only require profile picture
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .in('role', ['escort', 'agency'])
-        .not('profile_picture', 'is', null)
-        .neq('profile_picture', '')
+        .eq('status', 'approved')
+        .eq('is_active', true)
         .order('featured', { ascending: false })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      console.log('Fetched escorts:', data?.length || 0);
       setEscorts(data || []);
     } catch (error) {
       console.error('Error fetching escorts:', error);
@@ -922,28 +920,26 @@ const Directory = () => {
         return (b.rating || 0) - (a.rating || 0);
       case 'newest':
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      case 'age-asc':
+        return (parseInt(a.age) || 0) - (parseInt(b.age) || 0);
+      case 'age-desc':
+        return (parseInt(b.age) || 0) - (parseInt(a.age) || 0);
+      case 'price-asc':
+        const aPrice = a.hourly_rate ? parseInt(a.hourly_rate) : 0;
+        const bPrice = b.hourly_rate ? parseInt(b.hourly_rate) : 0;
+        return aPrice - bPrice;
+      case 'price-desc':
+        const aPriceDesc = a.hourly_rate ? parseInt(a.hourly_rate) : 0;
+        const bPriceDesc = b.hourly_rate ? parseInt(b.hourly_rate) : 0;
+        return bPriceDesc - aPriceDesc;
+      case 'name':
+        const aName = a.display_name || a.username || '';
+        const bName = b.display_name || b.username || '';
+        return aName.localeCompare(bName);
       case 'last-active':
-        return new Date(b.last_active || b.created_at).getTime() - new Date(a.last_active || a.created_at).getTime();
+        return new Date(b.last_active).getTime() - new Date(a.last_active).getTime();
       case 'view-count':
         return (b.view_count || 0) - (a.view_count || 0);
-      case 'name':
-        const nameA = (a.display_name || a.username || '').toLowerCase();
-        const nameB = (b.display_name || b.username || '').toLowerCase();
-        return nameA.localeCompare(nameB);
-      case 'age-asc':
-        return (a.age || 0) - (b.age || 0);
-      case 'age-desc':
-        return (b.age || 0) - (a.age || 0);
-      case 'price-asc': {
-        const priceA = a.hourly_rate || 0;
-        const priceB = b.hourly_rate || 0;
-        return priceA - priceB;
-      }
-      case 'price-desc': {
-        const priceA = a.hourly_rate || 0;
-        const priceB = b.hourly_rate || 0;
-        return priceB - priceA;
-      }
       default:
         return 0;
     }

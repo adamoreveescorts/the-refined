@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,7 +36,7 @@ const ChoosePlan = () => {
       // Get user profile to check role and subscription status
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('role, payment_status, setup_completed')
+        .select('role, payment_status')
         .eq('id', session.user.id)
         .single();
 
@@ -79,12 +80,7 @@ const ChoosePlan = () => {
       } else if (profile.role === 'escort') {
         // For escorts, check payment status
         if (profile.payment_status === 'completed') {
-          // If payment is complete but setup is not done, redirect to profile setup
-          if (!profile.setup_completed) {
-            navigate("/profile-setup");
-          } else {
-            navigate("/");
-          }
+          navigate("/");
           return;
         } else {
           // Escort needs subscription, show payment flow
@@ -108,19 +104,6 @@ const ChoosePlan = () => {
     // Redirect based on user role
     if (userRole === 'agency') {
       navigate("/agency/dashboard");
-    } else if (userRole === 'escort') {
-      // Check if profile setup is completed
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('setup_completed')
-        .eq('id', user.id)
-        .single();
-      
-      if (!profile?.setup_completed) {
-        navigate("/profile-setup");
-      } else {
-        navigate("/");
-      }
     } else {
       navigate("/");
     }

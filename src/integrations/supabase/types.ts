@@ -318,14 +318,11 @@ export type Database = {
           overnight_rate: string | null
           payment_status: string | null
           piercings: boolean | null
-          profile_completion_percentage: number | null
           profile_picture: string | null
           rates: string | null
           rating: number | null
           role: Database["public"]["Enums"]["user_role"] | null
           services: string | null
-          setup_completed: boolean | null
-          setup_step_completed: Json | null
           smoking: string | null
           status: string | null
           tags: string | null
@@ -365,14 +362,11 @@ export type Database = {
           overnight_rate?: string | null
           payment_status?: string | null
           piercings?: boolean | null
-          profile_completion_percentage?: number | null
           profile_picture?: string | null
           rates?: string | null
           rating?: number | null
           role?: Database["public"]["Enums"]["user_role"] | null
           services?: string | null
-          setup_completed?: boolean | null
-          setup_step_completed?: Json | null
           smoking?: string | null
           status?: string | null
           tags?: string | null
@@ -412,14 +406,11 @@ export type Database = {
           overnight_rate?: string | null
           payment_status?: string | null
           piercings?: boolean | null
-          profile_completion_percentage?: number | null
           profile_picture?: string | null
           rates?: string | null
           rating?: number | null
           role?: Database["public"]["Enums"]["user_role"] | null
           services?: string | null
-          setup_completed?: boolean | null
-          setup_step_completed?: Json | null
           smoking?: string | null
           status?: string | null
           tags?: string | null
@@ -509,10 +500,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      calculate_profile_completion: {
-        Args: { profile_id: string }
-        Returns: number
-      }
       is_admin: {
         Args: { user_id: string }
         Returns: boolean
