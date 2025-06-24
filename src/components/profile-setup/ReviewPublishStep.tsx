@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,10 +21,11 @@ const ReviewPublishStep = ({ profileData, onUpdate, onComplete, onPublish }: Rev
       await onUpdate({ 
         setup_completed: true,
         status: 'approved',
-        is_active: true
+        is_active: true // Ensure profile becomes active when published
       });
       onComplete();
       onPublish();
+      toast.success('Profile published successfully!');
     } catch (error) {
       console.error('Error publishing profile:', error);
       toast.error('Error publishing profile');

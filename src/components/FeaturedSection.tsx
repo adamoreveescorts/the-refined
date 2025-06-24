@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -91,7 +90,8 @@ const FeaturedSection = () => {
 
   const fetchFeaturedEscorts = async () => {
     try {
-      const { data, error } = await supabase
+      // First try to get featured escorts
+      let { data: featured, error: featuredError } = await supabase
         .from('profiles')
         .select('*')
         .in('role', ['escort', 'agency'])
@@ -100,8 +100,26 @@ const FeaturedSection = () => {
         .order('rating', { ascending: false })
         .limit(6);
 
-      if (error) throw error;
-      setFeaturedEscorts(data || []);
+      if (featuredError) throw featuredError;
+
+      // If no featured escorts, fallback to top-rated active profiles
+      if (!featured || featured.length === 0) {
+        console.log('No featured escorts found, falling back to top-rated profiles');
+        const { data: fallback, error: fallbackError } = await supabase
+          .from('profiles')
+          .select('*')
+          .in('role', ['escort', 'agency'])
+          .or('is_active.eq.true,and(display_name.not.is.null,location.not.is.null)') // Show active OR profiles with basic info
+          .in('status', ['pending', 'approved'])
+          .order('rating', { ascending: false })
+          .order('profile_completion_percentage', { ascending: false })
+          .limit(6);
+
+        if (fallbackError) throw fallbackError;
+        setFeaturedEscorts(fallback || []);
+      } else {
+        setFeaturedEscorts(featured);
+      }
     } catch (error) {
       console.error('Error fetching featured escorts:', error);
       // Fallback to showing no escorts instead of breaking the page

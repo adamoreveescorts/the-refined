@@ -694,14 +694,15 @@ const Directory = () => {
   const fetchEscorts = async () => {
     try {
       setLoading(true);
-      // Adjusted query to be less restrictive - show pending and approved profiles
+      // Show profiles that have basic information, regardless of is_active status temporarily
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .in('role', ['escort', 'agency'])
-        .in('status', ['pending', 'approved']) // Show both pending and approved
-        .eq('is_active', true)
+        .in('status', ['pending', 'approved'])
+        .or('is_active.eq.true,and(display_name.not.is.null,location.not.is.null)') // Show active profiles OR profiles with basic info
         .order('featured', { ascending: false })
+        .order('is_active', { ascending: false }) // Prioritize active profiles
         .order('created_at', { ascending: false });
 
       if (error) throw error;
