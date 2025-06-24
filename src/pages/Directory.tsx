@@ -922,7 +922,28 @@ const Directory = () => {
         return (b.rating || 0) - (a.rating || 0);
       case 'newest':
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      // ... keep existing code (other sort options) the same ...
+      case 'last-active':
+        return new Date(b.last_active || b.created_at).getTime() - new Date(a.last_active || a.created_at).getTime();
+      case 'view-count':
+        return (b.view_count || 0) - (a.view_count || 0);
+      case 'name':
+        const nameA = (a.display_name || a.username || '').toLowerCase();
+        const nameB = (b.display_name || b.username || '').toLowerCase();
+        return nameA.localeCompare(nameB);
+      case 'age-asc':
+        return (a.age || 0) - (b.age || 0);
+      case 'age-desc':
+        return (b.age || 0) - (a.age || 0);
+      case 'price-asc': {
+        const priceA = a.hourly_rate || 0;
+        const priceB = b.hourly_rate || 0;
+        return priceA - priceB;
+      }
+      case 'price-desc': {
+        const priceA = a.hourly_rate || 0;
+        const priceB = b.hourly_rate || 0;
+        return priceB - priceA;
+      }
       default:
         return 0;
     }
