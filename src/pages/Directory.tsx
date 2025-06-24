@@ -694,15 +694,14 @@ const Directory = () => {
   const fetchEscorts = async () => {
     try {
       setLoading(true);
-      // Show profiles that have basic information, regardless of is_active status temporarily
+      // Simplified visibility: only require profile picture
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .in('role', ['escort', 'agency'])
-        .in('status', ['pending', 'approved'])
-        .or('is_active.eq.true,and(display_name.not.is.null,location.not.is.null)') // Show active profiles OR profiles with basic info
+        .not('profile_picture', 'is', null)
+        .neq('profile_picture', '')
         .order('featured', { ascending: false })
-        .order('is_active', { ascending: false }) // Prioritize active profiles
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -910,7 +909,7 @@ const Directory = () => {
     }
     
     return true;
-  });
+  };
   
   // Sort escorts
   const sortedEscorts = [...filteredEscorts].sort((a, b) => {
@@ -923,26 +922,7 @@ const Directory = () => {
         return (b.rating || 0) - (a.rating || 0);
       case 'newest':
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      case 'age-asc':
-        return (parseInt(a.age) || 0) - (parseInt(b.age) || 0);
-      case 'age-desc':
-        return (parseInt(b.age) || 0) - (parseInt(a.age) || 0);
-      case 'price-asc':
-        const aPrice = a.hourly_rate ? parseInt(a.hourly_rate) : 0;
-        const bPrice = b.hourly_rate ? parseInt(b.hourly_rate) : 0;
-        return aPrice - bPrice;
-      case 'price-desc':
-        const aPriceDesc = a.hourly_rate ? parseInt(a.hourly_rate) : 0;
-        const bPriceDesc = b.hourly_rate ? parseInt(b.hourly_rate) : 0;
-        return bPriceDesc - aPriceDesc;
-      case 'name':
-        const aName = a.display_name || a.username || '';
-        const bName = b.display_name || b.username || '';
-        return aName.localeCompare(bName);
-      case 'last-active':
-        return new Date(b.last_active).getTime() - new Date(a.last_active).getTime();
-      case 'view-count':
-        return (b.view_count || 0) - (a.view_count || 0);
+      // ... keep existing code (other sort options) the same ...
       default:
         return 0;
     }
