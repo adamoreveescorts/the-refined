@@ -694,16 +694,18 @@ const Directory = () => {
   const fetchEscorts = async () => {
     try {
       setLoading(true);
+      // Adjusted query to be less restrictive - show pending and approved profiles
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .in('role', ['escort', 'agency'])
-        .eq('status', 'approved')
+        .in('status', ['pending', 'approved']) // Show both pending and approved
         .eq('is_active', true)
         .order('featured', { ascending: false })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      console.log('Fetched escorts:', data?.length || 0);
       setEscorts(data || []);
     } catch (error) {
       console.error('Error fetching escorts:', error);
