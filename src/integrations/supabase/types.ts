@@ -310,11 +310,19 @@ export type Database = {
           height: string | null
           hourly_rate: string | null
           id: string
+          incall_dinner_rate: string | null
+          incall_hourly_rate: string | null
+          incall_overnight_rate: string | null
+          incall_two_hour_rate: string | null
           is_active: boolean | null
           languages: string | null
           last_active: string | null
           location: string | null
           nationality: string | null
+          outcall_dinner_rate: string | null
+          outcall_hourly_rate: string | null
+          outcall_overnight_rate: string | null
+          outcall_two_hour_rate: string | null
           overnight_rate: string | null
           payment_status: string | null
           piercings: boolean | null
@@ -357,11 +365,19 @@ export type Database = {
           height?: string | null
           hourly_rate?: string | null
           id: string
+          incall_dinner_rate?: string | null
+          incall_hourly_rate?: string | null
+          incall_overnight_rate?: string | null
+          incall_two_hour_rate?: string | null
           is_active?: boolean | null
           languages?: string | null
           last_active?: string | null
           location?: string | null
           nationality?: string | null
+          outcall_dinner_rate?: string | null
+          outcall_hourly_rate?: string | null
+          outcall_overnight_rate?: string | null
+          outcall_two_hour_rate?: string | null
           overnight_rate?: string | null
           payment_status?: string | null
           piercings?: boolean | null
@@ -404,11 +420,19 @@ export type Database = {
           height?: string | null
           hourly_rate?: string | null
           id?: string
+          incall_dinner_rate?: string | null
+          incall_hourly_rate?: string | null
+          incall_overnight_rate?: string | null
+          incall_two_hour_rate?: string | null
           is_active?: boolean | null
           languages?: string | null
           last_active?: string | null
           location?: string | null
           nationality?: string | null
+          outcall_dinner_rate?: string | null
+          outcall_hourly_rate?: string | null
+          outcall_overnight_rate?: string | null
+          outcall_two_hour_rate?: string | null
           overnight_rate?: string | null
           payment_status?: string | null
           piercings?: boolean | null

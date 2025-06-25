@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -64,7 +63,15 @@ const ProfileEditModal = ({ profile, open, onOpenChange, onProfileUpdate }: Prof
     hourly_rate: '',
     two_hour_rate: '',
     dinner_rate: '',
-    overnight_rate: ''
+    overnight_rate: '',
+    incall_hourly_rate: '',
+    outcall_hourly_rate: '',
+    incall_two_hour_rate: '',
+    outcall_two_hour_rate: '',
+    incall_dinner_rate: '',
+    outcall_dinner_rate: '',
+    incall_overnight_rate: '',
+    outcall_overnight_rate: ''
   });
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -101,7 +108,15 @@ const ProfileEditModal = ({ profile, open, onOpenChange, onProfileUpdate }: Prof
         hourly_rate: profile.hourly_rate || '',
         two_hour_rate: profile.two_hour_rate || '',
         dinner_rate: profile.dinner_rate || '',
-        overnight_rate: profile.overnight_rate || ''
+        overnight_rate: profile.overnight_rate || '',
+        incall_hourly_rate: profile.incall_hourly_rate || '',
+        outcall_hourly_rate: profile.outcall_hourly_rate || '',
+        incall_two_hour_rate: profile.incall_two_hour_rate || '',
+        outcall_two_hour_rate: profile.outcall_two_hour_rate || '',
+        incall_dinner_rate: profile.incall_dinner_rate || '',
+        outcall_dinner_rate: profile.outcall_dinner_rate || '',
+        incall_overnight_rate: profile.incall_overnight_rate || '',
+        outcall_overnight_rate: profile.outcall_overnight_rate || ''
       });
     }
   }, [profile]);
@@ -242,10 +257,11 @@ const ProfileEditModal = ({ profile, open, onOpenChange, onProfileUpdate }: Prof
           </div>
 
           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid grid-cols-4 mb-4">
+            <TabsList className="grid grid-cols-5 mb-4">
               <TabsTrigger value="basic">Basic</TabsTrigger>
               <TabsTrigger value="appearance">Appearance</TabsTrigger>
               <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="rates">Rates</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
 
@@ -498,57 +514,152 @@ const ProfileEditModal = ({ profile, open, onOpenChange, onProfileUpdate }: Prof
                   />
                 </div>
               </div>
+            </TabsContent>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="hourly_rate">Hourly Rate ($)</Label>
-                  <Input
-                    id="hourly_rate"
-                    type="number"
-                    value={formData.hourly_rate}
-                    onChange={(e) => setFormData({ ...formData, hourly_rate: e.target.value })}
-                  />
-                </div>
+            <TabsContent value="rates" className="space-y-6">
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Incall Rates</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="incall_hourly_rate">Hourly Rate ($)</Label>
+                    <Input
+                      id="incall_hourly_rate"
+                      type="number"
+                      value={formData.incall_hourly_rate}
+                      onChange={(e) => setFormData({ ...formData, incall_hourly_rate: e.target.value })}
+                    />
+                  </div>
 
-                <div>
-                  <Label htmlFor="two_hour_rate">2 Hour Rate ($)</Label>
-                  <Input
-                    id="two_hour_rate"
-                    type="number"
-                    value={formData.two_hour_rate}
-                    onChange={(e) => setFormData({ ...formData, two_hour_rate: e.target.value })}
-                  />
-                </div>
+                  <div>
+                    <Label htmlFor="incall_two_hour_rate">2 Hour Rate ($)</Label>
+                    <Input
+                      id="incall_two_hour_rate"
+                      type="number"
+                      value={formData.incall_two_hour_rate}
+                      onChange={(e) => setFormData({ ...formData, incall_two_hour_rate: e.target.value })}
+                    />
+                  </div>
 
-                <div>
-                  <Label htmlFor="dinner_rate">Dinner Rate ($)</Label>
-                  <Input
-                    id="dinner_rate"
-                    type="number"
-                    value={formData.dinner_rate}
-                    onChange={(e) => setFormData({ ...formData, dinner_rate: e.target.value })}
-                  />
-                </div>
+                  <div>
+                    <Label htmlFor="incall_dinner_rate">Dinner Rate ($)</Label>
+                    <Input
+                      id="incall_dinner_rate"
+                      type="number"
+                      value={formData.incall_dinner_rate}
+                      onChange={(e) => setFormData({ ...formData, incall_dinner_rate: e.target.value })}
+                    />
+                  </div>
 
-                <div>
-                  <Label htmlFor="overnight_rate">Overnight Rate ($)</Label>
-                  <Input
-                    id="overnight_rate"
-                    type="number"
-                    value={formData.overnight_rate}
-                    onChange={(e) => setFormData({ ...formData, overnight_rate: e.target.value })}
-                  />
+                  <div>
+                    <Label htmlFor="incall_overnight_rate">Overnight Rate ($)</Label>
+                    <Input
+                      id="incall_overnight_rate"
+                      type="number"
+                      value={formData.incall_overnight_rate}
+                      onChange={(e) => setFormData({ ...formData, incall_overnight_rate: e.target.value })}
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="rates">Legacy Rates (Text)</Label>
-                <Textarea
-                  id="rates"
-                  value={formData.rates}
-                  onChange={(e) => setFormData({ ...formData, rates: e.target.value })}
-                  rows={3}
-                />
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Outcall Rates</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="outcall_hourly_rate">Hourly Rate ($)</Label>
+                    <Input
+                      id="outcall_hourly_rate"
+                      type="number"
+                      value={formData.outcall_hourly_rate}
+                      onChange={(e) => setFormData({ ...formData, outcall_hourly_rate: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="outcall_two_hour_rate">2 Hour Rate ($)</Label>
+                    <Input
+                      id="outcall_two_hour_rate"
+                      type="number"
+                      value={formData.outcall_two_hour_rate}
+                      onChange={(e) => setFormData({ ...formData, outcall_two_hour_rate: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="outcall_dinner_rate">Dinner Rate ($)</Label>
+                    <Input
+                      id="outcall_dinner_rate"
+                      type="number"
+                      value={formData.outcall_dinner_rate}
+                      onChange={(e) => setFormData({ ...formData, outcall_dinner_rate: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="outcall_overnight_rate">Overnight Rate ($)</Label>
+                    <Input
+                      id="outcall_overnight_rate"
+                      type="number"
+                      value={formData.outcall_overnight_rate}
+                      onChange={(e) => setFormData({ ...formData, outcall_overnight_rate: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Legacy Fields</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="hourly_rate">Legacy Hourly Rate ($)</Label>
+                    <Input
+                      id="hourly_rate"
+                      type="number"
+                      value={formData.hourly_rate}
+                      onChange={(e) => setFormData({ ...formData, hourly_rate: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="two_hour_rate">Legacy 2 Hour Rate ($)</Label>
+                    <Input
+                      id="two_hour_rate"
+                      type="number"
+                      value={formData.two_hour_rate}
+                      onChange={(e) => setFormData({ ...formData, two_hour_rate: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="dinner_rate">Legacy Dinner Rate ($)</Label>
+                    <Input
+                      id="dinner_rate"
+                      type="number"
+                      value={formData.dinner_rate}
+                      onChange={(e) => setFormData({ ...formData, dinner_rate: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="overnight_rate">Legacy Overnight Rate ($)</Label>
+                    <Input
+                      id="overnight_rate"
+                      type="number"
+                      value={formData.overnight_rate}
+                      onChange={(e) => setFormData({ ...formData, overnight_rate: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="rates">Legacy Rates (Text)</Label>
+                  <Textarea
+                    id="rates"
+                    value={formData.rates}
+                    onChange={(e) => setFormData({ ...formData, rates: e.target.value })}
+                    rows={3}
+                  />
+                </div>
               </div>
             </TabsContent>
 
