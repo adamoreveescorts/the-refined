@@ -47,17 +47,21 @@ const EscortCard = ({ escort, index }: { escort: any, index: number }) => {
     return () => clearTimeout(timer);
   }, [index]);
 
-  // Parse rates to get hourly rate if available
-  const getHourlyRate = () => {
-    if (!escort.rates) return 'Rates available';
+  // Format rates display using new incall/outcall columns
+  const formatRateDisplay = () => {
+    const incallRate = escort.incall_hourly_rate;
+    const outcallRate = escort.outcall_hourly_rate;
     
-    // Try to extract hourly rate from the rates string
-    const hourlyMatch = escort.rates.match(/\$(\d+)\/hour/);
-    if (hourlyMatch) {
-      return `$${hourlyMatch[1]}/hour`;
+    if (incallRate && outcallRate) {
+      return `$${incallRate} incall / $${outcallRate} outcall`;
+    } else if (incallRate) {
+      return `$${incallRate} incall`;
+    } else if (outcallRate) {
+      return `$${outcallRate} outcall`;
+    } else if (escort.rates) {
+      return escort.rates;
     }
-    
-    return 'Rates available';
+    return 'Rates on request';
   };
 
   return (
@@ -123,7 +127,7 @@ const EscortCard = ({ escort, index }: { escort: any, index: number }) => {
           
           <div className="mt-4 pt-2 border-t border-border flex items-center justify-between">
             <span className="text-secondary font-medium">
-              {getHourlyRate()}
+              {formatRateDisplay()}
             </span>
             <Button size="sm" variant="link" className="text-foreground">View Profile</Button>
           </div>
@@ -818,17 +822,20 @@ const Directory = () => {
       }
     }
 
-    // Price range filtering - only apply if values are set
+    // Price range filtering - using new incall/outcall rates
     if (filters.priceMin !== null || filters.priceMax !== null) {
       let escortPrice = null;
       
-      // Try to get price from hourly_rate first
-      if (escort.hourly_rate) {
-        escortPrice = parseInt(escort.hourly_rate.toString().replace(/\D/g, ''));
+      // Use incall hourly rate as primary price point for filtering
+      if (escort.incall_hourly_rate) {
+        escortPrice = parseInt(escort.incall_hourly_rate.toString().replace(/\D/g, ''));
       }
-      
-      // If no hourly_rate, try to extract from rates field
-      if (!escortPrice && escort.rates) {
+      // Fallback to outcall if no incall rate
+      else if (escort.outcall_hourly_rate) {
+        escortPrice = parseInt(escort.outcall_hourly_rate.toString().replace(/\D/g, ''));
+      }
+      // Legacy fallback to old rates field
+      else if (escort.rates) {
         const hourlyMatch = escort.rates.match(/\$?(\d+)(?:\/hour|\/hr|per hour)/i);
         if (hourlyMatch) {
           escortPrice = parseInt(hourlyMatch[1]);
@@ -925,12 +932,12 @@ const Directory = () => {
       case 'age-desc':
         return (parseInt(b.age) || 0) - (parseInt(a.age) || 0);
       case 'price-asc':
-        const aPrice = a.hourly_rate ? parseInt(a.hourly_rate) : 0;
-        const bPrice = b.hourly_rate ? parseInt(b.hourly_rate) : 0;
+        const aPrice = a.incall_hourly_rate ? parseInt(a.incall_hourly_rate) : a.outcall_hourly_rate ? parseInt(a.outcall_hourly_rate) : 0;
+        const bPrice = b.incall_hourly_rate ? parseInt(b.incall_hourly_rate) : b.outcall_hourly_rate ? parseInt(b.outcall_hourly_rate) : 0;
         return aPrice - bPrice;
       case 'price-desc':
-        const aPriceDesc = a.hourly_rate ? parseInt(a.hourly_rate) : 0;
-        const bPriceDesc = b.hourly_rate ? parseInt(b.hourly_rate) : 0;
+        const aPriceDesc = a.incall_hourly_rate ? parseInt(a.incall_hourly_rate) : a.outcall_hourly_rate ? parseInt(a.outcall_hourly_rate) : 0;
+        const bPriceDesc = b.incall_hourly_rate ? parseInt(b.incall_hourly_rate) : b.outcall_hourly_rate ? parseInt(b.outcall_hourly_rate) : 0;
         return bPriceDesc - aPriceDesc;
       case 'name':
         const aName = a.display_name || a.username || '';
