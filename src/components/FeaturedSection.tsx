@@ -27,24 +27,16 @@ const EscortCard = ({
     }
   }, [isMobile, index]);
 
-  const getLowestRate = (escort: any) => {
-    const rates = [
-      escort.incall_hourly_rate,
-      escort.outcall_hourly_rate,
-      escort.hourly_rate
-    ].filter(rate => rate && rate !== '').map(rate => parseInt(rate.toString().replace(/[^\d]/g, '')) || 0);
-    
-    return rates.length > 0 ? Math.min(...rates) : null;
-  };
-
   const formatRateDisplay = (escort: any) => {
     const incallRate = escort.incall_hourly_rate;
     const outcallRate = escort.outcall_hourly_rate;
     
     if (incallRate && outcallRate) {
       return `From $${incallRate} incall / $${outcallRate} outcall`;
-    } else if (escort.hourly_rate) {
-      return `From $${escort.hourly_rate}/hour`;
+    } else if (incallRate) {
+      return `From $${incallRate} incall`;
+    } else if (outcallRate) {
+      return `From $${outcallRate} outcall`;
     } else if (escort.rates) {
       return escort.rates;
     }
