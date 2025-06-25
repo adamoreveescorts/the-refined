@@ -414,7 +414,7 @@ const HeroBanner = () => {
                 Browse Escorts
               </Button>
             </Link>
-            <Link to="/join">
+            <Link to="/auth?tab=signup">
               <Button variant="outline" className="text-gold border-gold hover:bg-gold/20 text-sm sm:text-base px-4 py-2 sm:px-6 sm:py-3">
                 List Your Profile
               </Button>
