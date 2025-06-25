@@ -157,7 +157,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
               <Input
                 id="height"
                 {...register("height")}
-                placeholder="e.g., 5'6\" or 168cm"
+                placeholder="e.g., 5'6&quot; or 168cm"
               />
             </div>
           </div>
