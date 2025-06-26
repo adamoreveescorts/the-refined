@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import { Users, UserCheck, Star, TrendingUp, Activity, MessageSquare, Shield, Eye } from 'lucide-react';
+import { Users, UserCheck, Star, TrendingUp, Activity, MessageSquare, Shield, Eye, Crown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import AnalyticsExport from './AnalyticsExport';
 
@@ -16,6 +17,7 @@ const AnalyticsDashboard = () => {
     totalMessages: 0,
     totalConversations: 0,
     pendingVerifications: 0,
+    platinumSubscribers: 0,
     monthlyGrowth: []
   });
   const [roleDistribution, setRoleDistribution] = useState([]);
@@ -73,6 +75,15 @@ const AnalyticsDashboard = () => {
         .eq('status', 'pending');
 
       if (verificationsError) throw verificationsError;
+
+      // Fetch platinum subscribers count
+      const { count: platinumCount, error: platinumError } = await supabase
+        .from('subscribers')
+        .select('*', { count: 'exact', head: true })
+        .eq('subscription_tier', 'platinum')
+        .eq('subscribed', true);
+
+      if (platinumError) throw platinumError;
 
       // Process profile data
       const totalProfiles = profiles?.length || 0;
@@ -136,6 +147,7 @@ const AnalyticsDashboard = () => {
         totalMessages: messagesCount || 0,
         totalConversations: conversationsCount || 0,
         pendingVerifications: pendingVerifications || 0,
+        platinumSubscribers: platinumCount || 0,
         monthlyGrowth: monthlyData
       });
 
@@ -208,11 +220,11 @@ const AnalyticsDashboard = () => {
       change: '-10%'
     },
     {
-      title: 'Growth Rate',
-      value: '12.5%',
-      icon: TrendingUp,
-      color: 'text-emerald-600',
-      change: '+2%'
+      title: 'Platinum Subscribers',
+      value: analytics.platinumSubscribers,
+      icon: Crown,
+      color: 'text-gold',
+      change: '+7%'
     }
   ];
 
@@ -371,9 +383,9 @@ const AnalyticsDashboard = () => {
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm">Active Subscriptions</span>
+                <span className="text-sm">Platinum Subscribers</span>
                 <Badge className="bg-gold text-white">
-                  {analytics.activeProfiles}
+                  {analytics.platinumSubscribers}
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
