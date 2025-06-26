@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -101,18 +100,18 @@ const ChoosePlan = () => {
     setShowPaymentFlow(false);
     toast.success("Plan selected successfully! Welcome to Adam or Eve Escorts.");
     
-    // Redirect based on user role
+    // Redirect based on user role - send to edit-profile page instead of home
     if (userRole === 'agency') {
       navigate("/agency/dashboard");
     } else {
-      navigate("/");
+      navigate("/edit-profile");
     }
   };
 
   const handlePaymentCancel = () => {
     setShowPaymentFlow(false);
     toast.info("Plan selection cancelled. You can choose a plan anytime from your profile.");
-    navigate("/");
+    navigate("/edit-profile");
   };
 
   if (isLoading) {
