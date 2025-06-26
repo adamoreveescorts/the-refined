@@ -325,6 +325,7 @@ export type Database = {
           outcall_two_hour_rate: string | null
           overnight_rate: string | null
           payment_status: string | null
+          phone: string | null
           piercings: boolean | null
           profile_completion_percentage: number | null
           profile_picture: string | null
@@ -380,6 +381,7 @@ export type Database = {
           outcall_two_hour_rate?: string | null
           overnight_rate?: string | null
           payment_status?: string | null
+          phone?: string | null
           piercings?: boolean | null
           profile_completion_percentage?: number | null
           profile_picture?: string | null
@@ -435,6 +437,7 @@ export type Database = {
           outcall_two_hour_rate?: string | null
           overnight_rate?: string | null
           payment_status?: string | null
+          phone?: string | null
           piercings?: boolean | null
           profile_completion_percentage?: number | null
           profile_picture?: string | null
