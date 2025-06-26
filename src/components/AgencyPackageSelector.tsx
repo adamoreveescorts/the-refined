@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Users, Clock, Star } from 'lucide-react';
+import { Users, Clock, Star } from 'lucide-react';
 
 interface Package {
   id: number;
@@ -52,11 +52,10 @@ const PACKAGES: Package[] = [
 
 interface AgencyPackageSelectorProps {
   onPackageSelect: (packageId: number) => void;
-  onTrialActivate: () => void;
   isLoading: boolean;
 }
 
-const AgencyPackageSelector = ({ onPackageSelect, onTrialActivate, isLoading }: AgencyPackageSelectorProps) => {
+const AgencyPackageSelector = ({ onPackageSelect, isLoading }: AgencyPackageSelectorProps) => {
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -66,59 +65,6 @@ const AgencyPackageSelector = ({ onPackageSelect, onTrialActivate, isLoading }: 
         <p className="text-muted-foreground">
           Each package includes top page 1 ad positioning by location and full profile management
         </p>
-      </div>
-
-      {/* Free Trial Option */}
-      <Card className="border-secondary bg-secondary/5">
-        <CardHeader>
-          <CardTitle className="flex items-center text-secondary">
-            <Crown className="h-5 w-5 mr-2" />
-            Free 7-Day Trial
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-secondary mb-2">
-                FREE for 7 days
-              </div>
-              <p className="text-lg font-semibold mb-2">
-                Up to 5 profiles included
-              </p>
-              <p className="text-sm text-muted-foreground mb-4">
-                Full access to all premium features • No credit card required
-              </p>
-              <Button
-                onClick={onTrialActivate}
-                disabled={isLoading}
-                className="w-full bg-secondary hover:bg-secondary/90 text-white"
-                size="lg"
-              >
-                {isLoading ? 'Activating...' : 'Start Free Trial'}
-              </Button>
-            </div>
-            <div className="bg-muted p-3 rounded-lg">
-              <h4 className="font-medium mb-2 text-sm">Trial includes:</h4>
-              <ul className="text-xs text-muted-foreground space-y-1">
-                <li>• Manage up to 5 escort profiles</li>
-                <li>• Top page 1 ad positioning</li>
-                <li>• Agency dashboard with analytics</li>
-                <li>• Full 7 days of premium access</li>
-                <li>• No automatic billing after trial</li>
-              </ul>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Divider */}
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">Or choose a package</span>
-        </div>
       </div>
 
       {/* Package Selection */}
