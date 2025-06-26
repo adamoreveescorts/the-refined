@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -113,7 +112,7 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
     }
   };
 
-  const handleAgencySubscriptionCreate = async (billingCycle: string, seats: number) => {
+  const handleAgencySubscriptionCreate = async (packageId: string, packageType: number) => {
     setIsLoading(true);
     try {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -134,8 +133,8 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
       const { data, error } = await supabase.functions.invoke('create-agency-subscription', {
         body: {
           agencyId: currentSession.user.id,
-          billingCycle,
-          seats
+          packageId,
+          packageType
         },
         headers: {
           Authorization: `Bearer ${currentSession.access_token}`,

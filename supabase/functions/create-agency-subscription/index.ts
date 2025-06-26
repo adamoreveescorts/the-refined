@@ -15,17 +15,37 @@ const logStep = (step: string, details?: any) => {
 
 // Agency package configurations with recurring billing
 const AGENCY_PACKAGES = {
-  monthly: {
-    name: "Monthly Agency Plan",
-    basePrice: 7900, // $79 per escort per month
-    stripePriceId: "price_agency_monthly_aud", // Replace with actual Stripe Price ID
+  package_1: {
+    name: "Package 1",
+    price: 7900, // $79 
+    maxProfiles: 12,
+    periodWeeks: 1,
+    stripePriceId: "price_package_1_weekly_aud",
+    billingCycle: "weekly"
+  },
+  package_2: {
+    name: "Package 2", 
+    price: 9900, // $99
+    maxProfiles: 18,
+    periodWeeks: 1,
+    stripePriceId: "price_package_2_weekly_aud",
+    billingCycle: "weekly"
+  },
+  package_3: {
+    name: "Package 3",
+    price: 24900, // $249
+    maxProfiles: 24,
+    periodWeeks: 4,
+    stripePriceId: "price_package_3_monthly_aud",
     billingCycle: "monthly"
   },
-  yearly: {
-    name: "Yearly Agency Plan", 
-    basePrice: 79900, // $799 per escort per year (save $150)
-    stripePriceId: "price_agency_yearly_aud", // Replace with actual Stripe Price ID
-    billingCycle: "yearly"
+  package_4: {
+    name: "Package 4",
+    price: 49900, // $499
+    maxProfiles: 24,
+    periodWeeks: 12,
+    stripePriceId: "price_package_4_quarterly_aud",
+    billingCycle: "quarterly"
   }
 };
 
@@ -56,15 +76,14 @@ serve(async (req) => {
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
 
-    const { agencyId, billingCycle, seats } = await req.json();
-    logStep("Request data", { agencyId, billingCycle, seats });
+    const { agencyId, packageId, packageType } = await req.json();
+    logStep("Request data", { agencyId, packageId, packageType });
 
-    if (!AGENCY_PACKAGES[billingCycle as keyof typeof AGENCY_PACKAGES]) {
-      throw new Error("Invalid billing cycle");
+    if (!AGENCY_PACKAGES[packageId as keyof typeof AGENCY_PACKAGES]) {
+      throw new Error("Invalid package selected");
     }
 
-    const selectedPackage = AGENCY_PACKAGES[billingCycle as keyof typeof AGENCY_PACKAGES];
-    const seatsCount = seats || 1;
+    const selectedPackage = AGENCY_PACKAGES[packageId as keyof typeof AGENCY_PACKAGES];
 
     // Verify the user owns this agency
     const { data: agency, error: agencyError } = await supabaseClient
@@ -104,16 +123,16 @@ serve(async (req) => {
       customer: customerId,
       payment_method_types: ['card'],
       line_items: [{
-        price: selectedPackage.stripePriceId, // Use predefined Stripe Price ID
-        quantity: seatsCount, // Number of escort seats
+        price: selectedPackage.stripePriceId,
+        quantity: 1,
       }],
-      mode: 'subscription', // Changed to subscription for recurring billing
+      mode: 'subscription',
       success_url: `${req.headers.get('origin')}/agency/dashboard?success=true`,
       cancel_url: `${req.headers.get('origin')}/agency/dashboard?cancelled=true`,
       metadata: {
         agency_id: agencyId,
-        billing_cycle: billingCycle,
-        seats: seatsCount.toString(),
+        package_id: packageId,
+        package_type: packageType.toString(),
         type: 'agency_subscription'
       },
     });
@@ -121,8 +140,11 @@ serve(async (req) => {
     // Create or update agency subscription record
     const subscriptionData = {
       agency_id: agencyId,
-      total_seats: seatsCount,
-      price_per_seat: selectedPackage.basePrice,
+      package_type: packageType,
+      max_profiles: selectedPackage.maxProfiles,
+      package_name: selectedPackage.name,
+      total_seats: selectedPackage.maxProfiles,
+      price_per_seat: Math.floor(selectedPackage.price / selectedPackage.maxProfiles),
       used_seats: 0,
       subscription_tier: 'platinum',
       billing_cycle: selectedPackage.billingCycle,
