@@ -13,6 +13,7 @@ import FAQ from "./pages/FAQ";
 import Blog from "./pages/Blog";
 import Auth from "./pages/Auth";
 import UserProfilePage from "./pages/UserProfilePage";
+import EditProfilePage from "./pages/EditProfilePage";
 import AdminDashboard from "./pages/AdminDashboard";
 import PhotoVerificationPage from "./pages/PhotoVerificationPage";
 import MessagesPage from "./pages/MessagesPage";
@@ -46,6 +47,7 @@ function App() {
               <Route path="/blog" element={<Blog />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/user-profile" element={<UserProfilePage />} />
+              <Route path="/edit-profile" element={<EditProfilePage />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/agency/dashboard" element={<AgencyDashboardPage />} />
               <Route path="/photo-verification" element={<PhotoVerificationPage />} />

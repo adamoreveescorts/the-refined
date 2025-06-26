@@ -4,13 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
-import EditProfileForm from "@/components/EditProfileForm";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { UserRound, Calendar, Mail, Shield, User, CreditCard, Crown, Clock, ArrowLeft } from "lucide-react";
+import { UserRound, Calendar, Mail, Shield, User, CreditCard, Crown, Clock } from "lucide-react";
 import SubscriptionTierSelector from "@/components/SubscriptionTierSelector";
 import VerificationButton from "@/components/verification/VerificationButton";
 
@@ -218,8 +217,7 @@ const UserProfilePage = () => {
 
   // Helper functions for showing/hiding modals
   const handleShowEditProfile = () => {
-    setShowUpgrade(false);
-    setShowEditProfile(true);
+    navigate("/edit-profile");
   };
 
   const handleShowUpgrade = () => {
@@ -461,7 +459,6 @@ const UserProfilePage = () => {
                         </div>
                       </div>
 
-                      {/* Photo Verification Section */}
                       <div className="flex items-start">
                         <Shield className="h-5 w-5 mr-2 text-muted-foreground" />
                         <div className="w-full">
@@ -474,7 +471,6 @@ const UserProfilePage = () => {
                         </div>
                       </div>
 
-                      {/* Featured Status - only show if actually featured */}
                       {isActuallyFeatured() && (
                         <div className="flex items-start">
                           <Crown className="h-5 w-5 mr-2 text-secondary" />
@@ -485,7 +481,6 @@ const UserProfilePage = () => {
                         </div>
                       )}
 
-                      {/* Photo Verified Status - only show if actually verified */}
                       {isActuallyPhotoVerified() && (
                         <div className="flex items-start">
                           <Shield className="h-5 w-5 mr-2 text-green-500" />
@@ -521,29 +516,7 @@ const UserProfilePage = () => {
             
             {/* Content Section */}
             <div className="md:col-span-2">
-              {showEditProfile ? (
-                <Card className="bg-card shadow-sm border-border">
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-foreground">Edit Profile</CardTitle>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={handleBackToProfile}
-                      className="flex items-center gap-2"
-                    >
-                      <ArrowLeft className="h-4 w-4" />
-                      Back
-                    </Button>
-                  </CardHeader>
-                  <CardContent>
-                    <EditProfileForm 
-                      profile={profile!}
-                      onProfileUpdate={handleProfileUpdate}
-                      onCancel={handleBackToProfile}
-                    />
-                  </CardContent>
-                </Card>
-              ) : showUpgrade && (profile?.role === 'escort' || profile?.role === 'agency') ? (
+              {showUpgrade && (profile?.role === 'escort' || profile?.role === 'agency') ? (
                 <Card className="bg-card shadow-sm border-border">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle className="text-foreground">Choose Your Plan</CardTitle>
@@ -553,7 +526,6 @@ const UserProfilePage = () => {
                       onClick={handleBackToProfile}
                       className="flex items-center gap-2"
                     >
-                      <ArrowLeft className="h-4 w-4" />
                       Back
                     </Button>
                   </CardHeader>
