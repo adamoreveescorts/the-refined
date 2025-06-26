@@ -54,8 +54,8 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
   };
 
   const handleTierSelect = async (tier: SubscriptionTier) => {
-    // Handle free trial with confirmation dialog
-    if (tier.id === 'trial') {
+    // Handle free trial with confirmation dialog (only for escorts)
+    if (tier.id === 'trial' && role === 'escort') {
       setShowTrialDialog(true);
       return;
     }
@@ -159,77 +159,6 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
     }
   };
 
-  const handleAgencyTrialActivate = async () => {
-    setIsLoading(true);
-    try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.error("Session error:", sessionError);
-        throw new Error("Failed to get authentication session");
-      }
-      
-      const currentSession = session || userSession;
-      
-      if (!currentSession?.access_token) {
-        console.error("No session or access token found");
-        toast.error("Please log in to continue");
-        return;
-      }
-
-      // Create trial agency subscription with database-compliant values
-      const trialEnd = new Date();
-      trialEnd.setDate(trialEnd.getDate() + 7);
-
-      const { error: subscriptionError } = await supabase
-        .from('agency_subscriptions')
-        .upsert({
-          agency_id: currentSession.user.id,
-          package_type: 1, // Use package 1 but with trial pricing
-          package_name: 'Free Trial',
-          max_profiles: 5,
-          total_seats: 5,
-          used_seats: 0,
-          price_per_seat: 0,
-          subscription_tier: 'trial',
-          billing_cycle: '1 week', // Use valid constraint value
-          status: 'active',
-          current_period_start: new Date().toISOString(),
-          current_period_end: trialEnd.toISOString(),
-          updated_at: new Date().toISOString(),
-        }, { 
-          onConflict: 'agency_id' 
-        });
-
-      if (subscriptionError) {
-        console.error("Subscription error:", subscriptionError);
-        throw new Error("Failed to create trial subscription");
-      }
-
-      // Update profile status
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ 
-          payment_status: 'completed',
-          is_active: true,
-          status: 'approved'
-        })
-        .eq('id', currentSession.user.id);
-
-      if (profileError) {
-        console.error("Profile update error:", profileError);
-      }
-
-      toast.success("Free trial activated! You have 7 days to manage up to 5 profiles.");
-      onPaymentComplete();
-    } catch (error: any) {
-      console.error("Trial activation error:", error);
-      toast.error(error.message || "Failed to activate trial");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleTrialActivated = () => {
     checkSubscriptionStatus();
     onPaymentComplete();
@@ -244,7 +173,7 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
           </CardTitle>
           <CardDescription className="text-center text-muted-foreground">
             {role === 'agency' 
-              ? "Start with a free 7-day trial or select your agency package with flexible duration options"
+              ? "Select your agency package with flexible duration options"
               : "Start with a free 7-day trial, then select the plan that best fits your escort business needs"
             }
           </CardDescription>
@@ -253,7 +182,6 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
           {role === 'agency' ? (
             <AgencySubscriptionSetup 
               onSubscriptionCreate={handleAgencySubscriptionCreate}
-              onTrialActivate={handleAgencyTrialActivate}
               isLoading={isLoading}
             />
           ) : (
