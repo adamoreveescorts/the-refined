@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -256,8 +255,8 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
                                 Approve
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => handleStatusUpdate(profile, 'rejected')}
-                                className="text-red-600"
+                               onClick={() => handleStatusUpdate(profile, 'rejected')}
+                               className="text-red-600"
                               >
                                 <X className="mr-2 h-4 w-4" />
                                 Reject
