@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { z } from "zod";
@@ -6,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -50,6 +49,9 @@ const Auth = () => {
   const [formValues, setFormValues] = useState<SignupFormValues | null>(null);
   const [verificationSent, setVerificationSent] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Check for tab parameter in URL and payment status
   useEffect(() => {
@@ -349,7 +351,26 @@ const Auth = () => {
                         <FormItem>
                           <FormLabel className="text-foreground">Password</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="••••••••" {...field} />
+                            <div className="relative">
+                              <Input 
+                                type={showLoginPassword ? "text" : "password"} 
+                                placeholder="••••••••" 
+                                {...field} 
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                onClick={() => setShowLoginPassword(!showLoginPassword)}
+                              >
+                                {showLoginPassword ? (
+                                  <EyeOff className="h-4 w-4" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -407,7 +428,26 @@ const Auth = () => {
                         <FormItem>
                           <FormLabel className="text-foreground">Password</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="••••••••" {...field} />
+                            <div className="relative">
+                              <Input 
+                                type={showSignupPassword ? "text" : "password"} 
+                                placeholder="••••••••" 
+                                {...field} 
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                onClick={() => setShowSignupPassword(!showSignupPassword)}
+                              >
+                                {showSignupPassword ? (
+                                  <EyeOff className="h-4 w-4" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -421,7 +461,26 @@ const Auth = () => {
                         <FormItem>
                           <FormLabel className="text-foreground">Confirm Password</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="••••••••" {...field} />
+                            <div className="relative">
+                              <Input 
+                                type={showConfirmPassword ? "text" : "password"} 
+                                placeholder="••••••••" 
+                                {...field} 
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              >
+                                {showConfirmPassword ? (
+                                  <EyeOff className="h-4 w-4" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
