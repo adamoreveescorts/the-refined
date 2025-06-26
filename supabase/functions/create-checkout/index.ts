@@ -13,14 +13,13 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
-// Define new independent escort packages with Stripe Price IDs for recurring billing
+// Define subscription tiers with pricing information
 const SUBSCRIPTION_TIERS = {
   trial: { 
     name: "7-Day Free Trial", 
     price: 0, 
     duration: "7 Days", 
     durationDays: 7, 
-    stripePriceId: null,
     subscriptionTier: "Trial"
   },
   package_1_weekly: { 
@@ -28,32 +27,33 @@ const SUBSCRIPTION_TIERS = {
     price: 1500, // $15 in cents
     duration: "Weekly", 
     durationDays: 7,
-    stripePriceId: "price_package_1_weekly_aud",
-    subscriptionTier: "Package1"
+    subscriptionTier: "Package1",
+    interval: "week" as const
   },
   package_2_monthly: { 
     name: "4 Weeks Package 2", 
     price: 7900, // $79 in cents
     duration: "Monthly", 
     durationDays: 30,
-    stripePriceId: "price_package_2_monthly_aud",
-    subscriptionTier: "Package2"
+    subscriptionTier: "Package2",
+    interval: "month" as const
   },
   package_3_quarterly: { 
     name: "12 Weeks Package 3", 
     price: 18900, // $189 in cents
     duration: "Quarterly", 
     durationDays: 84,
-    stripePriceId: "price_package_3_quarterly_aud",
-    subscriptionTier: "Package3"
+    subscriptionTier: "Package3",
+    interval: "month" as const,
+    intervalCount: 3
   },
   package_4_yearly: { 
     name: "52 Weeks Package 4", 
     price: 39900, // $399 in cents
     duration: "Yearly", 
     durationDays: 365,
-    stripePriceId: "price_package_4_yearly_aud",
-    subscriptionTier: "Package4"
+    subscriptionTier: "Package4",
+    interval: "year" as const
   }
 };
 
@@ -221,17 +221,29 @@ serve(async (req) => {
       customerId = customers.data[0].id;
       logStep("Found existing customer", { customerId });
     }
+
+    // Create line items for recurring subscription checkout
+    const lineItems = [{
+      price_data: {
+        currency: 'aud',
+        product_data: {
+          name: selectedTier.name,
+          description: `${selectedTier.duration} subscription for ${role} profile`
+        },
+        unit_amount: selectedTier.price,
+        recurring: {
+          interval: selectedTier.interval,
+          interval_count: selectedTier.intervalCount || 1
+        }
+      },
+      quantity: 1,
+    }];
     
     // Create recurring subscription checkout
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
-      line_items: [
-        {
-          price: selectedTier.stripePriceId, // Use predefined Stripe Price ID
-          quantity: 1,
-        },
-      ],
+      line_items: lineItems,
       mode: "subscription", // Recurring billing
       success_url: `https://adamoreveescorts.com/auth?payment=success&tier=${tier}`,
       cancel_url: `https://adamoreveescorts.com/user-profile`,
