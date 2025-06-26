@@ -13,23 +13,47 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
-// Define subscription tiers with Stripe Price IDs for recurring billing
+// Define new independent escort packages with Stripe Price IDs for recurring billing
 const SUBSCRIPTION_TIERS = {
-  trial: { name: "Free Trial", price: 0, duration: "7 Days", durationDays: 7, stripePriceId: null },
-  basic: { name: "Basic Plan", price: 0, duration: "Forever", durationDays: 0, stripePriceId: null },
-  platinum_monthly: { 
-    name: "Platinum Monthly", 
-    price: 7900, 
+  basic: { 
+    name: "Basic Package", 
+    price: 0, 
+    duration: "Forever", 
+    durationDays: 0, 
+    stripePriceId: null,
+    subscriptionTier: "Basic"
+  },
+  package_1_weekly: { 
+    name: "Limited Time Package 1", 
+    price: 1500, // $15 in cents
+    duration: "Weekly", 
+    durationDays: 7,
+    stripePriceId: "price_package_1_weekly_aud",
+    subscriptionTier: "Package1"
+  },
+  package_2_monthly: { 
+    name: "4 Weeks Package 2", 
+    price: 7900, // $79 in cents
     duration: "Monthly", 
     durationDays: 30,
-    stripePriceId: "price_platinum_monthly_aud" // Replace with actual Stripe Price ID
+    stripePriceId: "price_package_2_monthly_aud",
+    subscriptionTier: "Package2"
   },
-  platinum_yearly: { 
-    name: "Platinum Yearly", 
-    price: 39900, 
+  package_3_quarterly: { 
+    name: "12 Weeks Package 3", 
+    price: 18900, // $189 in cents
+    duration: "Quarterly", 
+    durationDays: 84,
+    stripePriceId: "price_package_3_quarterly_aud",
+    subscriptionTier: "Package3"
+  },
+  package_4_yearly: { 
+    name: "52 Weeks Package 4", 
+    price: 39900, // $399 in cents
     duration: "Yearly", 
     durationDays: 365,
-    stripePriceId: "price_platinum_yearly_aud" // Replace with actual Stripe Price ID
+    stripePriceId: "price_package_4_yearly_aud",
+    subscriptionTier: "Package4"
   }
 };
 
@@ -111,84 +135,14 @@ serve(async (req) => {
     const selectedTier = SUBSCRIPTION_TIERS[tier as keyof typeof SUBSCRIPTION_TIERS];
     logStep("Tier selected", { tier, selectedTier });
 
-    // Handle free tiers (trial and basic)
-    if (tier === 'trial') {
-      // Check if user has already used trial
-      const { data: existingSubscriber } = await supabaseClient
-        .from("subscribers")
-        .select("trial_start_date")
-        .eq("email", user.email)
-        .single();
-
-      if (existingSubscriber?.trial_start_date) {
-        logStep("ERROR: User has already used trial");
-        return new Response(JSON.stringify({ error: "Trial already used" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 400,
-        });
-      }
-
-      const now = new Date();
-      const trialEnd = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
-
-      const { error: updateError } = await supabaseClient.from("subscribers").upsert({
-        email: user.email,
-        user_id: user.id,
-        stripe_customer_id: null,
-        subscribed: true,
-        subscription_tier: 'Platinum',
-        subscription_type: 'free',
-        plan_duration: selectedTier.duration,
-        plan_price: 0,
-        expires_at: trialEnd.toISOString(),
-        subscription_end: trialEnd.toISOString(),
-        trial_start_date: now.toISOString(),
-        trial_end_date: trialEnd.toISOString(),
-        is_trial_active: true,
-        is_featured: true,
-        photo_verified: true,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'email' });
-
-      if (updateError) {
-        logStep("ERROR: Failed to update subscriber record", { error: updateError });
-        return new Response(JSON.stringify({ error: "Failed to update subscription" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 500,
-        });
-      }
-
-      const { error: profileError } = await supabaseClient
-        .from('profiles')
-        .update({ 
-          payment_status: 'completed',
-          is_active: true 
-        })
-        .eq('id', user.id);
-
-      if (profileError) {
-        logStep("ERROR: Failed to update profile", { error: profileError });
-      }
-
-      logStep("Trial tier assigned with premium features", { userId: user.id, trialEnd });
-      return new Response(JSON.stringify({ 
-        success: true, 
-        message: "Free trial activated with full premium features",
-        tier: 'Platinum',
-        trial_end: trialEnd.toISOString()
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
-
+    // Handle free basic package
     if (tier === 'basic') {
       const { error: updateError } = await supabaseClient.from("subscribers").upsert({
         email: user.email,
         user_id: user.id,
         stripe_customer_id: null,
         subscribed: false,
-        subscription_tier: 'Basic',
+        subscription_tier: selectedTier.subscriptionTier,
         subscription_type: 'free',
         plan_duration: selectedTier.duration,
         plan_price: 0,
@@ -219,11 +173,11 @@ serve(async (req) => {
         logStep("ERROR: Failed to update profile", { error: profileError });
       }
 
-      logStep("Basic tier assigned", { userId: user.id });
+      logStep("Basic package assigned", { userId: user.id });
       return new Response(JSON.stringify({ 
         success: true, 
-        message: "Basic tier activated",
-        tier: 'Basic'
+        message: "Basic package activated",
+        tier: selectedTier.subscriptionTier
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -257,14 +211,15 @@ serve(async (req) => {
           quantity: 1,
         },
       ],
-      mode: "subscription", // Changed to subscription for recurring billing
+      mode: "subscription", // Recurring billing
       success_url: `https://adamoreveescorts.com/auth?payment=success&tier=${tier}`,
       cancel_url: `https://adamoreveescorts.com/user-profile`,
       metadata: {
         user_id: user.id,
         role: role,
         tier: tier,
-        billing_cycle: tier.includes('monthly') ? 'monthly' : 'yearly'
+        billing_cycle: selectedTier.duration.toLowerCase(),
+        subscription_tier: selectedTier.subscriptionTier
       }
     });
 
