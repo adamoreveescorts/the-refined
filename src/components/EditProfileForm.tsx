@@ -19,11 +19,12 @@ import {
 } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { X, Upload, User, Edit } from "lucide-react";
+import { X, Upload, User, Edit, Images } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import PhotoEditor from "./PhotoEditor";
+import PhotoGalleryManager from "./PhotoGalleryManager";
 
 const profileSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters").max(30, "Username must be less than 30 characters"),
@@ -101,6 +102,7 @@ interface EditProfileFormProps {
     outcall_dinner_rate?: string | null;
     outcall_overnight_rate?: string | null;
     profile_picture?: string | null;
+    gallery_images?: string[] | null;
     tags?: string | null;
     tattoos?: boolean | null;
     piercings?: boolean | null;
@@ -113,6 +115,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [profilePicture, setProfilePicture] = useState(profile.profile_picture || "");
+  const [galleryImages, setGalleryImages] = useState<string[]>(profile.gallery_images || []);
   const [selectedTags, setSelectedTags] = useState<string[]>(
     profile.tags ? profile.tags.split(',').filter(Boolean) : []
   );
@@ -120,6 +123,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
   const [piercings, setPiercings] = useState(profile.piercings || false);
   const [showPhotoEditor, setShowPhotoEditor] = useState(false);
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const [showGalleryManager, setShowGalleryManager] = useState(false);
 
   const isEscortOrAgency = profile.role === 'escort' || profile.role === 'agency';
 
@@ -216,6 +220,10 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
     setSelectedImageFile(null);
   };
 
+  const handleGalleryUpdate = (newGallery: string[]) => {
+    setGalleryImages(newGallery);
+  };
+
   const commonTags = [
     "Companion", "Dinner Date", "Travel", "Events", "Business", "Social",
     "Overnight", "Weekend", "Outcall", "Incall", "Mature", "Young", "Blonde", "Brunette"
@@ -268,6 +276,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
         updateData.outcall_dinner_rate = data.outcall_dinner_rate;
         updateData.outcall_overnight_rate = data.outcall_overnight_rate;
         updateData.profile_picture = profilePicture;
+        updateData.gallery_images = galleryImages;
         updateData.tags = selectedTags.join(',');
         updateData.tattoos = tattoos;
         updateData.piercings = piercings;
@@ -300,41 +309,81 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
       <div className="bg-card shadow-sm border-border rounded-lg p-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Profile Picture - Only for escorts/agencies */}
+            {/* Profile Picture & Gallery - Only for escorts/agencies */}
             {isEscortOrAgency && (
               <div className="space-y-4">
-                <h3 className="text-lg font-medium text-foreground">Profile Picture</h3>
-                <div className="flex items-center space-x-4">
-                  <Avatar className="h-20 w-20">
-                    <AvatarImage src={profilePicture} alt="Profile" />
-                    <AvatarFallback>
-                      <User className="h-10 w-10" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                      id="profile-picture"
-                    />
-                    <label htmlFor="profile-picture">
+                <h3 className="text-lg font-medium text-foreground">Photos</h3>
+                
+                {/* Profile Picture Section */}
+                <div className="space-y-2">
+                  <h4 className="text-md font-medium text-foreground">Profile Picture</h4>
+                  <div className="flex items-center space-x-4">
+                    <Avatar className="h-20 w-20">
+                      <AvatarImage src={profilePicture} alt="Profile" />
+                      <AvatarFallback>
+                        <User className="h-10 w-10" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        id="profile-picture"
+                      />
+                      <label htmlFor="profile-picture">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={uploadingImage}
+                          asChild
+                        >
+                          <span className="cursor-pointer">
+                            <Upload className="h-4 w-4 mr-2" />
+                            {uploadingImage ? "Uploading..." : "Upload & Edit Photo"}
+                          </span>
+                        </Button>
+                      </label>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Max 5MB, JPG/PNG only. Click to upload and edit with blur tool.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Gallery Management Section */}
+                <div className="space-y-2">
+                  <h4 className="text-md font-medium text-foreground">Photo Gallery</h4>
+                  <div className="flex items-center space-x-4">
+                    <div className="flex -space-x-2">
+                      {galleryImages.slice(0, 3).map((image, index) => (
+                        <Avatar key={index} className="h-10 w-10 border-2 border-background">
+                          <AvatarImage src={image} alt={`Gallery ${index + 1}`} />
+                          <AvatarFallback>
+                            <Images className="h-4 w-4" />
+                          </AvatarFallback>
+                        </Avatar>
+                      ))}
+                      {galleryImages.length > 3 && (
+                        <div className="h-10 w-10 rounded-full bg-muted border-2 border-background flex items-center justify-center text-xs font-medium">
+                          +{galleryImages.length - 3}
+                        </div>
+                      )}
+                    </div>
+                    <div>
                       <Button
                         type="button"
                         variant="outline"
-                        disabled={uploadingImage}
-                        asChild
+                        onClick={() => setShowGalleryManager(true)}
                       >
-                        <span className="cursor-pointer">
-                          <Upload className="h-4 w-4 mr-2" />
-                          {uploadingImage ? "Uploading..." : "Upload & Edit Photo"}
-                        </span>
+                        <Images className="h-4 w-4 mr-2" />
+                        Manage Photos ({galleryImages.length})
                       </Button>
-                    </label>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Max 5MB, JPG/PNG only. Click to upload and edit with blur tool.
-                    </p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Upload and manage multiple gallery photos with blur editing.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -973,7 +1022,7 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
         </Form>
       </div>
 
-      {/* Photo Editor Dialog */}
+      {/* Profile Picture Editor Dialog */}
       <Dialog open={showPhotoEditor} onOpenChange={setShowPhotoEditor}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -988,6 +1037,15 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Photo Gallery Manager Dialog */}
+      <PhotoGalleryManager
+        isOpen={showGalleryManager}
+        onClose={() => setShowGalleryManager(false)}
+        userId={profile.id}
+        currentGallery={galleryImages}
+        onGalleryUpdate={handleGalleryUpdate}
+      />
     </>
   );
 };
