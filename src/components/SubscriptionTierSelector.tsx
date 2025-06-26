@@ -190,7 +190,7 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, rol
           return (
             <Card 
               key={tier.id} 
-              className={`relative transition-all duration-200 hover:shadow-lg ${
+              className={`relative transition-all duration-200 hover:shadow-lg min-h-[600px] flex flex-col ${
                 selectedTier === tier.id ? 'ring-2 ring-gold' : ''
               } ${tier.recommended ? 'border-gold' : ''} ${
                 isCurrent ? 'ring-2 ring-green-500 bg-accent' : ''
@@ -230,8 +230,8 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, rol
                 </CardDescription>
               </CardHeader>
               
-              <CardContent className="space-y-4">
-                <ul className="space-y-2 max-h-64 overflow-y-auto">
+              <CardContent className="space-y-4 flex-1 flex flex-col">
+                <ul className="space-y-2 flex-1">
                   {tier.features.map((feature, index) => (
                     <li key={index} className="flex items-start text-sm">
                       <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
@@ -243,7 +243,7 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, rol
                 <Button
                   onClick={() => handleSelectTier(tier)}
                   disabled={loading === tier.id || isCurrent}
-                  className={`w-full ${
+                  className={`w-full mt-auto ${
                     isCurrent 
                       ? "bg-green-500 hover:bg-green-500 cursor-not-allowed text-white" 
                       : tier.id === "basic" 
