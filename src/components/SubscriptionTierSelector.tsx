@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,12 +20,14 @@ export interface SubscriptionTier {
 
 const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
   {
-    id: "basic",
-    name: "Basic Package",
+    id: "trial",
+    name: "7-Day Free Trial",
     price: 0,
-    duration: "Forever",
-    durationDays: 0,
+    duration: "7 Days",
+    durationDays: 7,
+    trial: true,
     features: [
+      "7 days free access",
       "Same State base locations",
       "Ad positioning below standard ads",
       "6 photos (+ 1 main photo)",
@@ -140,7 +143,7 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, rol
   };
 
   const getTierIcon = (tierId: string) => {
-    if (tierId === "basic") return <Shield className="h-6 w-6" />;
+    if (tierId === "trial") return <Clock className="h-6 w-6 text-blue-500" />;
     if (tierId === "package_1_weekly") return <Clock className="h-6 w-6 text-blue-500" />;
     if (tierId === "package_2_monthly") return <Zap className="h-6 w-6 text-purple-500" />;
     if (tierId === "package_3_quarterly") return <Star className="h-6 w-6 text-gold" />;
@@ -148,7 +151,7 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, rol
   };
 
   const isCurrentTier = (tierId: string) => {
-    if (currentTier === 'Basic' && tierId === 'basic') return true;
+    if (currentTier === 'Trial' && tierId === 'trial') return true;
     if (currentTier === 'Package1' && tierId === 'package_1_weekly') return true;
     if (currentTier === 'Package2' && tierId === 'package_2_monthly') return true;
     if (currentTier === 'Package3' && tierId === 'package_3_quarterly') return true;
@@ -163,12 +166,15 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, rol
           Choose Your Independent Package
         </h2>
         <p className="text-muted-foreground">
-          Select a recurring plan that fits your advertising needs and budget.
+          {hasUsedTrial 
+            ? "Select a paid plan to continue your advertising." 
+            : "Start with a 7-day free trial, then choose a plan that fits your needs."
+          }
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {SUBSCRIPTION_TIERS.map((tier) => {
+        {SUBSCRIPTION_TIERS.filter(tier => !(tier.trial && hasUsedTrial)).map((tier) => {
           const isCurrent = isCurrentTier(tier.id);
           
           return (
@@ -178,8 +184,17 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, rol
                 selectedTier === tier.id ? 'ring-2 ring-gold' : ''
               } ${tier.recommended ? 'border-gold' : ''} ${
                 isCurrent ? 'ring-2 ring-green-500 bg-accent' : ''
-              }`}
+              } ${tier.trial ? 'border-blue-500' : ''}`}
             >
+              {tier.trial && !hasUsedTrial && (
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                  <Badge className="bg-blue-500 text-white px-3 py-1">
+                    <Clock className="h-3 w-3 mr-1" />
+                    Free Trial
+                  </Badge>
+                </div>
+              )}
+              
               {tier.recommended && !isCurrent && (
                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                   <Badge className="bg-gold text-white px-3 py-1">
@@ -209,7 +224,8 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, rol
                     {tier.recurring && <span className="text-sm font-normal">/{tier.duration.toLowerCase()}</span>}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {tier.recurring ? `Billed ${tier.duration.toLowerCase()}` : tier.duration}
+                    {tier.trial ? "7 days free, then choose a plan" : 
+                     tier.recurring ? `Billed ${tier.duration.toLowerCase()}` : tier.duration}
                   </div>
                 </CardDescription>
               </CardHeader>
@@ -226,18 +242,19 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, rol
                 
                 <Button
                   onClick={() => handleSelectTier(tier)}
-                  disabled={loading === tier.id || isCurrent}
+                  disabled={loading === tier.id || isCurrent || (tier.trial && hasUsedTrial)}
                   className={`w-full mt-auto ${
                     isCurrent 
                       ? "bg-green-500 hover:bg-green-500 cursor-not-allowed text-white" 
-                      : tier.id === "basic" 
-                        ? "bg-muted hover:bg-muted/80 text-muted-foreground" 
+                      : tier.trial 
+                        ? "bg-blue-500 hover:bg-blue-600 text-white" 
                         : "btn-gold"
                   }`}
                 >
                   {loading === tier.id ? "Processing..." : 
                    isCurrent ? "Your Current Plan" :
-                   tier.price === 0 ? "Select Free Plan" : 
+                   tier.trial && hasUsedTrial ? "Trial Used" :
+                   tier.trial ? "Start Free Trial" : 
                    tier.recurring ? `Subscribe ${tier.duration}` : "Select Package"}
                 </Button>
               </CardContent>

@@ -15,13 +15,13 @@ const logStep = (step: string, details?: any) => {
 
 // Define new independent escort packages with Stripe Price IDs for recurring billing
 const SUBSCRIPTION_TIERS = {
-  basic: { 
-    name: "Basic Package", 
+  trial: { 
+    name: "7-Day Free Trial", 
     price: 0, 
-    duration: "Forever", 
-    durationDays: 0, 
+    duration: "7 Days", 
+    durationDays: 7, 
     stripePriceId: null,
-    subscriptionTier: "Basic"
+    subscriptionTier: "Trial"
   },
   package_1_weekly: { 
     name: "Limited Time Package 1", 
@@ -135,27 +135,47 @@ serve(async (req) => {
     const selectedTier = SUBSCRIPTION_TIERS[tier as keyof typeof SUBSCRIPTION_TIERS];
     logStep("Tier selected", { tier, selectedTier });
 
-    // Handle free basic package
-    if (tier === 'basic') {
+    // Handle free trial activation
+    if (tier === 'trial') {
+      // Check if user has already used trial
+      const { data: existingSubscriber } = await supabaseClient
+        .from("subscribers")
+        .select("trial_start_date")
+        .eq("email", user.email)
+        .single();
+
+      if (existingSubscriber?.trial_start_date) {
+        logStep("ERROR: Trial already used");
+        return new Response(JSON.stringify({ error: "Free trial has already been used" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        });
+      }
+
+      const now = new Date();
+      const trialEnd = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000)); // 7 days from now
+
       const { error: updateError } = await supabaseClient.from("subscribers").upsert({
         email: user.email,
         user_id: user.id,
         stripe_customer_id: null,
         subscribed: false,
         subscription_tier: selectedTier.subscriptionTier,
-        subscription_type: 'free',
+        subscription_type: 'trial',
         plan_duration: selectedTier.duration,
         plan_price: 0,
-        expires_at: null,
+        expires_at: trialEnd.toISOString(),
+        trial_start_date: now.toISOString(),
+        trial_end_date: trialEnd.toISOString(),
+        is_trial_active: true,
         is_featured: false,
         photo_verified: false,
-        is_trial_active: false,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'email' });
 
       if (updateError) {
         logStep("ERROR: Failed to update subscriber record", { error: updateError });
-        return new Response(JSON.stringify({ error: "Failed to update subscription" }), {
+        return new Response(JSON.stringify({ error: "Failed to activate trial" }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 500,
         });
@@ -173,11 +193,12 @@ serve(async (req) => {
         logStep("ERROR: Failed to update profile", { error: profileError });
       }
 
-      logStep("Basic package assigned", { userId: user.id });
+      logStep("Free trial activated", { userId: user.id, trialEnd });
       return new Response(JSON.stringify({ 
         success: true, 
-        message: "Basic package activated",
-        tier: selectedTier.subscriptionTier
+        message: "7-day free trial activated",
+        tier: selectedTier.subscriptionTier,
+        expires_at: trialEnd.toISOString()
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,

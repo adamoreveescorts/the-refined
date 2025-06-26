@@ -81,31 +81,42 @@ serve(async (req) => {
       logStep("Trial expiration check", { trialEnd, now, isTrialExpired });
     }
 
-    // If trial expired, deactivate it and revert to Basic
+    // If trial expired, deactivate profile and require paid plan
     if (isTrialExpired && currentSub?.is_trial_active) {
-      logStep("Trial expired, reverting to Basic");
+      logStep("Trial expired, profile now invisible");
       await supabaseClient.from("subscribers").update({
-        subscription_tier: 'Basic',
+        subscription_tier: null,
         subscribed: false,
-        subscription_type: 'free',
+        subscription_type: 'expired',
         is_trial_active: false,
         is_featured: false,
-        photo_verified: isActuallyPhotoVerified, // Use actual verification status
+        photo_verified: isActuallyPhotoVerified,
         expires_at: null,
         subscription_end: null,
         updated_at: new Date().toISOString(),
       }).eq('email', user.email);
 
+      // Make profile inactive/invisible
+      await supabaseClient
+        .from('profiles')
+        .update({ 
+          is_active: false,
+          payment_status: 'pending'
+        })
+        .eq('id', user.id);
+
       return new Response(JSON.stringify({
         subscribed: false,
-        subscription_tier: 'Basic',
+        subscription_tier: null,
         subscription_end: null,
         expires_at: null,
         is_featured: false,
         photo_verified: isActuallyPhotoVerified,
-        subscription_type: 'free',
+        subscription_type: 'expired',
         is_trial_active: false,
-        trial_expired: true
+        trial_expired: true,
+        profile_visible: false,
+        has_used_trial: true
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -117,14 +128,16 @@ serve(async (req) => {
       logStep("Active trial found");
       return new Response(JSON.stringify({
         subscribed: true,
-        subscription_tier: 'Platinum', // Trial gives Platinum features
+        subscription_tier: 'Trial',
         subscription_end: currentSub.trial_end_date,
         expires_at: currentSub.trial_end_date,
-        is_featured: false, // Don't auto-feature trial users
-        photo_verified: isActuallyPhotoVerified, // Use actual verification status
+        is_featured: false,
+        photo_verified: isActuallyPhotoVerified,
         subscription_type: 'trial',
         is_trial_active: true,
-        trial_days_remaining: Math.ceil((new Date(currentSub.trial_end_date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+        profile_visible: true,
+        trial_days_remaining: Math.ceil((new Date(currentSub.trial_end_date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
+        has_used_trial: true
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -140,24 +153,26 @@ serve(async (req) => {
       user_id: user.id,
       stripe_customer_id: null,
       subscribed: false,
-      subscription_tier: 'Basic',
-      subscription_type: 'free',
-      plan_duration: 'Forever',
+      subscription_tier: null,
+      subscription_type: 'none',
+      plan_duration: null,
       plan_price: 0,
       subscription_end: null,
       expires_at: null,
       is_featured: false,
-      photo_verified: isActuallyPhotoVerified, // Use actual verification status
+      photo_verified: isActuallyPhotoVerified,
       is_trial_active: false,
       updated_at: new Date().toISOString(),
     };
+
+    let profileVisible = false;
 
     if (customers.data.length > 0) {
       const customerId = customers.data[0].id;
       logStep("Found Stripe customer", { customerId });
       subscriptionData.stripe_customer_id = customerId;
 
-      // Check for active recurring subscriptions (legacy)
+      // Check for active recurring subscriptions
       const subscriptions = await stripe.subscriptions.list({
         customer: customerId,
         status: "active",
@@ -175,9 +190,10 @@ serve(async (req) => {
           subscription_tier: 'Platinum',
           subscription_type: 'recurring',
           subscription_end: subscriptionEnd,
-          is_featured: true, // Platinum subscribers can be featured
-          photo_verified: isActuallyPhotoVerified, // Use actual verification status
+          is_featured: true,
+          photo_verified: isActuallyPhotoVerified,
         };
+        profileVisible = true;
       } else {
         // Check for recent successful one-time payments
         const paymentIntents = await stripe.paymentIntents.list({
@@ -185,7 +201,6 @@ serve(async (req) => {
           limit: 100,
         });
 
-        // Find the most recent successful payment
         const successfulPayments = paymentIntents.data.filter(pi => 
           pi.status === 'succeeded' && 
           pi.metadata?.tier && 
@@ -193,7 +208,6 @@ serve(async (req) => {
         );
 
         if (successfulPayments.length > 0) {
-          // Sort by created date to get the most recent
           successfulPayments.sort((a, b) => b.created - a.created);
           const latestPayment = successfulPayments[0];
           
@@ -208,9 +222,7 @@ serve(async (req) => {
             expiresAt 
           });
 
-          // Check if this payment is still valid
           if (now <= expiresAt) {
-            const tierName = latestPayment.metadata.tier;
             subscriptionData = {
               ...subscriptionData,
               subscribed: true,
@@ -220,9 +232,10 @@ serve(async (req) => {
               plan_price: latestPayment.amount,
               expires_at: expiresAt.toISOString(),
               subscription_end: expiresAt.toISOString(),
-              is_featured: true, // Platinum subscribers can be featured
-              photo_verified: isActuallyPhotoVerified, // Use actual verification status
+              is_featured: true,
+              photo_verified: isActuallyPhotoVerified,
             };
+            profileVisible = true;
             logStep("One-time payment still valid", subscriptionData);
           } else {
             logStep("One-time payment has expired", { expiresAt, now });
@@ -233,24 +246,22 @@ serve(async (req) => {
       logStep("No Stripe customer found");
     }
 
-    // If subscription expired, revert to Basic
-    if (isExpired && currentSub?.subscription_tier === 'Platinum') {
-      logStep("Subscription expired, reverting to Basic");
-      subscriptionData.subscription_tier = 'Basic';
-      subscriptionData.subscribed = false;
-      subscriptionData.subscription_type = 'free';
-      subscriptionData.is_featured = false;
-      subscriptionData.photo_verified = isActuallyPhotoVerified; // Use actual verification status
-      subscriptionData.expires_at = null;
-      subscriptionData.subscription_end = null;
-    }
+    // Update profile visibility based on subscription status
+    await supabaseClient
+      .from('profiles')
+      .update({ 
+        is_active: profileVisible,
+        payment_status: profileVisible ? 'completed' : 'pending'
+      })
+      .eq('id', user.id);
 
     await supabaseClient.from("subscribers").upsert(subscriptionData, { onConflict: 'email' });
 
     logStep("Updated database with subscription info", { 
       subscribed: subscriptionData.subscribed, 
       subscriptionTier: subscriptionData.subscription_tier,
-      expiresAt: subscriptionData.expires_at 
+      expiresAt: subscriptionData.expires_at,
+      profileVisible 
     });
 
     return new Response(JSON.stringify({
@@ -262,6 +273,7 @@ serve(async (req) => {
       photo_verified: subscriptionData.photo_verified,
       subscription_type: subscriptionData.subscription_type,
       is_trial_active: subscriptionData.is_trial_active,
+      profile_visible: profileVisible,
       has_used_trial: currentSub?.trial_start_date ? true : false
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
