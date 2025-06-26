@@ -19,6 +19,11 @@ const AnalyticsDashboard = () => {
     platinumSubscribers: 0,
     monthlyGrowth: []
   });
+  const [recentActivity, setRecentActivity] = useState({
+    newRegistrationsToday: 0,
+    messagesSentToday: 0,
+    verificationsCompleted: 0
+  });
   const [roleDistribution, setRoleDistribution] = useState([]);
   const [locationStats, setLocationStats] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -42,7 +47,54 @@ const AnalyticsDashboard = () => {
 
   useEffect(() => {
     fetchAnalytics();
+    fetchRecentActivity();
   }, []);
+
+  const fetchRecentActivity = async () => {
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      // Fetch new registrations today
+      const { count: newRegistrations, error: registrationsError } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', today.toISOString())
+        .lt('created_at', tomorrow.toISOString());
+
+      if (registrationsError) throw registrationsError;
+
+      // Fetch messages sent today
+      const { count: messagesToday, error: messagesError } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', today.toISOString())
+        .lt('created_at', tomorrow.toISOString());
+
+      if (messagesError) throw messagesError;
+
+      // Fetch verifications completed today
+      const { count: verificationsToday, error: verificationsError } = await supabase
+        .from('photo_verifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'approved')
+        .gte('reviewed_at', today.toISOString())
+        .lt('reviewed_at', tomorrow.toISOString());
+
+      if (verificationsError) throw verificationsError;
+
+      setRecentActivity({
+        newRegistrationsToday: newRegistrations || 0,
+        messagesSentToday: messagesToday || 0,
+        verificationsCompleted: verificationsToday || 0
+      });
+
+    } catch (error) {
+      console.error('Error fetching recent activity:', error);
+    }
+  };
 
   const fetchAnalytics = async () => {
     try {
@@ -339,15 +391,15 @@ const AnalyticsDashboard = () => {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm">New registrations today</span>
-                <Badge variant="outline">5</Badge>
+                <Badge variant="outline">{recentActivity.newRegistrationsToday}</Badge>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm">Messages sent today</span>
-                <Badge variant="outline">23</Badge>
+                <Badge variant="outline">{recentActivity.messagesSentToday}</Badge>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm">Verifications completed</span>
-                <Badge variant="outline">3</Badge>
+                <Badge variant="outline">{recentActivity.verificationsCompleted}</Badge>
               </div>
             </div>
           </CardContent>
