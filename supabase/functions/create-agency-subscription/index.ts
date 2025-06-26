@@ -13,6 +13,38 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-AGENCY-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
+// Package configurations
+const PACKAGES = {
+  1: {
+    name: "Package 1",
+    price: 7900, // $79.00 in cents
+    duration: "1 week",
+    maxProfiles: 1,
+    stripePriceId: null // One-time payment
+  },
+  2: {
+    name: "Package 2", 
+    price: 9900, // $99.00 in cents
+    duration: "1 week",
+    maxProfiles: 12,
+    stripePriceId: null // One-time payment
+  },
+  3: {
+    name: "Package 3",
+    price: 24900, // $249.00 in cents
+    duration: "4 weeks",
+    maxProfiles: 18,
+    stripePriceId: null // One-time payment
+  },
+  4: {
+    name: "Package 4",
+    price: 49900, // $499.00 in cents
+    duration: "12 weeks",
+    maxProfiles: 24,
+    stripePriceId: null // One-time payment
+  }
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -40,8 +72,14 @@ serve(async (req) => {
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
 
-    const { agencyId, seats, billingCycle, pricePerSeat } = await req.json();
-    logStep("Request data", { agencyId, seats, billingCycle, pricePerSeat });
+    const { agencyId, packageType } = await req.json();
+    logStep("Request data", { agencyId, packageType });
+
+    if (!PACKAGES[packageType as keyof typeof PACKAGES]) {
+      throw new Error("Invalid package type");
+    }
+
+    const selectedPackage = PACKAGES[packageType as keyof typeof PACKAGES];
 
     // Verify the user owns this agency
     const { data: agency, error: agencyError } = await supabaseClient
@@ -76,10 +114,7 @@ serve(async (req) => {
       customerId = customer.id;
     }
 
-    // Calculate total amount
-    const totalAmount = pricePerSeat * seats;
-
-    // Create checkout session for agency subscription
+    // Create checkout session for one-time payment
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
@@ -87,40 +122,52 @@ serve(async (req) => {
         price_data: {
           currency: 'aud',
           product_data: {
-            name: `Agency Subscription - ${seats} Escort${seats > 1 ? 's' : ''}`,
-            description: `${billingCycle} billing for ${seats} escort seat${seats > 1 ? 's' : ''}`,
+            name: selectedPackage.name,
+            description: `${selectedPackage.duration} access for up to ${selectedPackage.maxProfiles} profiles with top page ad positioning`,
           },
-          unit_amount: totalAmount,
-          recurring: {
-            interval: billingCycle === 'yearly' ? 'year' : 
-                     billingCycle === 'quarterly' ? 'month' :
-                     billingCycle === 'weekly' ? 'week' : 'month',
-            interval_count: billingCycle === 'quarterly' ? 3 : 1,
-          },
+          unit_amount: selectedPackage.price,
         },
         quantity: 1,
       }],
-      mode: 'subscription',
+      mode: 'payment', // One-time payment instead of subscription
       success_url: `${req.headers.get('origin')}/agency/dashboard?success=true`,
       cancel_url: `${req.headers.get('origin')}/agency/dashboard?cancelled=true`,
       metadata: {
         agency_id: agencyId,
-        seats: seats.toString(),
-        billing_cycle: billingCycle,
-        price_per_seat: pricePerSeat.toString(),
-        type: 'agency_subscription'
+        package_type: packageType.toString(),
+        package_name: selectedPackage.name,
+        max_profiles: selectedPackage.maxProfiles.toString(),
+        duration: selectedPackage.duration,
+        type: 'agency_package'
       },
     });
+
+    // Calculate end date based on package duration
+    const startDate = new Date();
+    let endDate = new Date();
+    
+    if (selectedPackage.duration === "1 week") {
+      endDate.setDate(startDate.getDate() + 7);
+    } else if (selectedPackage.duration === "4 weeks") {
+      endDate.setDate(startDate.getDate() + 28);
+    } else if (selectedPackage.duration === "12 weeks") {
+      endDate.setDate(startDate.getDate() + 84);
+    }
 
     // Create or update agency subscription record
     const subscriptionData = {
       agency_id: agencyId,
-      total_seats: seats,
-      used_seats: 0, // Will be updated by trigger
-      price_per_seat: pricePerSeat,
+      package_type: packageType,
+      package_name: selectedPackage.name,
+      max_profiles: selectedPackage.maxProfiles,
+      price_per_seat: selectedPackage.price, // Keep for compatibility
+      total_seats: selectedPackage.maxProfiles, // Keep for compatibility
+      used_seats: 0,
       subscription_tier: 'platinum',
-      billing_cycle: billingCycle,
+      billing_cycle: selectedPackage.duration,
       status: 'pending',
+      current_period_start: startDate.toISOString(),
+      current_period_end: endDate.toISOString(),
       updated_at: new Date().toISOString(),
     };
 

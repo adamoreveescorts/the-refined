@@ -105,17 +105,53 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
   };
 
   const getSubscriptionStatus = () => {
-    if (!subscription) return { color: 'red', text: 'No Subscription' };
-    if (subscription.status === 'active') return { color: 'green', text: 'Active' };
+    if (!subscription) return { color: 'red', text: 'No Package' };
+    if (subscription.status === 'active') {
+      if (subscription.package_type === 0 || subscription.subscription_tier === 'trial') {
+        return { color: 'blue', text: 'Free Trial' };
+      }
+      return { color: 'green', text: 'Active' };
+    }
     return { color: 'orange', text: subscription.status };
   };
 
-  const canAddMoreEscorts = () => {
+  const canAddMoreProfiles = () => {
     if (!subscription) return false;
-    return subscription.used_seats < subscription.total_seats;
+    const maxProfiles = subscription.max_profiles || subscription.total_seats || 0;
+    const usedProfiles = subscription.used_seats || 0;
+    return usedProfiles < maxProfiles;
+  };
+
+  const getAvailableProfiles = () => {
+    if (!subscription) return 0;
+    const maxProfiles = subscription.max_profiles || subscription.total_seats || 0;
+    const usedProfiles = subscription.used_seats || 0;
+    return Math.max(0, maxProfiles - usedProfiles);
+  };
+
+  const getPackageInfo = () => {
+    if (!subscription) return { name: 'No Package', maxProfiles: 0 };
+    
+    if (subscription.package_type === 0 || subscription.subscription_tier === 'trial') {
+      return { name: 'Free Trial', maxProfiles: 5 };
+    }
+
+    const packageNames = {
+      1: 'Package 1',
+      2: 'Package 2',
+      3: 'Package 3',
+      4: 'Package 4'
+    };
+
+    return {
+      name: packageNames[subscription.package_type as keyof typeof packageNames] || subscription.package_name || 'Unknown Package',
+      maxProfiles: subscription.max_profiles || subscription.total_seats || 0
+    };
   };
 
   const pendingInvitations = invitations.filter(inv => inv.status === 'pending').length;
+  const statusInfo = getSubscriptionStatus();
+  const packageInfo = getPackageInfo();
 
   if (loading) {
     return (
@@ -125,8 +161,6 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
     );
   }
 
-  const statusInfo = getSubscriptionStatus();
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -134,19 +168,21 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
         <div className="flex gap-2">
           <Button
             onClick={() => setShowDirectAddEscort(true)}
-            disabled={!canAddMoreEscorts()}
+            disabled={!canAddMoreProfiles()}
             className="bg-secondary hover:bg-secondary/90"
+            title={!canAddMoreProfiles() ? 'Profile limit reached for current package' : ''}
           >
             <UserPlus className="h-4 w-4 mr-2" />
-            Add Escort
+            Add Profile
           </Button>
           <Button
             onClick={() => setShowAddEscort(true)}
-            disabled={!canAddMoreEscorts()}
+            disabled={!canAddMoreProfiles()}
             variant="outline"
+            title={!canAddMoreProfiles() ? 'Profile limit reached for current package' : ''}
           >
             <Plus className="h-4 w-4 mr-2" />
-            Invite Escort
+            Invite Profile
           </Button>
         </div>
       </div>
@@ -158,7 +194,7 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
             <div className="flex items-center">
               <Users className="h-8 w-8 text-secondary" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Total Escorts</p>
+                <p className="text-sm font-medium text-muted-foreground">Total Profiles</p>
                 <p className="text-2xl font-bold">{escorts.length}</p>
               </div>
             </div>
@@ -170,7 +206,7 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
             <div className="flex items-center">
               <Crown className="h-8 w-8 text-gold" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Active Escorts</p>
+                <p className="text-sm font-medium text-muted-foreground">Active Profiles</p>
                 <p className="text-2xl font-bold">
                   {escorts.filter(e => e.status === 'active').length}
                 </p>
@@ -196,10 +232,8 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
             <div className="flex items-center">
               <Settings className="h-8 w-8 text-purple-500" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Available Seats</p>
-                <p className="text-2xl font-bold">
-                  {subscription ? subscription.total_seats - subscription.used_seats : 0}
-                </p>
+                <p className="text-sm font-medium text-muted-foreground">Available Slots</p>
+                <p className="text-2xl font-bold">{getAvailableProfiles()}</p>
               </div>
             </div>
           </CardContent>
@@ -210,10 +244,11 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
             <div className="flex items-center">
               <CreditCard className="h-8 w-8 text-green-500" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Subscription</p>
+                <p className="text-sm font-medium text-muted-foreground">Package</p>
                 <Badge className={`bg-${statusInfo.color}-500`}>
                   {statusInfo.text}
                 </Badge>
+                <p className="text-xs text-muted-foreground mt-1">{packageInfo.name}</p>
               </div>
             </div>
           </CardContent>
@@ -223,19 +258,22 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
       {/* Main Content */}
       <Tabs defaultValue="escorts" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="escorts">Escort Management</TabsTrigger>
+          <TabsTrigger value="escorts">Profile Management</TabsTrigger>
           <TabsTrigger value="invitations">
             Invitations {pendingInvitations > 0 && (
               <Badge className="ml-2 bg-blue-500 text-white">{pendingInvitations}</Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="subscription">Subscription & Billing</TabsTrigger>
+          <TabsTrigger value="subscription">Package & Billing</TabsTrigger>
         </TabsList>
 
         <TabsContent value="escorts">
           <Card>
             <CardHeader>
-              <CardTitle>Manage Your Escorts</CardTitle>
+              <CardTitle>Manage Your Profiles</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Using {escorts.length} of {packageInfo.maxProfiles} available profile slots
+              </p>
             </CardHeader>
             <CardContent>
               <EscortManagementTable 
@@ -252,7 +290,7 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
         <TabsContent value="invitations">
           <Card>
             <CardHeader>
-              <CardTitle>Escort Invitations</CardTitle>
+              <CardTitle>Profile Invitations</CardTitle>
             </CardHeader>
             <CardContent>
               <InvitationManagementTable 
@@ -278,7 +316,7 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
         onOpenChange={setShowAddEscort}
         agencyId={agencyId}
         onEscortAdded={fetchAgencyData}
-        availableSeats={subscription ? subscription.total_seats - subscription.used_seats : 0}
+        availableSeats={getAvailableProfiles()}
       />
 
       <DirectAddEscortDialog
@@ -286,7 +324,7 @@ const AgencyDashboard = ({ agencyId }: AgencyDashboardProps) => {
         onOpenChange={setShowDirectAddEscort}
         agencyId={agencyId}
         onEscortAdded={fetchAgencyData}
-        availableSeats={subscription ? subscription.total_seats - subscription.used_seats : 0}
+        availableSeats={getAvailableProfiles()}
       />
 
       <EscortEditModal

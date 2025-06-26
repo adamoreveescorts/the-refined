@@ -114,7 +114,7 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
     }
   };
 
-  const handleAgencySubscriptionCreate = async (seats: number, billingCycle: string) => {
+  const handleAgencySubscriptionCreate = async (packageType: number) => {
     setIsLoading(true);
     try {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -135,9 +135,7 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
       const { data, error } = await supabase.functions.invoke('create-agency-subscription', {
         body: {
           agencyId: currentSession.user.id,
-          seats,
-          billingCycle,
-          pricePerSeat: getPricePerSeat(billingCycle) * 100 // Convert to cents
+          packageType
         },
         headers: {
           Authorization: `Bearer ${currentSession.access_token}`,
@@ -148,7 +146,7 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
 
       if (data?.url) {
         window.open(data.url, '_blank');
-        toast.success("Redirected to Stripe checkout. Complete your payment to activate your agency subscription.");
+        toast.success("Redirected to Stripe checkout. Complete your payment to activate your package.");
         onPaymentComplete();
       } else {
         throw new Error("No checkout URL received");
@@ -161,7 +159,7 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
     }
   };
 
-  const handleAgencyTrialActivate = async (seats: number) => {
+  const handleAgencyTrialActivate = async () => {
     setIsLoading(true);
     try {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -179,19 +177,22 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
         return;
       }
 
-      // Create trial agency subscription - use 'monthly' billing cycle with 0 price
+      // Create trial agency subscription
       const trialEnd = new Date();
-      trialEnd.setDate(trialEnd.getDate() + 7); // 7 days from now
+      trialEnd.setDate(trialEnd.getDate() + 7);
 
       const { error: subscriptionError } = await supabase
         .from('agency_subscriptions')
         .upsert({
           agency_id: currentSession.user.id,
-          total_seats: seats,
+          package_type: 0, // Special trial package type
+          package_name: 'Free Trial',
+          max_profiles: 5,
+          total_seats: 5,
           used_seats: 0,
-          price_per_seat: 0, // Free trial
-          subscription_tier: 'platinum',
-          billing_cycle: 'monthly', // Use valid billing cycle
+          price_per_seat: 0,
+          subscription_tier: 'trial',
+          billing_cycle: '1 week',
           status: 'active',
           current_period_start: new Date().toISOString(),
           current_period_end: trialEnd.toISOString(),
@@ -219,7 +220,7 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
         console.error("Profile update error:", profileError);
       }
 
-      toast.success("Free trial activated! You have 7 days to manage up to 5 escorts.");
+      toast.success("Free trial activated! You have 7 days to manage up to 5 profiles.");
       onPaymentComplete();
     } catch (error: any) {
       console.error("Trial activation error:", error);
@@ -227,16 +228,6 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const getPricePerSeat = (billingCycle: string) => {
-    const pricing = {
-      weekly: 15,
-      monthly: 79,
-      quarterly: 189,
-      yearly: 399
-    };
-    return pricing[billingCycle as keyof typeof pricing] || 79;
   };
 
   const handleTrialActivated = () => {
@@ -253,7 +244,7 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
           </CardTitle>
           <CardDescription className="text-center text-muted-foreground">
             {role === 'agency' 
-              ? "Start with a free 7-day trial or select your agency plan with per-escort pricing"
+              ? "Start with a free 7-day trial or select your agency package with flexible duration options"
               : "Start with a free 7-day trial, then select the plan that best fits your escort business needs"
             }
           </CardDescription>

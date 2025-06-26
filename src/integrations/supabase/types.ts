@@ -65,6 +65,9 @@ export type Database = {
           current_period_end: string | null
           current_period_start: string | null
           id: string
+          max_profiles: number
+          package_name: string
+          package_type: number
           price_per_seat: number
           status: string
           stripe_subscription_id: string | null
@@ -80,6 +83,9 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          max_profiles: number
+          package_name: string
+          package_type: number
           price_per_seat: number
           status?: string
           stripe_subscription_id?: string | null
@@ -95,6 +101,9 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          max_profiles?: number
+          package_name?: string
+          package_type?: number
           price_per_seat?: number
           status?: string
           stripe_subscription_id?: string | null
