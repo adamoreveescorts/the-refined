@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import NavBar from "@/components/NavBar";
@@ -13,8 +13,6 @@ import { Badge } from "@/components/ui/badge";
 import { UserRound, Calendar, Mail, Shield, User, CreditCard, Crown, Clock, ArrowLeft } from "lucide-react";
 import SubscriptionTierSelector from "@/components/SubscriptionTierSelector";
 import VerificationButton from "@/components/verification/VerificationButton";
-import ProfileOnboardingModal from "@/components/ProfileOnboardingModal";
-import { useProfileCompletion } from "@/hooks/useProfileCompletion";
 
 interface UserProfile {
   id: string;
@@ -25,16 +23,6 @@ interface UserProfile {
   created_at: string;
   payment_status: string | null;
   is_active: boolean | null;
-  phone?: string | null;
-  bio?: string | null;
-  location?: string | null;
-  age?: string | null;
-  profile_picture?: string | null;
-  gallery_images?: string[] | null;
-  incall_hourly_rate?: string | null;
-  outcall_hourly_rate?: string | null;
-  services?: string | null;
-  verified?: boolean | null;
 }
 
 interface PhotoVerification {
@@ -46,32 +34,16 @@ interface PhotoVerification {
 
 const UserProfilePage = () => {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [subscription, setSubscription] = useState<any>(null);
   const [photoVerification, setPhotoVerification] = useState<PhotoVerification | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
-  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   
-  const profileCompletion = useProfileCompletion(profile);
-
   useEffect(() => {
     checkAuthAndFetchProfile();
   }, []);
-
-  useEffect(() => {
-    // Check for onboarding parameters
-    const shouldShowOnboarding = searchParams.get('onboarding') === 'true';
-    const isWelcome = searchParams.get('welcome') === 'true';
-    
-    if (shouldShowOnboarding && isWelcome && profile) {
-      setShowOnboardingModal(true);
-      // Clean up URL parameters
-      setSearchParams({});
-    }
-  }, [profile, searchParams, setSearchParams]);
 
   const checkAuthAndFetchProfile = async () => {
     try {
@@ -109,17 +81,7 @@ const UserProfilePage = () => {
         role: data.role || "client",
         created_at: new Date(session.user.created_at || data.created_at).toLocaleDateString(),
         payment_status: data.payment_status || "pending",
-        is_active: shouldBeActive,
-        phone: data.phone,
-        bio: data.bio,
-        location: data.location,
-        age: data.age,
-        profile_picture: data.profile_picture,
-        gallery_images: data.gallery_images,
-        incall_hourly_rate: data.incall_hourly_rate,
-        outcall_hourly_rate: data.outcall_hourly_rate,
-        services: data.services,
-        verified: data.verified
+        is_active: shouldBeActive
       });
 
       // If profile should be active but isn't marked as such in the database, update it
@@ -270,14 +232,6 @@ const UserProfilePage = () => {
     setShowUpgrade(false);
   };
 
-  const handleCloseOnboarding = () => {
-    setShowOnboardingModal(false);
-    // Optionally show edit profile form after closing onboarding
-    if (profileCompletion < 70) {
-      setTimeout(() => setShowEditProfile(true), 500);
-    }
-  };
-
   const getSubscriptionStatusBadge = () => {
     if (!subscription) return null;
     
@@ -423,34 +377,6 @@ const UserProfilePage = () => {
           <div className="mb-8">
             <h1 className="text-3xl font-serif font-bold text-foreground">My Profile</h1>
             <p className="text-muted-foreground mt-2">Manage your account settings and subscription</p>
-            
-            {/* Profile Completion Progress - only show for escorts/agencies */}
-            {(profile?.role === 'escort' || profile?.role === 'agency') && (
-              <Card className="mt-4 bg-gradient-to-r from-secondary/10 to-secondary/5 border-secondary/20">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-medium text-foreground">Profile Completion</h3>
-                    <span className="text-sm font-medium text-secondary">{profileCompletion}%</span>
-                  </div>
-                  <Progress value={profileCompletion} className="mb-2" />
-                  <p className="text-sm text-muted-foreground">
-                    {profileCompletion < 70 
-                      ? "Complete your profile to increase visibility and attract more clients"
-                      : "Great! Your profile is well-optimized for client discovery"
-                    }
-                  </p>
-                  {profileCompletion < 70 && (
-                    <Button 
-                      size="sm" 
-                      className="mt-2 bg-secondary hover:bg-secondary/90"
-                      onClick={handleShowEditProfile}
-                    >
-                      Complete Profile
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            )}
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -823,14 +749,6 @@ const UserProfilePage = () => {
           </div>
         </div>
       </main>
-      
-      {/* Onboarding Modal */}
-      <ProfileOnboardingModal
-        isOpen={showOnboardingModal}
-        onClose={handleCloseOnboarding}
-        currentProgress={profileCompletion}
-        userRole={profile?.role || 'client'}
-      />
       
       <Footer />
     </div>
