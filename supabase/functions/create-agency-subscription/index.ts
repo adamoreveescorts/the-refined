@@ -13,35 +13,19 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-AGENCY-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
-// Package configurations
-const PACKAGES = {
-  1: {
-    name: "Package 1",
-    price: 7900, // $79.00 in cents
-    duration: "1 week",
-    maxProfiles: 1,
-    stripePriceId: null // One-time payment
+// Agency package configurations with recurring billing
+const AGENCY_PACKAGES = {
+  monthly: {
+    name: "Monthly Agency Plan",
+    basePrice: 7900, // $79 per escort per month
+    stripePriceId: "price_agency_monthly_aud", // Replace with actual Stripe Price ID
+    billingCycle: "monthly"
   },
-  2: {
-    name: "Package 2", 
-    price: 9900, // $99.00 in cents
-    duration: "1 week",
-    maxProfiles: 12,
-    stripePriceId: null // One-time payment
-  },
-  3: {
-    name: "Package 3",
-    price: 24900, // $249.00 in cents
-    duration: "4 weeks",
-    maxProfiles: 18,
-    stripePriceId: null // One-time payment
-  },
-  4: {
-    name: "Package 4",
-    price: 49900, // $499.00 in cents
-    duration: "12 weeks",
-    maxProfiles: 24,
-    stripePriceId: null // One-time payment
+  yearly: {
+    name: "Yearly Agency Plan", 
+    basePrice: 79900, // $799 per escort per year (save $150)
+    stripePriceId: "price_agency_yearly_aud", // Replace with actual Stripe Price ID
+    billingCycle: "yearly"
   }
 };
 
@@ -72,14 +56,15 @@ serve(async (req) => {
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
 
-    const { agencyId, packageType } = await req.json();
-    logStep("Request data", { agencyId, packageType });
+    const { agencyId, billingCycle, seats } = await req.json();
+    logStep("Request data", { agencyId, billingCycle, seats });
 
-    if (!PACKAGES[packageType as keyof typeof PACKAGES]) {
-      throw new Error("Invalid package type");
+    if (!AGENCY_PACKAGES[billingCycle as keyof typeof AGENCY_PACKAGES]) {
+      throw new Error("Invalid billing cycle");
     }
 
-    const selectedPackage = PACKAGES[packageType as keyof typeof PACKAGES];
+    const selectedPackage = AGENCY_PACKAGES[billingCycle as keyof typeof AGENCY_PACKAGES];
+    const seatsCount = seats || 1;
 
     // Verify the user owns this agency
     const { data: agency, error: agencyError } = await supabaseClient
@@ -114,60 +99,36 @@ serve(async (req) => {
       customerId = customer.id;
     }
 
-    // Create checkout session for one-time payment
+    // Create recurring subscription checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
       line_items: [{
-        price_data: {
-          currency: 'aud',
-          product_data: {
-            name: selectedPackage.name,
-            description: `${selectedPackage.duration} access for up to ${selectedPackage.maxProfiles} profiles with top page ad positioning`,
-          },
-          unit_amount: selectedPackage.price,
-        },
-        quantity: 1,
+        price: selectedPackage.stripePriceId, // Use predefined Stripe Price ID
+        quantity: seatsCount, // Number of escort seats
       }],
-      mode: 'payment', // One-time payment instead of subscription
+      mode: 'subscription', // Changed to subscription for recurring billing
       success_url: `${req.headers.get('origin')}/agency/dashboard?success=true`,
       cancel_url: `${req.headers.get('origin')}/agency/dashboard?cancelled=true`,
       metadata: {
         agency_id: agencyId,
-        package_type: packageType.toString(),
-        package_name: selectedPackage.name,
-        max_profiles: selectedPackage.maxProfiles.toString(),
-        duration: selectedPackage.duration,
-        type: 'agency_package'
+        billing_cycle: billingCycle,
+        seats: seatsCount.toString(),
+        type: 'agency_subscription'
       },
     });
-
-    // Calculate end date based on package duration
-    const startDate = new Date();
-    let endDate = new Date();
-    
-    if (selectedPackage.duration === "1 week") {
-      endDate.setDate(startDate.getDate() + 7);
-    } else if (selectedPackage.duration === "4 weeks") {
-      endDate.setDate(startDate.getDate() + 28);
-    } else if (selectedPackage.duration === "12 weeks") {
-      endDate.setDate(startDate.getDate() + 84);
-    }
 
     // Create or update agency subscription record
     const subscriptionData = {
       agency_id: agencyId,
-      package_type: packageType,
-      package_name: selectedPackage.name,
-      max_profiles: selectedPackage.maxProfiles,
-      price_per_seat: selectedPackage.price, // Keep for compatibility
-      total_seats: selectedPackage.maxProfiles, // Keep for compatibility
+      total_seats: seatsCount,
+      price_per_seat: selectedPackage.basePrice,
       used_seats: 0,
       subscription_tier: 'platinum',
-      billing_cycle: selectedPackage.duration,
+      billing_cycle: selectedPackage.billingCycle,
       status: 'pending',
-      current_period_start: startDate.toISOString(),
-      current_period_end: endDate.toISOString(),
+      stripe_price_id: selectedPackage.stripePriceId,
+      subscription_status: 'pending',
       updated_at: new Date().toISOString(),
     };
 

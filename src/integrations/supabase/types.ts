@@ -61,16 +61,20 @@ export type Database = {
         Row: {
           agency_id: string
           billing_cycle: string
+          cancel_at_period_end: boolean | null
           created_at: string
           current_period_end: string | null
           current_period_start: string | null
           id: string
           max_profiles: number
+          next_billing_date: string | null
           package_name: string
           package_type: number
           price_per_seat: number
           status: string
+          stripe_price_id: string | null
           stripe_subscription_id: string | null
+          subscription_status: string | null
           subscription_tier: string
           total_seats: number
           updated_at: string
@@ -79,16 +83,20 @@ export type Database = {
         Insert: {
           agency_id: string
           billing_cycle?: string
+          cancel_at_period_end?: boolean | null
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
           max_profiles: number
+          next_billing_date?: string | null
           package_name: string
           package_type: number
           price_per_seat: number
           status?: string
+          stripe_price_id?: string | null
           stripe_subscription_id?: string | null
+          subscription_status?: string | null
           subscription_tier?: string
           total_seats?: number
           updated_at?: string
@@ -97,16 +105,20 @@ export type Database = {
         Update: {
           agency_id?: string
           billing_cycle?: string
+          cancel_at_period_end?: boolean | null
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
           max_profiles?: number
+          next_billing_date?: string | null
           package_name?: string
           package_type?: number
           price_per_seat?: number
           status?: string
+          stripe_price_id?: string | null
           stripe_subscription_id?: string | null
+          subscription_status?: string | null
           subscription_tier?: string
           total_seats?: number
           updated_at?: string
@@ -479,18 +491,22 @@ export type Database = {
       }
       subscribers: {
         Row: {
+          cancel_at_period_end: boolean | null
           created_at: string
           email: string
           expires_at: string | null
           id: string
           is_featured: boolean | null
           is_trial_active: boolean | null
+          next_billing_date: string | null
           photo_verified: boolean | null
           plan_duration: string | null
           plan_price: number | null
           stripe_customer_id: string | null
+          stripe_price_id: string | null
           subscribed: boolean
           subscription_end: string | null
+          subscription_status: string | null
           subscription_tier: string | null
           subscription_type: string | null
           trial_end_date: string | null
@@ -499,18 +515,22 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          cancel_at_period_end?: boolean | null
           created_at?: string
           email: string
           expires_at?: string | null
           id?: string
           is_featured?: boolean | null
           is_trial_active?: boolean | null
+          next_billing_date?: string | null
           photo_verified?: boolean | null
           plan_duration?: string | null
           plan_price?: number | null
           stripe_customer_id?: string | null
+          stripe_price_id?: string | null
           subscribed?: boolean
           subscription_end?: string | null
+          subscription_status?: string | null
           subscription_tier?: string | null
           subscription_type?: string | null
           trial_end_date?: string | null
@@ -519,18 +539,22 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          cancel_at_period_end?: boolean | null
           created_at?: string
           email?: string
           expires_at?: string | null
           id?: string
           is_featured?: boolean | null
           is_trial_active?: boolean | null
+          next_billing_date?: string | null
           photo_verified?: boolean | null
           plan_duration?: string | null
           plan_price?: number | null
           stripe_customer_id?: string | null
+          stripe_price_id?: string | null
           subscribed?: boolean
           subscription_end?: string | null
+          subscription_status?: string | null
           subscription_tier?: string | null
           subscription_type?: string | null
           trial_end_date?: string | null

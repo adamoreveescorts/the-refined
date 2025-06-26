@@ -3,13 +3,13 @@ import { useState } from 'react';
 import AgencyPackageSelector from './AgencyPackageSelector';
 
 interface AgencySubscriptionSetupProps {
-  onSubscriptionCreate: (packageType: number) => void;
+  onSubscriptionCreate: (billingCycle: string, seats: number) => void;
   isLoading: boolean;
 }
 
 const AgencySubscriptionSetup = ({ onSubscriptionCreate, isLoading }: AgencySubscriptionSetupProps) => {
-  const handlePackageSelect = (packageId: number) => {
-    onSubscriptionCreate(packageId);
+  const handlePackageSelect = (billingCycle: string, seats: number) => {
+    onSubscriptionCreate(billingCycle, seats);
   };
 
   return (

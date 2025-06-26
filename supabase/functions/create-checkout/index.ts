@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
@@ -12,14 +13,24 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
-// Define subscription tiers
+// Define subscription tiers with Stripe Price IDs for recurring billing
 const SUBSCRIPTION_TIERS = {
-  trial: { name: "Free Trial", price: 0, duration: "7 Days", durationDays: 7 },
-  basic: { name: "Basic Plan", price: 0, duration: "Forever", durationDays: 0 },
-  platinum_weekly: { name: "Platinum Weekly", price: 1500, duration: "1 Week", durationDays: 7 },
-  platinum_monthly: { name: "Platinum Monthly", price: 7900, duration: "1 Month", durationDays: 30 },
-  platinum_quarterly: { name: "Platinum Quarterly", price: 18900, duration: "3 Months", durationDays: 90 },
-  platinum_yearly: { name: "Platinum Yearly", price: 39900, duration: "1 Year", durationDays: 365 }
+  trial: { name: "Free Trial", price: 0, duration: "7 Days", durationDays: 7, stripePriceId: null },
+  basic: { name: "Basic Plan", price: 0, duration: "Forever", durationDays: 0, stripePriceId: null },
+  platinum_monthly: { 
+    name: "Platinum Monthly", 
+    price: 7900, 
+    duration: "Monthly", 
+    durationDays: 30,
+    stripePriceId: "price_platinum_monthly_aud" // Replace with actual Stripe Price ID
+  },
+  platinum_yearly: { 
+    name: "Platinum Yearly", 
+    price: 39900, 
+    duration: "Yearly", 
+    durationDays: 365,
+    stripePriceId: "price_platinum_yearly_aud" // Replace with actual Stripe Price ID
+  }
 };
 
 serve(async (req) => {
@@ -36,7 +47,6 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    // Check if Stripe secret is available
     const stripeSecret = Deno.env.get("Stripe Secret");
     if (!stripeSecret) {
       logStep("ERROR: Stripe Secret not found");
@@ -119,16 +129,15 @@ serve(async (req) => {
       }
 
       const now = new Date();
-      const trialEnd = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000)); // 7 days from now
+      const trialEnd = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
 
-      // Update user to Platinum tier with trial features enabled - use 'free' as subscription_type
       const { error: updateError } = await supabaseClient.from("subscribers").upsert({
         email: user.email,
         user_id: user.id,
         stripe_customer_id: null,
         subscribed: true,
-        subscription_tier: 'Platinum', // Use Platinum for trial with premium features
-        subscription_type: 'free', // Use 'free' instead of 'trial' to satisfy DB constraint
+        subscription_tier: 'Platinum',
+        subscription_type: 'free',
         plan_duration: selectedTier.duration,
         plan_price: 0,
         expires_at: trialEnd.toISOString(),
@@ -136,8 +145,8 @@ serve(async (req) => {
         trial_start_date: now.toISOString(),
         trial_end_date: trialEnd.toISOString(),
         is_trial_active: true,
-        is_featured: true, // Enable premium feature
-        photo_verified: true, // Enable premium feature
+        is_featured: true,
+        photo_verified: true,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'email' });
 
@@ -149,7 +158,6 @@ serve(async (req) => {
         });
       }
 
-      // Update user profile payment status
       const { error: profileError } = await supabaseClient
         .from('profiles')
         .update({ 
@@ -175,7 +183,6 @@ serve(async (req) => {
     }
 
     if (tier === 'basic') {
-      // Update user to Basic tier directly
       const { error: updateError } = await supabaseClient.from("subscribers").upsert({
         email: user.email,
         user_id: user.id,
@@ -200,7 +207,6 @@ serve(async (req) => {
         });
       }
 
-      // Update user profile payment status
       const { error: profileError } = await supabaseClient
         .from('profiles')
         .update({ 
@@ -224,7 +230,7 @@ serve(async (req) => {
       });
     }
 
-    // Handle paid Platinum tiers
+    // Handle paid recurring subscriptions
     const stripe = new Stripe(stripeSecret, { 
       apiVersion: "2023-10-16" 
     });
@@ -241,29 +247,24 @@ serve(async (req) => {
       logStep("Found existing customer", { customerId });
     }
     
+    // Create recurring subscription checkout
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          price_data: {
-            currency: "aud",
-            product_data: { 
-              name: `Adam or Eve Escorts ${selectedTier.name}` 
-            },
-            unit_amount: selectedTier.price,
-          },
+          price: selectedTier.stripePriceId, // Use predefined Stripe Price ID
           quantity: 1,
         },
       ],
-      mode: "payment", // One-time payment for platinum tiers
+      mode: "subscription", // Changed to subscription for recurring billing
       success_url: `https://adamoreveescorts.com/auth?payment=success&tier=${tier}`,
       cancel_url: `https://adamoreveescorts.com/user-profile`,
       metadata: {
         user_id: user.id,
         role: role,
         tier: tier,
-        duration_days: selectedTier.durationDays.toString()
+        billing_cycle: tier.includes('monthly') ? 'monthly' : 'yearly'
       }
     });
 

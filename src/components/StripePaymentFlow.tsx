@@ -62,7 +62,6 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
 
     setIsLoading(true);
     try {
-      // Get the current session more reliably
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError) {
@@ -100,7 +99,7 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
         // Paid tier, redirect to Stripe
         if (data?.url) {
           window.open(data.url, '_blank');
-          toast.success("Redirected to Stripe checkout. Complete your payment to activate your plan.");
+          toast.success("Redirected to Stripe checkout. Complete your payment to activate your recurring plan.");
           onPaymentComplete();
         } else {
           throw new Error("No checkout URL received");
@@ -114,7 +113,7 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
     }
   };
 
-  const handleAgencySubscriptionCreate = async (packageType: number) => {
+  const handleAgencySubscriptionCreate = async (billingCycle: string, seats: number) => {
     setIsLoading(true);
     try {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -135,7 +134,8 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
       const { data, error } = await supabase.functions.invoke('create-agency-subscription', {
         body: {
           agencyId: currentSession.user.id,
-          packageType
+          billingCycle,
+          seats
         },
         headers: {
           Authorization: `Bearer ${currentSession.access_token}`,
@@ -146,7 +146,7 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
 
       if (data?.url) {
         window.open(data.url, '_blank');
-        toast.success("Redirected to Stripe checkout. Complete your payment to activate your package.");
+        toast.success("Redirected to Stripe checkout. Complete your payment to activate your recurring subscription.");
         onPaymentComplete();
       } else {
         throw new Error("No checkout URL received");
@@ -173,8 +173,8 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
           </CardTitle>
           <CardDescription className="text-center text-muted-foreground">
             {role === 'agency' 
-              ? "Select your agency package with flexible duration options"
-              : "Start with a free 7-day trial, then select the plan that best fits your escort business needs"
+              ? "Select your agency subscription with recurring monthly or yearly billing"
+              : "Start with a free 7-day trial, then choose a recurring plan that fits your needs"
             }
           </CardDescription>
         </CardHeader>
