@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -387,10 +386,6 @@ const AnalyticsDashboard = () => {
                 <Badge className="bg-gold text-white">
                   {analytics.platinumSubscribers}
                 </Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Monthly Revenue</span>
-                <Badge variant="outline">$2,450</Badge>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm">Growth</span>
