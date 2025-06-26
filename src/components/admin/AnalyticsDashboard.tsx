@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,6 +5,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import { Users, UserCheck, Star, TrendingUp, Activity, MessageSquare, Shield, Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import AnalyticsExport from './AnalyticsExport';
 
 const AnalyticsDashboard = () => {
   const [analytics, setAnalytics] = useState({
@@ -218,6 +218,9 @@ const AnalyticsDashboard = () => {
 
   return (
     <div className="space-y-6">
+      {/* Export Feature - Add at the top */}
+      <AnalyticsExport />
+
       {/* Key Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {keyMetrics.map((metric, index) => (
