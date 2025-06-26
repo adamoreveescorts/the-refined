@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Star, Crown, Shield, Clock, Zap, Camera, MapPin, Video } from "lucide-react";
+import { CheckCircle, Star, Crown, Shield, Clock, Zap } from "lucide-react";
 
 export interface SubscriptionTier {
   id: string;
@@ -31,7 +30,6 @@ const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
       "6 photos (+ 1 main photo)",
       "Photo verification available",
       "Photo blurring available",
-      "Connect to social media",
       "Manual boosting available"
     ]
   },
@@ -51,9 +49,7 @@ const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
       "Manual boosting available",
       "10 photos (+ 1 main photo)",
       "Photo verification available",
-      "Photo blurring available",
-      "Connect to social media",
-      "Profile pause available"
+      "Photo blurring available"
     ]
   },
   {
@@ -72,13 +68,9 @@ const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
       "Auto boosting - push ad to top each week",
       "Manual boosting available", 
       "5 touring locations (when photo verified)",
-      "3 videos (30 seconds each)",
       "15 photos (+ 1 main photo)",
       "Photo verification available",
-      "Photo blurring available",
-      "Connect to social media",
-      "Profile pause available",
-      "Send announcements to followers"
+      "Photo blurring available"
     ]
   },
   {
@@ -97,13 +89,9 @@ const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
       "Manual boosting available",
       "Homepage ad placement",
       "5 touring locations (when photo verified)",
-      "5 videos (30 seconds each)",
       "30 photos (+ 1 main photo)",
       "Photo verification available", 
-      "Photo blurring available",
-      "Connect to social media",
-      "Profile pause available",
-      "Send announcements to followers"
+      "Photo blurring available"
     ]
   },
   {
@@ -122,13 +110,9 @@ const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
       "Manual boosting available",
       "Homepage ad placement",
       "5 touring locations (when photo verified)",
-      "10 videos (30 seconds each)",
       "50 photos (+ 1 main photo)",
       "Photo verification available",
-      "Photo blurring available", 
-      "Connect to social media",
-      "Profile pause available",
-      "Send announcements to followers"
+      "Photo blurring available"
     ]
   }
 ];
