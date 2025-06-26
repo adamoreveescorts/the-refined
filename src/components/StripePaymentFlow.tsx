@@ -177,7 +177,7 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
         return;
       }
 
-      // Create trial agency subscription with proper values
+      // Create trial agency subscription with database-compliant values
       const trialEnd = new Date();
       trialEnd.setDate(trialEnd.getDate() + 7);
 
@@ -185,14 +185,14 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
         .from('agency_subscriptions')
         .upsert({
           agency_id: currentSession.user.id,
-          package_type: 0, // Special trial package type, but this violates the constraint
+          package_type: 1, // Use package 1 but with trial pricing
           package_name: 'Free Trial',
           max_profiles: 5,
           total_seats: 5,
           used_seats: 0,
           price_per_seat: 0,
           subscription_tier: 'trial',
-          billing_cycle: 'trial', // Use 'trial' instead of '1 week' to avoid constraint violation
+          billing_cycle: '1 week', // Use valid constraint value
           status: 'active',
           current_period_start: new Date().toISOString(),
           current_period_end: trialEnd.toISOString(),
