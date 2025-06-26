@@ -2,25 +2,27 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Star } from 'lucide-react';
+
 const testimonials = [{
   id: 1,
   name: "J.M.",
-  location: "New York",
+  location: "Sydney",
   text: "The Refined Escort has completely transformed my experience. The verification process makes me feel secure, and the quality of connections has been excellent.",
   rating: 5
 }, {
   id: 2,
   name: "S.K.",
-  location: "London",
+  location: "Melbourne",
   text: "As a companion, this platform has provided me with high-quality clients and a safe way to manage my business. The verification process is thorough but respectful.",
   rating: 5
 }, {
   id: 3,
   name: "A.D.",
-  location: "Paris",
+  location: "Perth",
   text: "I appreciate the elegant design and discreet nature of this service. It stands apart from other platforms with its professional approach and premium experience.",
   rating: 4
 }];
+
 const Testimonial = ({
   testimonial
 }: {
@@ -41,6 +43,7 @@ const Testimonial = ({
       </CardContent>
     </Card>;
 };
+
 const TestimonialSection = () => {
   return <section className="py-16 px-4 sm:px-6 lg:px-8">
       <div className="container mx-auto">
@@ -57,4 +60,5 @@ const TestimonialSection = () => {
       </div>
     </section>;
 };
+
 export default TestimonialSection;
