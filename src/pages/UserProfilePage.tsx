@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +14,8 @@ import { ImageZoomModal } from '@/components/ImageZoomModal';
 import { ContactRequestDialog } from '@/components/ContactRequestDialog';
 import { MessageButton } from '@/components/messaging/MessageButton';
 import { FollowButton } from '@/components/FollowButton';
+import PhotoGalleryManager from '@/components/PhotoGalleryManager';
+import VerificationButton from '@/components/verification/VerificationButton';
 
 interface Profile {
   id: string;
@@ -91,8 +94,9 @@ const UserProfilePage = () => {
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<Image | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [showContactDialog, setShowContactRequestDialog] = useState(false);
+  const [showContactDialog, setShowContactDialog] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [showGalleryManager, setShowGalleryManager] = useState(false);
 
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -282,6 +286,12 @@ const UserProfilePage = () => {
     navigate("/edit-profile");
   };
 
+  const handleGalleryUpdate = (newGallery: string[]) => {
+    if (profile) {
+      setProfile({ ...profile, gallery_images: newGallery });
+    }
+  };
+
   const isOwnProfile = currentUser && profile && currentUser.id === profile.id;
   const isClient = profile?.role === 'client';
   const isEscort = profile?.role === 'escort';
@@ -374,29 +384,6 @@ const UserProfilePage = () => {
                         </Badge>
                       )}
                     </div>
-                    {isOwnProfile && (
-                      <div className="flex gap-2">
-                        {isEscort && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={toggleVisibility}
-                            className={profile.is_active ? "text-green-600" : "text-red-600"}
-                          >
-                            {profile.is_active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                            {profile.is_active ? "Visible" : "Hidden"}
-                          </Button>
-                        )}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleEditProfile}
-                        >
-                          <Edit className="h-4 w-4" />
-                          Edit Profile
-                        </Button>
-                      </div>
-                    )}
                   </div>
 
                   {/* Profile Info Display */}
@@ -443,8 +430,8 @@ const UserProfilePage = () => {
                     )}
                   </div>
 
-                  {/* Only show rating for non-clients */}
-                  {!isClient && (
+                  {/* Only show rating for non-clients and non-own profiles */}
+                  {!isClient && !isOwnProfile && (
                     <div className="flex items-center gap-4 mt-4">
                       <div className="flex items-center">
                         <Star className="h-5 w-5 text-secondary fill-secondary mr-1" />
@@ -460,246 +447,293 @@ const UserProfilePage = () => {
 
             {/* Escort Dashboard - Only for escorts viewing their own profile */}
             {isEscort && isOwnProfile && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                {/* Subscription Status */}
-                <div className="bg-card rounded-lg shadow-md p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Crown className="h-6 w-6 text-gold" />
-                    <h3 className="text-lg font-semibold text-foreground">Current Plan</h3>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Tier:</span>
-                      <Badge className="bg-gold text-white">
-                        {subscriptionInfo?.subscription_tier || 'Free'}
-                      </Badge>
+              <>
+                {/* Account Status Section */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                  {/* Account Status Card */}
+                  <div className="bg-card rounded-lg shadow-md p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <Shield className="h-6 w-6 text-blue-500" />
+                      <h3 className="text-lg font-semibold text-foreground">Account Status</h3>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Status:</span>
-                      <span className="text-foreground capitalize">
-                        {subscriptionInfo?.subscription_status || 'Inactive'}
-                      </span>
-                    </div>
-                    {subscriptionInfo?.expires_at && (
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Verified:</span>
+                        <Badge variant={profile.verified ? "default" : "secondary"} className={profile.verified ? "bg-green-500" : ""}>
+                          {profile.verified ? "Verified" : "Pending"}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Visibility:</span>
+                        <Badge variant={profile.is_active && profile.profile_picture ? "default" : "secondary"} 
+                               className={profile.is_active && profile.profile_picture ? "bg-green-500" : "bg-red-500"}>
+                          {profile.is_active && profile.profile_picture ? "Visible" : "Hidden"}
+                        </Badge>
+                      </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Expires:</span>
-                        <span className="text-foreground">
-                          {new Date(subscriptionInfo.expires_at).toLocaleDateString()}
+                        <span className="text-muted-foreground">Profile Completion:</span>
+                        <span className="text-foreground">{profile.profile_completion_percentage || 0}%</span>
+                      </div>
+                      {(!profile.profile_picture || !profile.is_active) && (
+                        <div className="text-sm text-muted-foreground bg-amber-50 p-3 rounded-md">
+                          <p className="font-medium text-amber-800">Visibility Notice:</p>
+                          <p className="text-amber-700">
+                            Only profiles with profile pictures are visible to clients. 
+                            {!profile.profile_picture && " Please upload a profile picture."}
+                            {!profile.is_active && " Your profile is currently hidden."}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={toggleVisibility}
+                        className={profile.is_active ? "text-green-600" : "text-red-600"}
+                      >
+                        {profile.is_active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                        {profile.is_active ? "Visible" : "Hidden"}
+                      </Button>
+                      <VerificationButton 
+                        userRole={profile.role}
+                        subscription={subscriptionInfo}
+                        userId={profile.id}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Subscription Management Card */}
+                  <div className="bg-card rounded-lg shadow-md p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <Crown className="h-6 w-6 text-gold" />
+                      <h3 className="text-lg font-semibold text-foreground">Current Plan</h3>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Tier:</span>
+                        <Badge className="bg-gold text-white">
+                          {subscriptionInfo?.subscription_tier || 'Free'}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Status:</span>
+                        <span className="text-foreground capitalize">
+                          {subscriptionInfo?.subscription_status || 'Inactive'}
                         </span>
                       </div>
-                    )}
+                      {subscriptionInfo?.expires_at && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Expires:</span>
+                          <span className="text-foreground">
+                            {new Date(subscriptionInfo.expires_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <Button className="w-full mt-4 btn-gold" size="sm" onClick={() => navigate('/choose-plan')}>
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      Manage Plan
+                    </Button>
                   </div>
-                  <Button className="w-full mt-4 btn-gold" size="sm">
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Manage Plan
-                  </Button>
+
+                  {/* Photo & Gallery Card */}
+                  <div className="bg-card rounded-lg shadow-md p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <Camera className="h-6 w-6 text-purple-500" />
+                      <h3 className="text-lg font-semibold text-foreground">Photos & Gallery</h3>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Gallery Photos:</span>
+                        <span className="text-foreground">
+                          {profile.gallery_images?.length || 0} / 50
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Profile Picture:</span>
+                        <Badge variant={profile.profile_picture ? "default" : "secondary"} className={profile.profile_picture ? "bg-green-500" : ""}>
+                          {profile.profile_picture ? "Set" : "Missing"}
+                        </Badge>
+                      </div>
+                    </div>
+                    <Button 
+                      className="w-full mt-4" 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setShowGalleryManager(true)}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Manage Photos
+                    </Button>
+                  </div>
                 </div>
 
-                {/* Account Status */}
-                <div className="bg-card rounded-lg shadow-md p-6">
+                {/* Profile Settings Section */}
+                <div className="bg-card rounded-lg shadow-md p-6 mb-6">
                   <div className="flex items-center gap-3 mb-4">
-                    <Shield className="h-6 w-6 text-blue-500" />
-                    <h3 className="text-lg font-semibold text-foreground">Account Status</h3>
+                    <Settings className="h-6 w-6 text-gray-500" />
+                    <h3 className="text-lg font-semibold text-foreground">Profile Settings</h3>
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Verified:</span>
-                      <Badge variant={profile.verified ? "default" : "secondary"} className={profile.verified ? "bg-green-500" : ""}>
-                        {profile.verified ? "Verified" : "Pending"}
-                      </Badge>
+                  <div className="flex gap-4">
+                    <Button onClick={handleEditProfile} variant="outline">
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit Profile
+                    </Button>
+                    <Button onClick={() => navigate('/edit-profile')} variant="outline">
+                      <User className="h-4 w-4 mr-2" />
+                      Update Information
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Detailed Profile Information */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                  <div className="bg-card rounded-lg shadow-md p-6">
+                    <h3 className="text-lg font-semibold text-foreground mb-4">Personal Information</h3>
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <span className="text-muted-foreground text-sm">Age:</span>
+                          <p className="text-foreground">{profile.age || 'Not specified'}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-sm">Height:</span>
+                          <p className="text-foreground">{profile.height || 'Not specified'}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-sm">Weight:</span>
+                          <p className="text-foreground">{profile.weight || 'Not specified'}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-sm">Body Type:</span>
+                          <p className="text-foreground">{profile.body_type || 'Not specified'}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-sm">Ethnicity:</span>
+                          <p className="text-foreground">{profile.ethnicity || 'Not specified'}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-sm">Nationality:</span>
+                          <p className="text-foreground">{profile.nationality || 'Not specified'}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-sm">Hair Color:</span>
+                          <p className="text-foreground">{profile.hair_color || 'Not specified'}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-sm">Eye Color:</span>
+                          <p className="text-foreground">{profile.eye_color || 'Not specified'}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-sm">Cup Size:</span>
+                          <p className="text-foreground">{profile.cup_size || 'Not specified'}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-sm">Languages:</span>
+                          <p className="text-foreground">{profile.languages || 'Not specified'}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-sm">Smoking:</span>
+                          <p className="text-foreground">{profile.smoking || 'Not specified'}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-sm">Drinking:</span>
+                          <p className="text-foreground">{profile.drinking || 'Not specified'}</p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Visibility:</span>
-                      <Badge variant={profile.is_active ? "default" : "secondary"} className={profile.is_active ? "bg-green-500" : "bg-red-500"}>
-                        {profile.is_active ? "Active" : "Hidden"}
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Profile Completion:</span>
-                      <span className="text-foreground">{profile.profile_completion_percentage || 0}%</span>
+                  </div>
+
+                  <div className="bg-card rounded-lg shadow-md p-6">
+                    <h3 className="text-lg font-semibold text-foreground mb-4">Rates & Services</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="font-medium text-foreground mb-2">Incall Rates</h4>
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">Hourly:</span>
+                            <p className="text-foreground">{profile.incall_hourly_rate ? `$${profile.incall_hourly_rate}` : 'Not set'}</p>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">2 Hours:</span>
+                            <p className="text-foreground">{profile.incall_two_hour_rate ? `$${profile.incall_two_hour_rate}` : 'Not set'}</p>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Dinner:</span>
+                            <p className="text-foreground">{profile.incall_dinner_rate ? `$${profile.incall_dinner_rate}` : 'Not set'}</p>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Overnight:</span>
+                            <p className="text-foreground">{profile.incall_overnight_rate ? `$${profile.incall_overnight_rate}` : 'Not set'}</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h4 className="font-medium text-foreground mb-2">Outcall Rates</h4>
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">Hourly:</span>
+                            <p className="text-foreground">{profile.outcall_hourly_rate ? `$${profile.outcall_hourly_rate}` : 'Not set'}</p>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">2 Hours:</span>
+                            <p className="text-foreground">{profile.outcall_two_hour_rate ? `$${profile.outcall_two_hour_rate}` : 'Not set'}</p>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Dinner:</span>
+                            <p className="text-foreground">{profile.outcall_dinner_rate ? `$${profile.outcall_dinner_rate}` : 'Not set'}</p>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Overnight:</span>
+                            <p className="text-foreground">{profile.outcall_overnight_rate ? `$${profile.outcall_overnight_rate}` : 'Not set'}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <span className="text-muted-foreground text-sm">Availability:</span>
+                        <p className="text-foreground mt-1">{profile.availability || 'Not specified'}</p>
+                      </div>
+
+                      {profile.tags && (
+                        <div>
+                          <span className="text-muted-foreground text-sm">Tags:</span>
+                          <p className="text-foreground mt-1">{profile.tags}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
 
-                {/* Gallery Management */}
-                <div className="bg-card rounded-lg shadow-md p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Camera className="h-6 w-6 text-purple-500" />
-                    <h3 className="text-lg font-semibold text-foreground">Gallery</h3>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Photos:</span>
-                      <span className="text-foreground">
-                        {profile.gallery_images?.length || 0} / 50
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Profile Picture:</span>
-                      <Badge variant={profile.profile_picture ? "default" : "secondary"} className={profile.profile_picture ? "bg-green-500" : ""}>
-                        {profile.profile_picture ? "Set" : "Missing"}
-                      </Badge>
-                    </div>
-                  </div>
-                  <Button className="w-full mt-4" variant="outline" size="sm">
-                    <Upload className="h-4 w-4 mr-2" />
-                    Manage Photos
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Detailed Profile Information - Only for escorts viewing their own profile */}
-            {isEscort && isOwnProfile && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                {/* Personal Information */}
-                <div className="bg-card rounded-lg shadow-md p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Personal Information</h3>
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <span className="text-muted-foreground text-sm">Age:</span>
-                        <p className="text-foreground">{profile.age || 'Not specified'}</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground text-sm">Height:</span>
-                        <p className="text-foreground">{profile.height || 'Not specified'}</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground text-sm">Weight:</span>
-                        <p className="text-foreground">{profile.weight || 'Not specified'}</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground text-sm">Body Type:</span>
-                        <p className="text-foreground">{profile.body_type || 'Not specified'}</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground text-sm">Ethnicity:</span>
-                        <p className="text-foreground">{profile.ethnicity || 'Not specified'}</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground text-sm">Nationality:</span>
-                        <p className="text-foreground">{profile.nationality || 'Not specified'}</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground text-sm">Hair Color:</span>
-                        <p className="text-foreground">{profile.hair_color || 'Not specified'}</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground text-sm">Eye Color:</span>
-                        <p className="text-foreground">{profile.eye_color || 'Not specified'}</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground text-sm">Cup Size:</span>
-                        <p className="text-foreground">{profile.cup_size || 'Not specified'}</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground text-sm">Languages:</span>
-                        <p className="text-foreground">{profile.languages || 'Not specified'}</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground text-sm">Smoking:</span>
-                        <p className="text-foreground">{profile.smoking || 'Not specified'}</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground text-sm">Drinking:</span>
-                        <p className="text-foreground">{profile.drinking || 'Not specified'}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Rates Information */}
-                <div className="bg-card rounded-lg shadow-md p-6">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Rates & Services</h3>
-                  <div className="space-y-4">
+                {/* Social Media Links */}
+                <div className="bg-card rounded-lg shadow-md p-6 mb-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Social Media</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div>
-                      <h4 className="font-medium text-foreground mb-2">Incall Rates</h4>
-                      <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div>
-                          <span className="text-muted-foreground">Hourly:</span>
-                          <p className="text-foreground">{profile.incall_hourly_rate ? `$${profile.incall_hourly_rate}` : 'Not set'}</p>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">2 Hours:</span>
-                          <p className="text-foreground">{profile.incall_two_hour_rate ? `$${profile.incall_two_hour_rate}` : 'Not set'}</p>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Dinner:</span>
-                          <p className="text-foreground">{profile.incall_dinner_rate ? `$${profile.incall_dinner_rate}` : 'Not set'}</p>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Overnight:</span>
-                          <p className="text-foreground">{profile.incall_overnight_rate ? `$${profile.incall_overnight_rate}` : 'Not set'}</p>
-                        </div>
-                      </div>
+                      <span className="text-muted-foreground text-sm">Instagram:</span>
+                      <p className="text-foreground">{profile.instagram_url || 'Not provided'}</p>
                     </div>
-                    
                     <div>
-                      <h4 className="font-medium text-foreground mb-2">Outcall Rates</h4>
-                      <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div>
-                          <span className="text-muted-foreground">Hourly:</span>
-                          <p className="text-foreground">{profile.outcall_hourly_rate ? `$${profile.outcall_hourly_rate}` : 'Not set'}</p>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">2 Hours:</span>
-                          <p className="text-foreground">{profile.outcall_two_hour_rate ? `$${profile.outcall_two_hour_rate}` : 'Not set'}</p>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Dinner:</span>
-                          <p className="text-foreground">{profile.outcall_dinner_rate ? `$${profile.outcall_dinner_rate}` : 'Not set'}</p>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Overnight:</span>
-                          <p className="text-foreground">{profile.outcall_overnight_rate ? `$${profile.outcall_overnight_rate}` : 'Not set'}</p>
-                        </div>
-                      </div>
+                      <span className="text-muted-foreground text-sm">Twitter:</span>
+                      <p className="text-foreground">{profile.twitter_url || 'Not provided'}</p>
                     </div>
-
                     <div>
-                      <span className="text-muted-foreground text-sm">Availability:</span>
-                      <p className="text-foreground mt-1">{profile.availability || 'Not specified'}</p>
+                      <span className="text-muted-foreground text-sm">Facebook:</span>
+                      <p className="text-foreground">{profile.facebook_url || 'Not provided'}</p>
                     </div>
-
-                    {profile.tags && (
-                      <div>
-                        <span className="text-muted-foreground text-sm">Tags:</span>
-                        <p className="text-foreground mt-1">{profile.tags}</p>
-                      </div>
-                    )}
+                    <div>
+                      <span className="text-muted-foreground text-sm">LinkedIn:</span>
+                      <p className="text-foreground">{profile.linkedin_url || 'Not provided'}</p>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-sm">YouTube:</span>
+                      <p className="text-foreground">{profile.youtube_url || 'Not provided'}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-
-            {/* Social Media Links - Only for escorts viewing their own profile */}
-            {isEscort && isOwnProfile && (
-              <div className="bg-card rounded-lg shadow-md p-6 mb-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4">Social Media</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div>
-                    <span className="text-muted-foreground text-sm">Instagram:</span>
-                    <p className="text-foreground">{profile.instagram_url || 'Not provided'}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground text-sm">Twitter:</span>
-                    <p className="text-foreground">{profile.twitter_url || 'Not provided'}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground text-sm">Facebook:</span>
-                    <p className="text-foreground">{profile.facebook_url || 'Not provided'}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground text-sm">LinkedIn:</span>
-                    <p className="text-foreground">{profile.linkedin_url || 'Not provided'}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground text-sm">YouTube:</span>
-                    <p className="text-foreground">{profile.youtube_url || 'Not provided'}</p>
-                  </div>
-                </div>
-              </div>
+              </>
             )}
 
             {/* Followed Users Section - Only for clients viewing their own profile */}
@@ -767,8 +801,8 @@ const UserProfilePage = () => {
                   <ContactRequestDialog 
                     escortId={profile.id}
                     escortName={profile.display_name || profile.username || 'Anonymous'}
-                    isOpen={showContactRequestDialog}
-                    onClose={() => setShowContactRequestDialog(false)}
+                    isOpen={showContactDialog}
+                    onClose={() => setShowContactDialog(false)}
                   />
                   <MessageButton 
                     escortId={profile.id} 
@@ -786,6 +820,16 @@ const UserProfilePage = () => {
       </main>
 
       <Footer />
+
+      {/* Photo Gallery Manager */}
+      <PhotoGalleryManager
+        isOpen={showGalleryManager}
+        onClose={() => setShowGalleryManager(false)}
+        userId={profile.id}
+        currentGallery={profile.gallery_images || []}
+        onGalleryUpdate={handleGalleryUpdate}
+        onUpgrade={() => navigate('/choose-plan')}
+      />
 
       {/* Image Zoom Modal */}
       <ImageZoomModal
