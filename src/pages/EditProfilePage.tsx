@@ -7,6 +7,8 @@ import Footer from "@/components/Footer";
 import EditProfileForm from "@/components/EditProfileForm";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Camera } from "lucide-react";
+import PhotoGalleryManager from "@/components/PhotoGalleryManager";
 
 interface UserProfile {
   id: string;
@@ -45,12 +47,14 @@ interface UserProfile {
   tattoos?: boolean | null;
   piercings?: boolean | null;
   phone?: string | null;
+  gallery_images?: string[] | null;
 }
 
 const EditProfilePage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [showPhotoGallery, setShowPhotoGallery] = useState(false);
 
   useEffect(() => {
     checkAuthAndFetchProfile();
@@ -117,6 +121,7 @@ const EditProfilePage = () => {
         tattoos: data.tattoos,
         piercings: data.piercings,
         phone: data.phone,
+        gallery_images: data.gallery_images,
       });
     } catch (error) {
       console.error("Profile error:", error);
@@ -134,6 +139,16 @@ const EditProfilePage = () => {
 
   const handleCancel = () => {
     navigate("/user-profile");
+  };
+
+  const handleShowUpgrade = () => {
+    navigate("/user-profile");
+  };
+
+  const handlePhotoGalleryUpdate = (newGallery: string[]) => {
+    if (profile) {
+      setProfile({ ...profile, gallery_images: newGallery });
+    }
   };
 
   if (loading) {
@@ -188,12 +203,34 @@ const EditProfilePage = () => {
             </div>
           </div>
           
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-4xl mx-auto space-y-6">
             <EditProfileForm 
               profile={profile}
               onProfileUpdate={handleProfileUpdate}
               onCancel={handleCancel}
             />
+
+            {/* Photo Gallery Section for Escorts */}
+            {profile?.role === 'escort' && (
+              <div className="mt-8">
+                <Button 
+                  onClick={() => setShowPhotoGallery(true)}
+                  className="bg-secondary hover:bg-secondary/90 text-secondary-foreground"
+                >
+                  <Camera className="h-4 w-4 mr-2" />
+                  Manage Photo Gallery
+                </Button>
+
+                <PhotoGalleryManager
+                  isOpen={showPhotoGallery}
+                  onClose={() => setShowPhotoGallery(false)}
+                  userId={profile.id}
+                  currentGallery={profile.gallery_images || []}
+                  onGalleryUpdate={handlePhotoGalleryUpdate}
+                  onUpgrade={handleShowUpgrade}
+                />
+              </div>
+            )}
           </div>
         </div>
       </main>

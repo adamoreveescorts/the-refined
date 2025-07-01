@@ -9,9 +9,12 @@ import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { UserRound, Calendar, Mail, Shield, User, CreditCard, Crown, Clock, AlertCircle } from "lucide-react";
+import { UserRound, Calendar, Mail, Shield, User, CreditCard, Crown, Clock, AlertCircle, Camera } from "lucide-react";
 import SubscriptionTierSelector from "@/components/SubscriptionTierSelector";
 import VerificationButton from "@/components/verification/VerificationButton";
+import PhotoGalleryManager from "@/components/PhotoGalleryManager";
+import { usePhotoLimits } from "@/hooks/usePhotoLimits";
+import PhotoLimitsDisplay from "@/components/PhotoLimitsDisplay";
 
 interface UserProfile {
   id: string;
@@ -39,6 +42,9 @@ const UserProfilePage = () => {
   const [photoVerification, setPhotoVerification] = useState<PhotoVerification | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showPhotoGallery, setShowPhotoGallery] = useState(false);
+  
+  const photoLimits = usePhotoLimits(profile?.id || '');
   
   useEffect(() => {
     checkAuthAndFetchProfile();
@@ -219,6 +225,15 @@ const UserProfilePage = () => {
   const handleBackToProfile = () => {
     setShowEditProfile(false);
     setShowUpgrade(false);
+  };
+
+  const handleShowPhotoGallery = () => {
+    setShowPhotoGallery(true);
+  };
+
+  const handlePhotoGalleryUpdate = (newGallery: string[]) => {
+    // Update profile state if needed
+    console.log('Gallery updated:', newGallery);
   };
 
   const getSubscriptionStatusBadge = () => {
@@ -497,12 +512,24 @@ const UserProfilePage = () => {
                     Edit Profile
                   </Button>
                   {(profile?.role === 'escort' || profile?.role === 'agency') && (
-                    <Button 
-                      className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground" 
-                      onClick={handleShowUpgrade}
-                    >
-                      {hasNoActivePlan() ? 'Choose Plan' : 'Manage Plan'}
-                    </Button>
+                    <>
+                      <Button 
+                        className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground" 
+                        onClick={handleShowUpgrade}
+                      >
+                        {hasNoActivePlan() ? 'Choose Plan' : 'Manage Plan'}
+                      </Button>
+                      {profile?.role === 'escort' && (
+                        <Button 
+                          className="w-full" 
+                          variant="outline"
+                          onClick={handleShowPhotoGallery}
+                        >
+                          <Camera className="h-4 w-4 mr-2" />
+                          Manage Photos
+                        </Button>
+                      )}
+                    </>
                   )}
                 </div>
               </CardContent>
@@ -650,6 +677,30 @@ const UserProfilePage = () => {
                         )}
                       </CardContent>
                     </Card>
+
+                    {/* Photo Limits Card for Escorts */}
+                    {profile?.role === 'escort' && !photoLimits.loading && (
+                      <Card className="bg-card shadow-sm border-border">
+                        <CardHeader>
+                          <CardTitle className="text-foreground">Photo Management</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <PhotoLimitsDisplay
+                            usage={photoLimits.usage}
+                            limits={photoLimits.limits}
+                            subscriptionTier={photoLimits.subscriptionTier}
+                            onUpgrade={handleShowUpgrade}
+                          />
+                          <Button 
+                            onClick={handleShowPhotoGallery}
+                            className="w-full mt-4 bg-secondary hover:bg-secondary/90 text-secondary-foreground"
+                          >
+                            <Camera className="h-4 w-4 mr-2" />
+                            Open Photo Gallery
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    )}
                   </TabsContent>
                   
                   <TabsContent value="settings" className="space-y-6">

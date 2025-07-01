@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -6,8 +5,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Upload, Edit, Trash2, Eye, EyeOff, X } from 'lucide-react';
+import { Upload, Edit, Trash2, Eye, EyeOff, X, AlertCircle } from 'lucide-react';
 import PhotoEditor from './PhotoEditor';
+import { usePhotoLimits } from '@/hooks/usePhotoLimits';
+import PhotoLimitsDisplay from './PhotoLimitsDisplay';
 
 interface PhotoGalleryManagerProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ interface PhotoGalleryManagerProps {
   userId: string;
   currentGallery: string[] | null;
   onGalleryUpdate: (newGallery: string[]) => void;
+  onUpgrade?: () => void;
 }
 
 interface GalleryImage {
@@ -27,13 +29,16 @@ const PhotoGalleryManager = ({
   onClose, 
   userId, 
   currentGallery, 
-  onGalleryUpdate 
+  onGalleryUpdate,
+  onUpgrade
 }: PhotoGalleryManagerProps) => {
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [uploading, setUploading] = useState(false);
   const [showPhotoEditor, setShowPhotoEditor] = useState(false);
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [editingImageUrl, setEditingImageUrl] = useState<string | null>(null);
+  
+  const { limits, usage, canUploadMore, canUploadGallery, loading: limitsLoading } = usePhotoLimits(userId);
 
   useEffect(() => {
     if (isOpen) {
@@ -85,6 +90,12 @@ const PhotoGalleryManager = ({
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
+    // Check if user can upload more photos
+    if (!canUploadMore) {
+      toast.error("You've reached your photo limit. Please upgrade your plan to upload more photos.");
+      return;
+    }
+
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       
@@ -96,6 +107,12 @@ const PhotoGalleryManager = ({
       if (file.size > 5 * 1024 * 1024) {
         toast.error(`${file.name} is too large (max 5MB)`);
         continue;
+      }
+
+      // Check if adding this photo would exceed limits
+      if (usage.totalCount >= limits.totalPhotos) {
+        toast.error("Photo limit reached. Please upgrade your plan to upload more photos.");
+        break;
       }
 
       // Set the selected file and show editor
@@ -282,12 +299,23 @@ const PhotoGalleryManager = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Manage Photo Gallery</DialogTitle>
           </DialogHeader>
           
           <div className="space-y-6">
+            {/* Photo Limits Display */}
+            {!limitsLoading && (
+              <PhotoLimitsDisplay
+                usage={usage}
+                limits={limits}
+                subscriptionTier={null}
+                onUpgrade={onUpgrade}
+                showUpgradeButton={!!onUpgrade}
+              />
+            )}
+
             {/* Upload Section */}
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
               <input
@@ -297,24 +325,49 @@ const PhotoGalleryManager = ({
                 onChange={handleImageUpload}
                 className="hidden"
                 id="gallery-upload"
-                disabled={uploading}
+                disabled={uploading || !canUploadMore}
               />
               <label htmlFor="gallery-upload">
                 <Button
                   type="button"
                   variant="outline"
-                  disabled={uploading}
+                  disabled={uploading || !canUploadMore}
                   asChild
                 >
                   <span className="cursor-pointer">
                     <Upload className="h-4 w-4 mr-2" />
-                    {uploading ? "Uploading..." : "Upload & Edit Photos"}
+                    {uploading ? "Uploading..." : !canUploadMore ? "Photo Limit Reached" : "Upload & Edit Photos"}
                   </span>
                 </Button>
               </label>
-              <p className="text-sm text-muted-foreground mt-2">
-                Select multiple images to upload. Each will open in the editor for blur adjustments.
-              </p>
+              
+              {canUploadMore ? (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Select multiple images to upload. Each will open in the editor for blur adjustments.
+                  <br />
+                  <span className="text-xs">
+                    {usage.totalCount} / {limits.totalPhotos} photos used
+                  </span>
+                </p>
+              ) : (
+                <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-md">
+                  <div className="flex items-center justify-center gap-2">
+                    <AlertCircle className="h-4 w-4 text-amber-600" />
+                    <p className="text-sm text-amber-800">
+                      You've reached your photo limit ({limits.totalPhotos} photos)
+                    </p>
+                  </div>
+                  {onUpgrade && (
+                    <Button 
+                      onClick={onUpgrade}
+                      size="sm"
+                      className="mt-2 bg-gold hover:bg-gold/90 text-white"
+                    >
+                      Upgrade for More Photos
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Gallery Grid */}
