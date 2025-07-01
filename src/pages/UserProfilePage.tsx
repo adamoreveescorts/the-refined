@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { UserRound, Calendar, Mail, Shield, User, CreditCard, Crown, Clock, AlertCircle, Camera } from "lucide-react";
+import { UserRound, Calendar, Mail, Shield, User, CreditCard, Crown, Clock, AlertCircle, Camera, Phone } from "lucide-react";
 import SubscriptionTierSelector from "@/components/SubscriptionTierSelector";
 import VerificationButton from "@/components/verification/VerificationButton";
 import PhotoGalleryManager from "@/components/PhotoGalleryManager";
@@ -25,6 +25,9 @@ interface UserProfile {
   created_at: string;
   payment_status: string | null;
   is_active: boolean | null;
+  profile_picture?: string | null;
+  gallery_images?: string[] | null;
+  phone?: string | null;
 }
 
 interface PhotoVerification {
@@ -82,7 +85,10 @@ const UserProfilePage = () => {
         role: data.role || "client",
         created_at: new Date(session.user.created_at || data.created_at).toLocaleDateString(),
         payment_status: data.payment_status || "pending",
-        is_active: data.is_active || false
+        is_active: data.is_active || false,
+        profile_picture: data.profile_picture,
+        gallery_images: data.gallery_images,
+        phone: data.phone
       });
 
       // Check subscription status for paid roles
@@ -290,10 +296,46 @@ const UserProfilePage = () => {
   };
 
   const isProfilePublic = () => {
+    // For escorts, require both subscription and profile picture
+    if (profile?.role === 'escort') {
+      const hasValidSubscription = subscription && subscription.subscription_tier && (
+        subscription.subscription_tier.startsWith('Package') || 
+        subscription.is_trial_active
+      );
+      const hasProfilePicture = profile?.profile_picture;
+      return hasValidSubscription && hasProfilePicture;
+    }
+    
+    // For agencies, only check subscription
     return subscription && subscription.subscription_tier && (
       subscription.subscription_tier.startsWith('Package') || 
       subscription.is_trial_active
     );
+  };
+
+  const getProfileVisibilityMessage = () => {
+    if (profile?.role === 'escort') {
+      const hasValidSubscription = subscription && subscription.subscription_tier && (
+        subscription.subscription_tier.startsWith('Package') || 
+        subscription.is_trial_active
+      );
+      const hasProfilePicture = profile?.profile_picture;
+      
+      if (!hasValidSubscription && !hasProfilePicture) {
+        return "Choose a subscription plan and upload a profile picture to make your profile visible";
+      } else if (!hasValidSubscription) {
+        return "Choose a subscription plan to make your profile visible";
+      } else if (!hasProfilePicture) {
+        return "Upload a profile picture to make your profile visible in the directory";
+      }
+      return "Your profile is visible in the directory";
+    }
+    
+    return isProfilePublic() 
+      ? "Your profile is visible in the directory" 
+      : hasNoActivePlan()
+        ? "Choose a subscription plan to make your profile visible"
+        : "Your profile is not visible until you have an active subscription";
   };
 
   const isActuallyPhotoVerified = () => {
@@ -417,6 +459,16 @@ const UserProfilePage = () => {
                       <p className="font-medium text-foreground">{profile?.email}</p>
                     </div>
                   </div>
+
+                  {profile?.phone && (
+                    <div className="flex items-start">
+                      <Phone className="h-5 w-5 mr-2 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">Phone</p>
+                        <p className="font-medium text-foreground">{profile.phone}</p>
+                      </div>
+                    </div>
+                  )}
                   
                   <div className="flex items-start">
                     <Calendar className="h-5 w-5 mr-2 text-muted-foreground" />
@@ -742,11 +794,7 @@ const UserProfilePage = () => {
                                 {isProfilePublic() ? "Public" : "Not Visible"}
                               </Badge>
                               <p className="text-sm text-muted-foreground mt-1">
-                                {isProfilePublic()
-                                  ? "Your profile is visible in the directory" 
-                                  : hasNoActivePlan()
-                                    ? "Choose a subscription plan to make your profile visible"
-                                    : "Your profile is not visible until you have an active subscription"}
+                                {getProfileVisibilityMessage()}
                               </p>
                             </div>
                             
