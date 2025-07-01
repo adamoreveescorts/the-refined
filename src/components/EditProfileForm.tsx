@@ -63,6 +63,12 @@ const profileSchema = z.object({
   outcall_two_hour_rate: z.string().optional(),
   outcall_dinner_rate: z.string().optional(),
   outcall_overnight_rate: z.string().optional(),
+  // Social media fields
+  instagram_url: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
+  twitter_url: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
+  facebook_url: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
+  linkedin_url: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
+  youtube_url: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -106,6 +112,11 @@ interface EditProfileFormProps {
     tags?: string | null;
     tattoos?: boolean | null;
     piercings?: boolean | null;
+    instagram_url?: string | null;
+    twitter_url?: string | null;
+    facebook_url?: string | null;
+    linkedin_url?: string | null;
+    youtube_url?: string | null;
   };
   onProfileUpdate: (updatedProfile: any) => void;
   onCancel: () => void;
@@ -160,6 +171,11 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
       outcall_two_hour_rate: profile.outcall_two_hour_rate || "",
       outcall_dinner_rate: profile.outcall_dinner_rate || "",
       outcall_overnight_rate: profile.outcall_overnight_rate || "",
+      instagram_url: profile.instagram_url || "",
+      twitter_url: profile.twitter_url || "",
+      facebook_url: profile.facebook_url || "",
+      linkedin_url: profile.linkedin_url || "",
+      youtube_url: profile.youtube_url || "",
     },
   });
 
@@ -280,6 +296,11 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
         updateData.tags = selectedTags.join(',');
         updateData.tattoos = tattoos;
         updateData.piercings = piercings;
+        updateData.instagram_url = data.instagram_url || null;
+        updateData.twitter_url = data.twitter_url || null;
+        updateData.facebook_url = data.facebook_url || null;
+        updateData.linkedin_url = data.linkedin_url || null;
+        updateData.youtube_url = data.youtube_url || null;
       }
 
       const { data: updatedProfile, error } = await supabase
@@ -455,11 +476,12 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
             {/* Escort/Agency Specific Fields in Tabs */}
             {isEscortOrAgency && (
               <Tabs defaultValue="about" className="w-full">
-                <TabsList className="grid grid-cols-4 mb-4">
+                <TabsList className="grid grid-cols-5 mb-4">
                   <TabsTrigger value="about">About</TabsTrigger>
                   <TabsTrigger value="appearance">Appearance</TabsTrigger>
                   <TabsTrigger value="details">Details</TabsTrigger>
                   <TabsTrigger value="rates">Rates</TabsTrigger>
+                  <TabsTrigger value="social">Social</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="about" className="space-y-4">
@@ -967,6 +989,87 @@ const EditProfileForm = ({ profile, onProfileUpdate, onCancel }: EditProfileForm
                           )}
                         />
                       </div>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="social" className="space-y-4">
+                  <div className="space-y-4">
+                    <h4 className="text-md font-medium text-foreground mb-3">Social Media Links</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Add your social media profiles to connect with clients. Only filled links will be displayed on your public profile.
+                    </p>
+                    
+                    <div className="grid grid-cols-1 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="instagram_url"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-foreground">Instagram URL</FormLabel>
+                            <FormControl>
+                              <Input placeholder="https://instagram.com/yourprofile" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="twitter_url"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-foreground">Twitter/X URL</FormLabel>
+                            <FormControl>
+                              <Input placeholder="https://twitter.com/yourprofile" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="facebook_url"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-foreground">Facebook URL</FormLabel>
+                            <FormControl>
+                              <Input placeholder="https://facebook.com/yourprofile" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="linkedin_url"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-foreground">LinkedIn URL</FormLabel>
+                            <FormControl>
+                              <Input placeholder="https://linkedin.com/in/yourprofile" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="youtube_url"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-foreground">YouTube URL</FormLabel>
+                            <FormControl>
+                              <Input placeholder="https://youtube.com/@yourprofile" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                   </div>
                 </TabsContent>

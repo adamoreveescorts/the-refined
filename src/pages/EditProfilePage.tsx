@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,6 +49,11 @@ interface UserProfile {
   phone?: string | null;
   country_code?: string | null;
   gallery_images?: string[] | null;
+  instagram_url?: string | null;
+  twitter_url?: string | null;
+  facebook_url?: string | null;
+  linkedin_url?: string | null;
+  youtube_url?: string | null;
 }
 
 const EditProfilePage = () => {
@@ -125,6 +129,11 @@ const EditProfilePage = () => {
         phone: data.phone,
         country_code: data.country_code,
         gallery_images: data.gallery_images,
+        instagram_url: data.instagram_url,
+        twitter_url: data.twitter_url,
+        facebook_url: data.facebook_url,
+        linkedin_url: data.linkedin_url,
+        youtube_url: data.youtube_url,
       });
     } catch (error) {
       console.error("Profile error:", error);

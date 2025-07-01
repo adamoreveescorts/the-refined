@@ -1,482 +1,423 @@
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { 
+  Star, 
+  MapPin, 
+  Calendar, 
+  Eye, 
+  User as UserIcon,
+  DollarSign,
+  Phone,
+  Mail,
+  MessageSquare,
+  Camera
+} from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import NavBar from "@/components/NavBar";
+import Footer from "@/components/Footer";
+import MessageButton from "@/components/messaging/MessageButton";
+import SocialMediaLinks from "@/components/SocialMediaLinks";
 
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import NavBar from '@/components/NavBar';
-import Footer from '@/components/Footer';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, Check, Clock, Heart, MapPin, Star, Mail, Phone } from 'lucide-react';
-import { MessageButton } from '@/components/messaging/MessageButton';
-
-interface RateDisplayItem {
-  label: string;
-  incallRate?: string;
-  outcallRate?: string;
-  icon: React.ReactNode;
+interface ProfileData {
+  id: string;
+  display_name: string | null;
+  bio: string | null;
+  age: string | null;
+  location: string | null;
+  profile_picture: string | null;
+  verified: boolean | null;
+  featured: boolean | null;
+  view_count: number | null;
+  rating: number | null;
+  role: string | null;
+  ethnicity: string | null;
+  body_type: string | null;
+  hair_color: string | null;
+  eye_color: string | null;
+  height: string | null;
+  weight: string | null;
+  languages: string | null;
+  services: string | null;
+  hourly_rate: string | null;
+  two_hour_rate: string | null;
+  dinner_rate: string | null;
+  overnight_rate: string | null;
+  incall_hourly_rate: string | null;
+  outcall_hourly_rate: string | null;
+  incall_two_hour_rate: string | null;
+  outcall_two_hour_rate: string | null;
+  incall_dinner_rate: string | null;
+  outcall_dinner_rate: string | null;
+  incall_overnight_rate: string | null;
+  outcall_overnight_rate: string | null;
+  tags: string | null;
+  gallery_images: string[] | null;
+  instagram_url?: string | null;
+  twitter_url?: string | null;
+  facebook_url?: string | null;
+  linkedin_url?: string | null;
+  youtube_url?: string | null;
 }
 
 const ProfilePage = () => {
-  const { id } = useParams();
-  const [escort, setEscort] = useState<any>(null);
+  const { id } = useParams<{ id: string }>();
+  const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [requestingContact, setRequestingContact] = useState<'email' | 'phone' | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (!id) return;
-
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', id)
-          .eq('status', 'approved')
-          .eq('is_active', true)
-          .single();
-
-        if (error) {
-          console.error('Error fetching profile:', error);
-          toast.error('Profile not found');
-          return;
-        }
-
-        setEscort(data);
-
-        // Increment view count
-        await supabase
-          .from('profiles')
-          .update({ view_count: (data.view_count || 0) + 1 })
-          .eq('id', id);
-      } catch (error) {
-        console.error('Error:', error);
-        toast.error('Error loading profile');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfile();
+    if (id) {
+      fetchProfile();
+      getCurrentUser();
+    }
   }, [id]);
 
-  const handleContactRequest = async (type: 'email' | 'phone') => {
-    setRequestingContact(type);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast.error('Please log in to request contact information');
-        return;
-      }
+  const getCurrentUser = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    setCurrentUser(session?.user || null);
+  };
 
-      // Get or create conversation
-      let { data: conversation } = await supabase
-        .from('conversations')
-        .select('id')
-        .eq('client_id', user.id)
-        .eq('escort_id', escort.id)
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+      
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", id)
+        .eq("status", "approved")
         .single();
 
-      if (!conversation) {
-        const { data: newConversation, error } = await supabase
-          .from('conversations')
-          .insert({
-            client_id: user.id,
-            escort_id: escort.id
-          })
-          .select('id')
-          .single();
-
-        if (error) {
-          console.error('Error creating conversation:', error);
-          toast.error('Failed to send request');
-          return;
-        }
-        conversation = newConversation;
-      }
-
-      // Send the contact request message
-      const message = type === 'email' 
-        ? `Hi ${escort.display_name || escort.username}, I would like to request your email address for further communication. Thank you!`
-        : `Hi ${escort.display_name || escort.username}, I would like to request your phone number for further communication. Thank you!`;
-
-      const { error } = await supabase
-        .from('messages')
-        .insert({
-          conversation_id: conversation.id,
-          sender_id: user.id,
-          content: message
-        });
-
       if (error) {
-        console.error('Error sending contact request:', error);
-        toast.error('Failed to send request');
+        console.error("Error fetching profile:", error);
+        toast.error("Profile not found");
         return;
       }
 
-      toast.success(`${type === 'email' ? 'Email' : 'Phone number'} request sent successfully!`);
+      setProfile(data);
+      
+      // Increment view count
+      await supabase
+        .from("profiles")
+        .update({ view_count: (data.view_count || 0) + 1 })
+        .eq("id", id);
+        
     } catch (error) {
-      console.error('Error:', error);
-      toast.error('Failed to send request');
+      console.error("Error:", error);
+      toast.error("Failed to load profile");
     } finally {
-      setRequestingContact(null);
+      setLoading(false);
     }
-  };
-
-  // Generate rating count based on rating and some randomness
-  const generateRatingCount = (rating: number) => {
-    const baseCount = Math.floor(rating * 20); // Higher ratings get more reviews
-    const randomVariation = Math.floor(Math.random() * 15) + 5; // Add 5-20 random reviews
-    return baseCount + randomVariation;
-  };
-
-  // Build rates array from incall/outcall columns
-  const buildRatesDisplay = (escort: any): RateDisplayItem[] => {
-    const rates: RateDisplayItem[] = [];
-
-    if (escort.incall_hourly_rate || escort.outcall_hourly_rate) {
-      rates.push({
-        label: '1 Hour',
-        incallRate: escort.incall_hourly_rate,
-        outcallRate: escort.outcall_hourly_rate,
-        icon: <Clock className="h-5 w-5 mr-2 text-gold" />
-      });
-    }
-
-    if (escort.incall_two_hour_rate || escort.outcall_two_hour_rate) {
-      rates.push({
-        label: '2 Hours',
-        incallRate: escort.incall_two_hour_rate,
-        outcallRate: escort.outcall_two_hour_rate,
-        icon: <Clock className="h-5 w-5 mr-2 text-gold" />
-      });
-    }
-
-    if (escort.incall_dinner_rate || escort.outcall_dinner_rate) {
-      rates.push({
-        label: 'Dinner Date',
-        incallRate: escort.incall_dinner_rate,
-        outcallRate: escort.outcall_dinner_rate,
-        icon: <Calendar className="h-5 w-5 mr-2 text-gold" />
-      });
-    }
-
-    if (escort.incall_overnight_rate || escort.outcall_overnight_rate) {
-      rates.push({
-        label: 'Overnight',
-        incallRate: escort.incall_overnight_rate,
-        outcallRate: escort.outcall_overnight_rate,
-        icon: <Calendar className="h-5 w-5 mr-2 text-gold" />
-      });
-    }
-
-    return rates;
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-background">
         <NavBar />
-        <main className="flex-grow bg-gray-50 py-8 flex items-center justify-center">
+        <div className="flex-grow flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold mx-auto mb-4"></div>
-            <p>Loading profile...</p>
+            <div className="w-16 h-16 border-4 border-secondary border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="mt-4 text-foreground">Loading profile...</p>
           </div>
-        </main>
+        </div>
         <Footer />
       </div>
     );
   }
 
-  if (!escort) {
+  if (!profile) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-background">
         <NavBar />
-        <main className="flex-grow bg-gray-50 py-8 flex items-center justify-center">
+        <div className="flex-grow flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Profile Not Found</h1>
-            <p className="text-gray-600 mb-6">The profile you're looking for doesn't exist or is not available.</p>
-            <Button onClick={() => window.history.back()}>← Go Back</Button>
+            <p className="text-red-500">Profile not found</p>
           </div>
-        </main>
+        </div>
         <Footer />
       </div>
     );
   }
 
-  // Parse data from database with error handling
-  const images = escort.gallery_images && escort.gallery_images.length > 0 
-    ? escort.gallery_images 
-    : escort.profile_picture 
-      ? [escort.profile_picture] 
-      : ["https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"];
-  
-  const services = escort.services ? escort.services.split(',').map((s: string) => s.trim()) : [];
-  const languages = escort.languages ? escort.languages.split(',').map((l: string) => l.trim()) : [];
-  const rates = buildRatesDisplay(escort);
-  const ratingCount = generateRatingCount(escort.rating || 4.5);
+  const tags = profile.tags ? profile.tags.split(',').filter(Boolean) : [];
+  const galleryImages = profile.gallery_images || [];
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <NavBar />
       
-      <main className="flex-grow bg-gray-50 py-8">
+      <main className="flex-grow py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Back Button */}
-          <div className="mb-6">
-            <Button 
-              variant="outline" 
-              className="text-sm" 
-              onClick={() => window.history.back()}
-            >
-              ← Back to Directory
-            </Button>
-          </div>
-          
-          {/* Profile Content */}
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Gallery Section */}
-            <div className="lg:w-1/2 space-y-4">
-              {/* Main Image */}
-              <div className="relative rounded-lg overflow-hidden shadow-md aspect-[4/5]">
-                <img 
-                  src={images[activeImageIndex]} 
-                  alt={`${escort.display_name || escort.username} profile`} 
-                  className="w-full h-full object-cover" 
-                />
-              </div>
-              
-              {/* Thumbnail Gallery */}
-              {images.length > 1 && (
-                <div className="flex gap-3 overflow-x-auto pb-2">
-                  {images.map((image: string, index: number) => (
-                    <button
-                      key={index}
-                      className={`flex-shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 ${
-                        index === activeImageIndex ? 'border-gold' : 'border-transparent'
-                      }`}
-                      onClick={() => setActiveImageIndex(index)}
-                    >
-                      <img 
-                        src={image} 
-                        alt={`${escort.display_name || escort.username} thumbnail ${index + 1}`} 
-                        className="w-full h-full object-cover" 
-                      />
-                    </button>
-                  ))}
+          <div className="max-w-4xl mx-auto space-y-6">
+            {/* Profile Header */}
+            <Card>
+              <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                <div className="flex items-center space-x-4 flex-1">
+                  <Avatar className="h-24 w-24">
+                    <AvatarImage src={profile.profile_picture || ""} alt={profile.display_name || "Profile"} />
+                    <AvatarFallback>
+                      <UserIcon className="h-12 w-12" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <h1 className="text-3xl font-serif font-bold text-foreground">
+                        {profile.display_name || "Anonymous"}
+                      </h1>
+                      {profile.verified && (
+                        <Badge variant="secondary" className="bg-green-100 text-green-800">
+                          <Star className="h-3 w-3 mr-1" />
+                          Verified
+                        </Badge>
+                      )}
+                      {profile.featured && (
+                        <Badge variant="secondary" className="bg-gold text-white">
+                          Featured
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center text-sm text-muted-foreground space-x-4">
+                      <span className="capitalize">{profile.role}</span>
+                      {profile.rating && (
+                        <div className="flex items-center">
+                          <Star className="h-4 w-4 fill-current text-gold mr-1" />
+                          <span>{profile.rating}</span>
+                        </div>
+                      )}
+                      {profile.view_count !== null && (
+                        <div className="flex items-center">
+                          <Eye className="h-4 w-4 mr-1" />
+                          <span>{profile.view_count} views</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Social Media Links */}
+                    <SocialMediaLinks
+                      instagram_url={profile.instagram_url}
+                      twitter_url={profile.twitter_url}
+                      facebook_url={profile.facebook_url}
+                      linkedin_url={profile.linkedin_url}
+                      youtube_url={profile.youtube_url}
+                    />
+                  </div>
                 </div>
+                <div className="flex flex-col gap-2">
+                  {currentUser && currentUser.id !== profile.id && (
+                    <MessageButton escortId={profile.id} />
+                  )}
+                </div>
+              </CardHeader>
+            </Card>
+
+            {/* Profile Content */}
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* Basic Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Basic Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {profile.location && (
+                    <div className="flex items-center space-x-3">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{profile.location}</span>
+                    </div>
+                  )}
+                  {profile.age && (
+                    <div className="flex items-center space-x-3">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{profile.age} years old</span>
+                    </div>
+                  )}
+                  {profile.height && (
+                    <div className="flex items-center space-x-3">
+                      <UserIcon className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">Height: {profile.height}</span>
+                    </div>
+                  )}
+                  {profile.weight && (
+                    <div className="flex items-center space-x-3">
+                      <UserIcon className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">Weight: {profile.weight}</span>
+                    </div>
+                  )}
+                  {profile.languages && (
+                    <div className="flex items-center space-x-3">
+                      <UserIcon className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">Languages: {profile.languages}</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* About Section */}
+              {profile.bio && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>About</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {profile.bio}
+                    </p>
+                  </CardContent>
+                </Card>
               )}
             </div>
-            
-            {/* Profile Info Section */}
-            <div className="lg:w-1/2 space-y-6">
-              {/* Header with Name and Actions */}
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h1 className="text-3xl font-serif font-bold text-navy">
-                      {escort.display_name || escort.username}
-                    </h1>
-                    {escort.verified && (
-                      <Badge variant="outline" className="flex items-center border-green-500 text-green-600 text-xs">
-                        <Check className="h-3 w-3 mr-1" />
-                        Verified
-                      </Badge>
-                    )}
-                    {escort.featured && (
-                      <Badge variant="outline" className="flex items-center border-gold text-gold text-xs">
-                        <Star className="h-3 w-3 mr-1" />
-                        Featured
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 text-charcoal mt-1">
-                    <span className="flex items-center">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      {escort.location || 'Location not specified'}
-                    </span>
-                    {escort.age && (
-                      <>
-                        <span>•</span>
-                        <span>{escort.age} years</span>
-                      </>
-                    )}
-                  </div>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => setIsFavorite(!isFavorite)}
-                  className={`${isFavorite ? 'text-red-500 bg-red-50' : 'text-gray-400'} hover:bg-gray-100`}
-                >
-                  <Heart className={`h-5 w-5 ${isFavorite ? 'fill-red-500' : ''}`} />
-                </Button>
-              </div>
-              
-              {/* Rating */}
-              <div className="flex items-center gap-2">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star 
-                      key={i} 
-                      className={`h-4 w-4 ${
-                        i < Math.floor(escort.rating || 4.5) ? 'text-gold fill-gold' : 'text-gray-300'
-                      }`} 
-                    />
-                  ))}
-                </div>
-                <span className="font-medium text-slate-950">{escort.rating || 4.5}</span>
-                <span className="text-gray-500">({ratingCount} ratings)</span>
-              </div>
-              
-              {/* About Section */}
+
+            {/* Appearance Details */}
+            {(profile.ethnicity || profile.body_type || profile.hair_color || profile.eye_color) && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg text-card-foreground">About</CardTitle>
+                  <CardTitle>Appearance</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="prose max-w-none">
-                    <p className="text-card-foreground whitespace-pre-line">
-                      {escort.bio || 'No biography available.'}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Details Section */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg text-card-foreground">Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-y-4 gap-x-8">
-                    <div>
-                      <p className="text-sm text-muted-foreground font-medium">Height</p>
-                      <p className="text-card-foreground font-medium">{escort.height || 'Not specified'}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground font-medium">Age</p>
-                      <p className="text-card-foreground font-medium">{escort.age || 'Not specified'}</p>
-                    </div>
-                  </div>
-                  
-                  {languages.length > 0 && (
-                    <>
-                      <Separator />
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    {profile.ethnicity && (
                       <div>
-                        <p className="text-sm text-muted-foreground font-medium mb-2">Languages</p>
-                        <div className="flex flex-wrap gap-2">
-                          {languages.map((language, index) => (
-                            <Badge key={index} variant="outline" className="text-foreground border-border">
-                              {language}
-                            </Badge>
-                          ))}
-                        </div>
+                        <span className="font-medium">Ethnicity:</span>
+                        <p className="text-muted-foreground">{profile.ethnicity}</p>
                       </div>
-                    </>
-                  )}
-                  
-                  {services.length > 0 && (
-                    <>
-                      <Separator />
+                    )}
+                    {profile.body_type && (
                       <div>
-                        <p className="text-sm text-muted-foreground font-medium mb-2">Services Offered</p>
-                        <div className="flex flex-wrap gap-2">
-                          {services.map((service, index) => (
-                            <Badge key={index} variant="secondary">
-                              {service}
-                            </Badge>
-                          ))}
-                        </div>
+                        <span className="font-medium">Body Type:</span>
+                        <p className="text-muted-foreground">{profile.body_type}</p>
                       </div>
-                    </>
-                  )}
-                  
-                  {escort.availability && (
-                    <>
-                      <Separator />
+                    )}
+                    {profile.hair_color && (
                       <div>
-                        <p className="text-sm text-muted-foreground font-medium mb-2">Availability</p>
-                        <p className="text-card-foreground">{escort.availability}</p>
+                        <span className="font-medium">Hair Color:</span>
+                        <p className="text-muted-foreground">{profile.hair_color}</p>
                       </div>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Rates Section */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg text-card-foreground">Rates</CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <div className="divide-y divide-border">
-                    {rates.length > 0 ? (
-                      rates.map((rate, index) => (
-                        <div key={index} className="p-4">
-                          <div className="flex items-center mb-2">
-                            {rate.icon}
-                            <span className="text-card-foreground font-medium">{rate.label}</span>
-                          </div>
-                          <div className="ml-7 space-y-1">
-                            {rate.incallRate && (
-                              <div className="flex justify-between items-center">
-                                <span className="text-sm text-muted-foreground">Incall</span>
-                                <span className="font-medium text-card-foreground">${rate.incallRate}</span>
-                              </div>
-                            )}
-                            {rate.outcallRate && (
-                              <div className="flex justify-between items-center">
-                                <span className="text-sm text-muted-foreground">Outcall</span>
-                                <span className="font-medium text-card-foreground">${rate.outcallRate}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="p-4 text-center">
-                        <p className="text-muted-foreground">Rates not specified. Please contact for pricing.</p>
+                    )}
+                    {profile.eye_color && (
+                      <div>
+                        <span className="font-medium">Eye Color:</span>
+                        <p className="text-muted-foreground">{profile.eye_color}</p>
                       </div>
                     )}
                   </div>
                 </CardContent>
               </Card>
-              
-              {/* Contact Actions */}
-              <div className="flex flex-col gap-4">
-                <MessageButton escortId={escort.id} escortName={escort.display_name || escort.username} />
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <Button 
-                    variant="outline" 
-                    size="lg" 
-                    onClick={() => handleContactRequest('email')}
-                    disabled={requestingContact === 'email'}
-                    className="flex items-center justify-center"
-                  >
-                    <Mail className="h-4 w-4 mr-2" />
-                    {requestingContact === 'email' ? 'Sending...' : 'Request Email'}
-                  </Button>
-                  
-                  <Button 
-                    variant="outline" 
-                    size="lg" 
-                    onClick={() => handleContactRequest('phone')}
-                    disabled={requestingContact === 'phone'}
-                    className="flex items-center justify-center"
-                  >
-                    <Phone className="h-4 w-4 mr-2" />
-                    {requestingContact === 'phone' ? 'Sending...' : 'Request Phone'}
-                  </Button>
-                </div>
-              </div>
-            </div>
+            )}
+
+            {/* Services */}
+            {profile.services && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Services</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {profile.services}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Rates */}
+            {(profile.hourly_rate || profile.incall_hourly_rate || profile.outcall_hourly_rate) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <DollarSign className="h-5 w-5 mr-2" />
+                    Rates
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    {/* General Rates */}
+                    {(profile.hourly_rate || profile.two_hour_rate || profile.dinner_rate || profile.overnight_rate) && (
+                      <div>
+                        <h4 className="font-medium mb-2">General</h4>
+                        <div className="space-y-1 text-sm">
+                          {profile.hourly_rate && <p>1 Hour: ${profile.hourly_rate}</p>}
+                          {profile.two_hour_rate && <p>2 Hours: ${profile.two_hour_rate}</p>}
+                          {profile.dinner_rate && <p>Dinner: ${profile.dinner_rate}</p>}
+                          {profile.overnight_rate && <p>Overnight: ${profile.overnight_rate}</p>}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Incall Rates */}
+                    {(profile.incall_hourly_rate || profile.incall_two_hour_rate || profile.incall_dinner_rate || profile.incall_overnight_rate) && (
+                      <div>
+                        <h4 className="font-medium mb-2">Incall</h4>
+                        <div className="space-y-1 text-sm">
+                          {profile.incall_hourly_rate && <p>1 Hour: ${profile.incall_hourly_rate}</p>}
+                          {profile.incall_two_hour_rate && <p>2 Hours: ${profile.incall_two_hour_rate}</p>}
+                          {profile.incall_dinner_rate && <p>Dinner: ${profile.incall_dinner_rate}</p>}
+                          {profile.incall_overnight_rate && <p>Overnight: ${profile.incall_overnight_rate}</p>}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Outcall Rates */}
+                    {(profile.outcall_hourly_rate || profile.outcall_two_hour_rate || profile.outcall_dinner_rate || profile.outcall_overnight_rate) && (
+                      <div>
+                        <h4 className="font-medium mb-2">Outcall</h4>
+                        <div className="space-y-1 text-sm">
+                          {profile.outcall_hourly_rate && <p>1 Hour: ${profile.outcall_hourly_rate}</p>}
+                          {profile.outcall_two_hour_rate && <p>2 Hours: ${profile.outcall_two_hour_rate}</p>}
+                          {profile.outcall_dinner_rate && <p>Dinner: ${profile.outcall_dinner_rate}</p>}
+                          {profile.outcall_overnight_rate && <p>Overnight: ${profile.outcall_overnight_rate}</p>}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Tags */}
+            {tags.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Tags</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {tags.map((tag, index) => (
+                      <Badge key={index} variant="outline">
+                        {tag.trim()}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Photo Gallery */}
+            {galleryImages.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Camera className="h-5 w-5 mr-2" />
+                    Photo Gallery
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {galleryImages.map((image, index) => (
+                      <div key={index} className="aspect-square overflow-hidden rounded-lg">
+                        <img
+                          src={image}
+                          alt={`Gallery image ${index + 1}`}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </main>

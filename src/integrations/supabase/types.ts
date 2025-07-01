@@ -326,6 +326,7 @@ export type Database = {
           email: string | null
           ethnicity: string | null
           eye_color: string | null
+          facebook_url: string | null
           featured: boolean | null
           gallery_images: string[] | null
           gallery_videos: string[] | null
@@ -337,9 +338,11 @@ export type Database = {
           incall_hourly_rate: string | null
           incall_overnight_rate: string | null
           incall_two_hour_rate: string | null
+          instagram_url: string | null
           is_active: boolean | null
           languages: string | null
           last_active: string | null
+          linkedin_url: string | null
           location: string | null
           nationality: string | null
           outcall_dinner_rate: string | null
@@ -362,12 +365,14 @@ export type Database = {
           status: string | null
           tags: string | null
           tattoos: boolean | null
+          twitter_url: string | null
           two_hour_rate: string | null
           updated_at: string
           username: string | null
           verified: boolean | null
           view_count: number | null
           weight: string | null
+          youtube_url: string | null
         }
         Insert: {
           age?: string | null
@@ -384,6 +389,7 @@ export type Database = {
           email?: string | null
           ethnicity?: string | null
           eye_color?: string | null
+          facebook_url?: string | null
           featured?: boolean | null
           gallery_images?: string[] | null
           gallery_videos?: string[] | null
@@ -395,9 +401,11 @@ export type Database = {
           incall_hourly_rate?: string | null
           incall_overnight_rate?: string | null
           incall_two_hour_rate?: string | null
+          instagram_url?: string | null
           is_active?: boolean | null
           languages?: string | null
           last_active?: string | null
+          linkedin_url?: string | null
           location?: string | null
           nationality?: string | null
           outcall_dinner_rate?: string | null
@@ -420,12 +428,14 @@ export type Database = {
           status?: string | null
           tags?: string | null
           tattoos?: boolean | null
+          twitter_url?: string | null
           two_hour_rate?: string | null
           updated_at?: string
           username?: string | null
           verified?: boolean | null
           view_count?: number | null
           weight?: string | null
+          youtube_url?: string | null
         }
         Update: {
           age?: string | null
@@ -442,6 +452,7 @@ export type Database = {
           email?: string | null
           ethnicity?: string | null
           eye_color?: string | null
+          facebook_url?: string | null
           featured?: boolean | null
           gallery_images?: string[] | null
           gallery_videos?: string[] | null
@@ -453,9 +464,11 @@ export type Database = {
           incall_hourly_rate?: string | null
           incall_overnight_rate?: string | null
           incall_two_hour_rate?: string | null
+          instagram_url?: string | null
           is_active?: boolean | null
           languages?: string | null
           last_active?: string | null
+          linkedin_url?: string | null
           location?: string | null
           nationality?: string | null
           outcall_dinner_rate?: string | null
@@ -478,12 +491,14 @@ export type Database = {
           status?: string | null
           tags?: string | null
           tattoos?: boolean | null
+          twitter_url?: string | null
           two_hour_rate?: string | null
           updated_at?: string
           username?: string | null
           verified?: boolean | null
           view_count?: number | null
           weight?: string | null
+          youtube_url?: string | null
         }
         Relationships: [
           {
