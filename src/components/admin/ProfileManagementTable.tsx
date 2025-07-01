@@ -18,15 +18,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { 
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { MoreHorizontal, Eye, Edit, Star, StarOff, Check, X, Shield, User } from 'lucide-react';
+import { MoreHorizontal, Eye, Edit, Star, StarOff, Check, X, Shield, User, Camera } from 'lucide-react';
 import ProfileDetailsModal from './ProfileDetailsModal';
 import ProfileEditModal from './ProfileEditModal';
+import AdminPhotoGalleryManager from './AdminPhotoGalleryManager';
 
 interface ProfileManagementTableProps {
   profiles: any[];
@@ -37,6 +32,7 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showGalleryModal, setShowGalleryModal] = useState(false);
 
   const isAdminUser = (profile: any) => {
     return profile.role === 'admin' || profile.email === 'info@eternalsecurity.com.au';
@@ -239,6 +235,15 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
                           <DropdownMenuItem
                             onClick={() => {
                               setSelectedProfile(profile);
+                              setShowGalleryModal(true);
+                            }}
+                          >
+                            <Camera className="mr-2 h-4 w-4" />
+                            Manage Gallery
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedProfile(profile);
                               setShowEditModal(true);
                             }}
                           >
@@ -297,12 +302,21 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
             onOpenChange={setShowDetailsModal}
           />
           {!isAdminUser(selectedProfile) && (
-            <ProfileEditModal
-              profile={selectedProfile}
-              open={showEditModal}
-              onOpenChange={setShowEditModal}
-              onProfileUpdate={onProfileUpdate}
-            />
+            <>
+              <ProfileEditModal
+                profile={selectedProfile}
+                open={showEditModal}
+                onOpenChange={setShowEditModal}
+                onProfileUpdate={onProfileUpdate}
+              />
+              <AdminPhotoGalleryManager
+                isOpen={showGalleryModal}
+                onClose={() => setShowGalleryModal(false)}
+                profileId={selectedProfile.id}
+                profileName={selectedProfile.display_name || selectedProfile.username || 'Profile'}
+                onGalleryUpdate={onProfileUpdate}
+              />
+            </>
           )}
         </>
       )}
