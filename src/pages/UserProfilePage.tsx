@@ -6,7 +6,9 @@ import { toast } from 'sonner';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import { Badge } from '@/components/ui/badge';
-import { Check, Star } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Check, Star, Upload, User, Edit, Save, X } from 'lucide-react';
 import { ImageZoomModal } from '@/components/ImageZoomModal';
 import { ContactRequestDialog } from '@/components/ContactRequestDialog';
 import { MessageButton } from '@/components/messaging/MessageButton';
@@ -77,6 +79,13 @@ const UserProfilePage = () => {
   const [selectedImage, setSelectedImage] = useState<Image | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [showContactDialog, setShowContactDialog] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [editData, setEditData] = useState({
+    display_name: '',
+    email: '',
+    phone: '',
+  });
 
   useEffect(() => {
     // Get current user
@@ -116,6 +125,11 @@ const UserProfilePage = () => {
         }
 
         setProfile(data as Profile);
+        setEditData({
+          display_name: data.display_name || '',
+          email: data.email || '',
+          phone: data.phone || '',
+        });
       } catch (error: any) {
         console.error('Error fetching profile:', error);
         toast.error(`Failed to load profile: ${error.message}`);
@@ -132,7 +146,95 @@ const UserProfilePage = () => {
     setIsZoomModalOpen(true);
   };
 
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !profile) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be less than 5MB");
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+      
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${profile.id}/profile-${Date.now()}.${fileExt}`;
+
+      const { data, error } = await supabase.storage
+        .from('profile-pictures')
+        .upload(fileName, file);
+
+      if (error) {
+        console.error("Storage upload error:", error);
+        toast.error("Failed to upload image");
+        return;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('profile-pictures')
+        .getPublicUrl(fileName);
+
+      // Update profile with new image
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ profile_picture: publicUrl })
+        .eq('id', profile.id);
+
+      if (updateError) {
+        toast.error("Failed to update profile picture");
+        return;
+      }
+
+      setProfile({ ...profile, profile_picture: publicUrl });
+      toast.success("Profile picture updated successfully");
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast.error("Failed to upload image");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!profile) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          display_name: editData.display_name,
+          email: editData.email,
+          phone: editData.phone,
+        })
+        .eq('id', profile.id);
+
+      if (error) {
+        toast.error("Failed to update profile");
+        return;
+      }
+
+      setProfile({
+        ...profile,
+        display_name: editData.display_name,
+        email: editData.email,
+        phone: editData.phone,
+      });
+      setIsEditing(false);
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("Failed to update profile");
+    }
+  };
+
   const isOwnProfile = currentUser && profile && currentUser.id === profile.id;
+  const isClient = profile?.role === 'client';
 
   if (loading) {
     return (
@@ -171,95 +273,149 @@ const UserProfilePage = () => {
             {/* Profile Header */}
             <div className="bg-card rounded-lg shadow-md p-6 mb-6">
               <div className="flex flex-col md:flex-row gap-6">
-                <div className="flex-shrink-0">
-                  <img 
-                    src={profile.profile_picture || "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"} 
-                    alt={profile.display_name || profile.username || 'Profile'}
-                    className="w-48 h-48 object-cover rounded-lg cursor-pointer transition-transform hover:scale-105"
-                    onClick={() => handleImageClick(
-                      profile.profile_picture || "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                      profile.display_name || profile.username || 'Profile'
-                    )}
-                  />
+                <div className="flex-shrink-0 relative">
+                  {profile.profile_picture ? (
+                    <img 
+                      src={profile.profile_picture} 
+                      alt={profile.display_name || profile.username || 'Profile'}
+                      className="w-48 h-48 object-cover rounded-lg cursor-pointer transition-transform hover:scale-105"
+                      onClick={() => handleImageClick(profile.profile_picture, profile.display_name || profile.username || 'Profile')}
+                    />
+                  ) : (
+                    <div className="w-48 h-48 bg-muted rounded-lg flex items-center justify-center">
+                      <User className="h-24 w-24 text-muted-foreground" />
+                    </div>
+                  )}
+                  {isOwnProfile && (
+                    <div className="absolute bottom-2 right-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        id="profile-picture-upload"
+                      />
+                      <label htmlFor="profile-picture-upload">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          disabled={uploadingImage}
+                          asChild
+                        >
+                          <span className="cursor-pointer">
+                            <Upload className="h-4 w-4" />
+                          </span>
+                        </Button>
+                      </label>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="flex-grow">
-                  <div className="flex items-center gap-3 mb-4">
-                    <h1 className="text-3xl font-bold text-foreground">
-                      {profile.display_name || profile.username || 'Anonymous'}
-                    </h1>
-                    {profile.verified && (
-                      <Badge variant="outline" className="border-green-500 text-green-400">
-                        <Check className="h-4 w-4 mr-1" />
-                        Verified
-                      </Badge>
-                    )}
-                    {profile.featured && (
-                      <Badge variant="secondary">Featured</Badge>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                    {profile.age && (
-                      <div>
-                        <span className="text-muted-foreground">Age:</span>
-                        <span className="ml-2 text-foreground">{profile.age}</span>
-                      </div>
-                    )}
-                    {profile.location && (
-                      <div>
-                        <span className="text-muted-foreground">Location:</span>
-                        <span className="ml-2 text-foreground">{profile.location}</span>
-                      </div>
-                    )}
-                    {profile.height && (
-                      <div>
-                        <span className="text-muted-foreground">Height:</span>
-                        <span className="ml-2 text-foreground">{profile.height}</span>
-                      </div>
-                    )}
-                    {profile.ethnicity && (
-                      <div>
-                        <span className="text-muted-foreground">Ethnicity:</span>
-                        <span className="ml-2 text-foreground">{profile.ethnicity}</span>
-                      </div>
-                    )}
-                    {profile.body_type && (
-                      <div>
-                        <span className="text-muted-foreground">Body Type:</span>
-                        <span className="ml-2 text-foreground">{profile.body_type}</span>
-                      </div>
-                    )}
-                    {profile.hair_color && (
-                      <div>
-                        <span className="text-muted-foreground">Hair:</span>
-                        <span className="ml-2 text-foreground">{profile.hair_color}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-4 mt-4">
-                    <div className="flex items-center">
-                      <Star className="h-5 w-5 text-secondary fill-secondary mr-1" />
-                      <span className="font-medium text-foreground">{profile.rating?.toFixed(1) || '4.5'}</span>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <h1 className="text-3xl font-bold text-foreground">
+                        {profile.display_name || profile.username || 'Anonymous'}
+                      </h1>
+                      {profile.verified && !isClient && (
+                        <Badge variant="outline" className="border-green-500 text-green-400">
+                          <Check className="h-4 w-4 mr-1" />
+                          Verified
+                        </Badge>
+                      )}
                     </div>
-                    <span className="text-muted-foreground">•</span>
-                    <span className="text-muted-foreground">{profile.view_count || 0} views</span>
+                    {isOwnProfile && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsEditing(!isEditing)}
+                      >
+                        {isEditing ? <X className="h-4 w-4" /> : <Edit className="h-4 w-4" />}
+                      </Button>
+                    )}
                   </div>
+
+                  {isEditing && isOwnProfile ? (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-sm font-medium text-foreground">Display Name</label>
+                        <Input
+                          value={editData.display_name}
+                          onChange={(e) => setEditData({ ...editData, display_name: e.target.value })}
+                          placeholder="Enter your display name"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-foreground">Email</label>
+                        <Input
+                          value={editData.email}
+                          onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                          placeholder="Enter your email"
+                          type="email"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-foreground">Phone</label>
+                        <Input
+                          value={editData.phone}
+                          onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
+                          placeholder="Enter your phone number"
+                          type="tel"
+                        />
+                      </div>
+                      <Button onClick={handleSaveProfile} className="btn-gold">
+                        <Save className="h-4 w-4 mr-2" />
+                        Save Changes
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Email:</span>
+                        <span className="ml-2 text-foreground">{profile.email || 'Not provided'}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Phone:</span>
+                        <span className="ml-2 text-foreground">{profile.phone || 'Not provided'}</span>
+                      </div>
+                      {profile.location && (
+                        <div>
+                          <span className="text-muted-foreground">Location:</span>
+                          <span className="ml-2 text-foreground">{profile.location}</span>
+                        </div>
+                      )}
+                      <div>
+                        <span className="text-muted-foreground">Role:</span>
+                        <span className="ml-2 text-foreground capitalize">{profile.role}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Only show rating for non-clients */}
+                  {!isClient && (
+                    <div className="flex items-center gap-4 mt-4">
+                      <div className="flex items-center">
+                        <Star className="h-5 w-5 text-secondary fill-secondary mr-1" />
+                        <span className="font-medium text-foreground">{profile.rating?.toFixed(1) || '4.5'}</span>
+                      </div>
+                      <span className="text-muted-foreground">•</span>
+                      <span className="text-muted-foreground">{profile.view_count || 0} views</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Bio Section */}
-            {profile.bio && (
+            {/* Bio Section - Only for non-clients or if bio exists */}
+            {profile.bio && !isClient && (
               <div className="bg-card rounded-lg shadow-md p-6 mb-6">
                 <h2 className="text-xl font-semibold text-foreground mb-4">About</h2>
                 <p className="text-foreground leading-relaxed">{profile.bio}</p>
               </div>
             )}
 
-            {/* Gallery Section */}
-            {profile.gallery_images && profile.gallery_images.length > 0 && (
+            {/* Gallery Section - Only for non-clients */}
+            {!isClient && profile.gallery_images && profile.gallery_images.length > 0 && (
               <div className="bg-card rounded-lg shadow-md p-6 mb-6">
                 <h2 className="text-xl font-semibold text-foreground mb-4">Gallery</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -276,41 +432,43 @@ const UserProfilePage = () => {
               </div>
             )}
 
-            {/* Services and Rates */}
-            <div className="grid md:grid-cols-2 gap-6">
-              {profile.services && (
-                <div className="bg-card rounded-lg shadow-md p-6">
-                  <h2 className="text-xl font-semibold text-foreground mb-4">Services</h2>
-                  <p className="text-foreground">{profile.services}</p>
-                </div>
-              )}
-
-              {(profile.rates || profile.incall_hourly_rate || profile.outcall_hourly_rate) && (
-                <div className="bg-card rounded-lg shadow-md p-6">
-                  <h2 className="text-xl font-semibold text-foreground mb-4">Rates</h2>
-                  <div className="space-y-2">
-                    {profile.incall_hourly_rate && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Incall (hourly):</span>
-                        <span className="text-foreground font-medium">${profile.incall_hourly_rate}</span>
-                      </div>
-                    )}
-                    {profile.outcall_hourly_rate && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Outcall (hourly):</span>
-                        <span className="text-foreground font-medium">${profile.outcall_hourly_rate}</span>
-                      </div>
-                    )}
-                    {profile.rates && !profile.incall_hourly_rate && !profile.outcall_hourly_rate && (
-                      <p className="text-foreground">{profile.rates}</p>
-                    )}
+            {/* Services and Rates - Only for non-clients */}
+            {!isClient && (
+              <div className="grid md:grid-cols-2 gap-6">
+                {profile.services && (
+                  <div className="bg-card rounded-lg shadow-md p-6">
+                    <h2 className="text-xl font-semibold text-foreground mb-4">Services</h2>
+                    <p className="text-foreground">{profile.services}</p>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
 
-            {/* Contact Section - Only show for other users' profiles */}
-            {!isOwnProfile && (
+                {(profile.rates || profile.incall_hourly_rate || profile.outcall_hourly_rate) && (
+                  <div className="bg-card rounded-lg shadow-md p-6">
+                    <h2 className="text-xl font-semibold text-foreground mb-4">Rates</h2>
+                    <div className="space-y-2">
+                      {profile.incall_hourly_rate && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Incall (hourly):</span>
+                          <span className="text-foreground font-medium">${profile.incall_hourly_rate}</span>
+                        </div>
+                      )}
+                      {profile.outcall_hourly_rate && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Outcall (hourly):</span>
+                          <span className="text-foreground font-medium">${profile.outcall_hourly_rate}</span>
+                        </div>
+                      )}
+                      {profile.rates && !profile.incall_hourly_rate && !profile.outcall_hourly_rate && (
+                        <p className="text-foreground">{profile.rates}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Contact Section - Only show for other users' profiles and non-clients */}
+            {!isOwnProfile && !isClient && (
               <div className="mt-6 bg-card rounded-lg shadow-md p-6">
                 <h2 className="text-xl font-semibold text-foreground mb-4">Contact</h2>
                 <div className="flex flex-col sm:flex-row gap-4">
