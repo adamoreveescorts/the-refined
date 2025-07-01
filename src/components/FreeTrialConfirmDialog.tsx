@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Clock, Crown, Shield } from "lucide-react";
+import { Clock, Crown, Shield, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
 interface FreeTrialConfirmDialogProps {
@@ -22,16 +22,20 @@ interface FreeTrialConfirmDialogProps {
 
 const FreeTrialConfirmDialog = ({ open, onOpenChange, role, onTrialActivated }: FreeTrialConfirmDialogProps) => {
   const [isActivating, setIsActivating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleActivateTrial = async () => {
     setIsActivating(true);
+    setError(null);
+    
     try {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError || !session?.access_token) {
-        toast.error("Please log in to start your free trial");
-        return;
+        throw new Error("Please log in to start your free trial");
       }
+
+      console.log("Activating free trial for role:", role);
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { role, tier: 'trial' },
@@ -42,20 +46,31 @@ const FreeTrialConfirmDialog = ({ open, onOpenChange, role, onTrialActivated }: 
 
       if (error) {
         console.error("Trial activation error:", error);
-        if (error.message === "Trial already used") {
-          toast.error("You have already used your free trial. Please select a different plan.");
+        
+        // Handle specific error cases
+        if (error.message?.includes("already been used")) {
+          throw new Error("You have already used your free trial. Please select a different plan.");
+        } else if (error.message?.includes("constraint")) {
+          throw new Error("There was a database error. Please try again in a moment.");
         } else {
-          toast.error(error.message || "Failed to activate trial");
+          throw new Error(error.message || "Failed to activate trial. Please try again.");
         }
-        return;
       }
 
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      console.log("Trial activation successful:", data);
       toast.success("Free trial activated! You now have 7 days of premium features.");
       onTrialActivated();
       onOpenChange(false);
+      
     } catch (error: any) {
       console.error("Trial activation error:", error);
-      toast.error("Failed to activate trial. Please try again.");
+      const errorMessage = error.message || "Failed to activate trial. Please try again.";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsActivating(false);
     }
@@ -95,10 +110,19 @@ const FreeTrialConfirmDialog = ({ open, onOpenChange, role, onTrialActivated }: 
           </div>
           
           <div className="bg-muted/50 p-3 rounded-lg">
-            <p className="text-sm text-muted-foreground">
+            <div className="text-sm text-muted-foreground">
               <strong>Note:</strong> This is a one-time offer. After 7 days, you can upgrade to a paid plan to continue enjoying premium features.
-            </p>
+            </div>
           </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <div className="flex items-start">
+                <AlertCircle className="h-4 w-4 text-red-500 mr-2 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-red-700">{error}</div>
+              </div>
+            </div>
+          )}
         </div>
 
         <DialogFooter className="flex gap-2">
@@ -114,7 +138,14 @@ const FreeTrialConfirmDialog = ({ open, onOpenChange, role, onTrialActivated }: 
             disabled={isActivating}
             className="bg-blue-500 hover:bg-blue-600 text-white"
           >
-            {isActivating ? "Activating..." : "Start Free Trial"}
+            {isActivating ? (
+              <div className="flex items-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Activating...
+              </div>
+            ) : (
+              "Start Free Trial"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

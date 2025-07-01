@@ -13,7 +13,7 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
-// Define subscription tiers with pricing information
+// Define subscription tiers with consistent naming
 const SUBSCRIPTION_TIERS = {
   trial: { 
     name: "7-Day Free Trial", 
@@ -135,17 +135,27 @@ serve(async (req) => {
     const selectedTier = SUBSCRIPTION_TIERS[tier as keyof typeof SUBSCRIPTION_TIERS];
     logStep("Tier selected", { tier, selectedTier });
 
-    // Handle free trial activation
+    // Handle free trial activation - separate flow
     if (tier === 'trial') {
+      logStep("Processing free trial activation");
+      
       // Check if user has already used trial
-      const { data: existingSubscriber } = await supabaseClient
+      const { data: existingSubscriber, error: checkError } = await supabaseClient
         .from("subscribers")
-        .select("trial_start_date")
+        .select("trial_start_date, subscription_tier")
         .eq("email", user.email)
         .single();
 
+      if (checkError && checkError.code !== 'PGRST116') {
+        logStep("ERROR: Database error checking existing subscriber", { error: checkError });
+        return new Response(JSON.stringify({ error: "Database error" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500,
+        });
+      }
+
       if (existingSubscriber?.trial_start_date) {
-        logStep("ERROR: Trial already used");
+        logStep("ERROR: Trial already used", { existingSubscriber });
         return new Response(JSON.stringify({ error: "Free trial has already been used" }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 400,
@@ -155,12 +165,14 @@ serve(async (req) => {
       const now = new Date();
       const trialEnd = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000)); // 7 days from now
 
+      logStep("Creating trial subscription record", { now: now.toISOString(), trialEnd: trialEnd.toISOString() });
+
       const { error: updateError } = await supabaseClient.from("subscribers").upsert({
         email: user.email,
         user_id: user.id,
         stripe_customer_id: null,
         subscribed: false,
-        subscription_tier: selectedTier.subscriptionTier,
+        subscription_tier: "Trial", // Use consistent tier naming
         subscription_type: 'free', // Use 'free' for trial subscriptions
         plan_duration: selectedTier.duration,
         plan_price: 0,
@@ -170,17 +182,22 @@ serve(async (req) => {
         is_trial_active: true,
         is_featured: false,
         photo_verified: false,
+        subscription_status: 'active',
         updated_at: new Date().toISOString(),
       }, { onConflict: 'email' });
 
       if (updateError) {
         logStep("ERROR: Failed to update subscriber record", { error: updateError });
-        return new Response(JSON.stringify({ error: "Failed to activate trial" }), {
+        return new Response(JSON.stringify({ 
+          error: "Failed to activate trial", 
+          details: updateError.message 
+        }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 500,
         });
       }
 
+      // Update profile status
       const { error: profileError } = await supabaseClient
         .from('profiles')
         .update({ 
@@ -190,14 +207,15 @@ serve(async (req) => {
         .eq('id', user.id);
 
       if (profileError) {
-        logStep("ERROR: Failed to update profile", { error: profileError });
+        logStep("WARNING: Failed to update profile", { error: profileError });
+        // Don't fail the entire request for profile update issues
       }
 
-      logStep("Free trial activated", { userId: user.id, trialEnd });
+      logStep("Free trial activated successfully", { userId: user.id, trialEnd });
       return new Response(JSON.stringify({ 
         success: true, 
-        message: "7-day free trial activated",
-        tier: selectedTier.subscriptionTier,
+        message: "7-day free trial activated successfully!",
+        tier: "Trial",
         expires_at: trialEnd.toISOString()
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -206,6 +224,7 @@ serve(async (req) => {
     }
 
     // Handle paid recurring subscriptions
+    logStep("Processing paid subscription");
     const stripe = new Stripe(stripeSecret, { 
       apiVersion: "2023-10-16" 
     });
@@ -263,8 +282,11 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error: any) {
-    logStep("ERROR", { message: error.message, stack: error.stack });
-    return new Response(JSON.stringify({ error: error.message || "An unexpected error occurred" }), {
+    logStep("ERROR: Unexpected error", { message: error.message, stack: error.stack });
+    return new Response(JSON.stringify({ 
+      error: "An unexpected error occurred", 
+      details: error.message 
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
