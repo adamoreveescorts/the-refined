@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -19,11 +20,6 @@ interface PhotoGalleryManagerProps {
   onUpgrade?: () => void;
 }
 
-interface GalleryImage {
-  url: string;
-  isProfilePicture: boolean;
-}
-
 const PhotoGalleryManager = ({ 
   isOpen, 
   onClose, 
@@ -32,13 +28,14 @@ const PhotoGalleryManager = ({
   onGalleryUpdate,
   onUpgrade
 }: PhotoGalleryManagerProps) => {
-  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [showPhotoEditor, setShowPhotoEditor] = useState(false);
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [editingImageUrl, setEditingImageUrl] = useState<string | null>(null);
   
-  const { limits, usage, canUploadMore, canUploadGallery, loading: limitsLoading } = usePhotoLimits(userId);
+  const { limits, usage, canUploadMore, loading: limitsLoading } = usePhotoLimits(userId);
 
   useEffect(() => {
     if (isOpen) {
@@ -48,7 +45,7 @@ const PhotoGalleryManager = ({
 
   const loadGalleryImages = async () => {
     try {
-      // Get current profile to check profile picture
+      // Get current profile to load all photos from the unified pool
       const { data: profile } = await supabase
         .from('profiles')
         .select('profile_picture, gallery_images')
@@ -56,29 +53,8 @@ const PhotoGalleryManager = ({
         .single();
 
       if (profile) {
-        const images: GalleryImage[] = [];
-        
-        // Add profile picture if it exists
-        if (profile.profile_picture) {
-          images.push({
-            url: profile.profile_picture,
-            isProfilePicture: true
-          });
-        }
-
-        // Add gallery images
-        if (profile.gallery_images && Array.isArray(profile.gallery_images)) {
-          profile.gallery_images.forEach(url => {
-            if (url !== profile.profile_picture) {
-              images.push({
-                url,
-                isProfilePicture: false
-              });
-            }
-          });
-        }
-
-        setGalleryImages(images);
+        setProfilePictureUrl(profile.profile_picture);
+        setGalleryImages(profile.gallery_images || []);
       }
     } catch (error) {
       console.error('Error loading gallery:', error);
@@ -143,8 +119,8 @@ const PhotoGalleryManager = ({
         .from('profile-pictures')
         .getPublicUrl(fileName);
 
-      // Update gallery images in database
-      const updatedGallery = [...(currentGallery || []), publicUrl];
+      // Add to the unified photo pool
+      const updatedGallery = [...galleryImages, publicUrl];
       
       const { error: updateError } = await supabase
         .from('profiles')
@@ -212,14 +188,20 @@ const PhotoGalleryManager = ({
         .from('profile-pictures')
         .getPublicUrl(fileName);
 
-      // Replace the old image URL with the new one
-      const updatedGallery = (currentGallery || []).map(url => 
+      // Replace the old image URL with the new one in the gallery
+      const updatedGallery = galleryImages.map(url => 
         url === editingImageUrl ? publicUrl : url
       );
       
+      // Update gallery and profile picture reference if this was the profile picture
+      const updateData: any = { gallery_images: updatedGallery };
+      if (profilePictureUrl === editingImageUrl) {
+        updateData.profile_picture = publicUrl;
+      }
+      
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ gallery_images: updatedGallery })
+        .update(updateData)
         .eq('id', userId);
 
       if (updateError) {
@@ -242,31 +224,26 @@ const PhotoGalleryManager = ({
     }
   };
 
-  const handleDeleteImage = async (imageUrl: string, isProfilePicture: boolean) => {
+  const handleDeleteImage = async (imageUrl: string) => {
     try {
-      if (isProfilePicture) {
-        // Clear profile picture
-        const { error } = await supabase
-          .from('profiles')
-          .update({ profile_picture: null })
-          .eq('id', userId);
-
-        if (error) throw error;
-        toast.success('Profile picture removed');
-      } else {
-        // Remove from gallery
-        const updatedGallery = (currentGallery || []).filter(url => url !== imageUrl);
-        
-        const { error } = await supabase
-          .from('profiles')
-          .update({ gallery_images: updatedGallery })
-          .eq('id', userId);
-
-        if (error) throw error;
-        onGalleryUpdate(updatedGallery);
-        toast.success('Image removed from gallery');
+      // Remove from gallery
+      const updatedGallery = galleryImages.filter(url => url !== imageUrl);
+      
+      // Update database - clear profile picture if this was it, and update gallery
+      const updateData: any = { gallery_images: updatedGallery };
+      if (profilePictureUrl === imageUrl) {
+        updateData.profile_picture = null;
       }
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update(updateData)
+        .eq('id', userId);
 
+      if (error) throw error;
+      
+      onGalleryUpdate(updatedGallery);
+      toast.success('Image removed successfully');
       loadGalleryImages();
     } catch (error) {
       console.error('Error deleting image:', error);
@@ -301,7 +278,7 @@ const PhotoGalleryManager = ({
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Manage Photo Gallery</DialogTitle>
+            <DialogTitle>Manage Your Photo Gallery</DialogTitle>
           </DialogHeader>
           
           <div className="space-y-6">
@@ -343,7 +320,7 @@ const PhotoGalleryManager = ({
               
               {canUploadMore ? (
                 <p className="text-sm text-muted-foreground mt-2">
-                  Select multiple images to upload. Each will open in the editor for blur adjustments.
+                  Upload photos to your gallery and choose which one to set as your profile picture.
                   <br />
                   <span className="text-xs">
                     {usage.totalCount} / {limits.totalPhotos} photos used
@@ -372,12 +349,12 @@ const PhotoGalleryManager = ({
 
             {/* Gallery Grid */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {galleryImages.map((image, index) => (
+              {galleryImages.map((imageUrl, index) => (
                 <Card key={index} className="relative group">
                   <CardContent className="p-2">
                     <div className="relative aspect-square">
                       <img
-                        src={image.url}
+                        src={imageUrl}
                         alt={`Gallery ${index + 1}`}
                         className="w-full h-full object-cover rounded-md"
                       />
@@ -388,25 +365,35 @@ const PhotoGalleryManager = ({
                           <Button
                             size="sm"
                             variant="secondary"
-                            onClick={() => handleEditExistingImage(image.url)}
+                            onClick={() => handleEditExistingImage(imageUrl)}
                           >
                             <Edit className="h-3 w-3" />
                           </Button>
                           
-                          {!image.isProfilePicture && (
+                          {profilePictureUrl !== imageUrl ? (
                             <Button
                               size="sm"
                               variant="secondary"
-                              onClick={() => handleSetAsProfilePicture(image.url)}
+                              onClick={() => handleSetAsProfilePicture(imageUrl)}
+                              title="Set as profile picture"
                             >
                               <Eye className="h-3 w-3" />
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => handleSetAsProfilePicture('')}
+                              title="Remove as profile picture"
+                            >
+                              <EyeOff className="h-3 w-3" />
                             </Button>
                           )}
                           
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() => handleDeleteImage(image.url, image.isProfilePicture)}
+                            onClick={() => handleDeleteImage(imageUrl)}
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>
@@ -414,7 +401,7 @@ const PhotoGalleryManager = ({
                       </div>
                       
                       {/* Profile Picture Badge */}
-                      {image.isProfilePicture && (
+                      {profilePictureUrl === imageUrl && (
                         <Badge className="absolute top-2 left-2 bg-gold text-white">
                           Profile
                         </Badge>

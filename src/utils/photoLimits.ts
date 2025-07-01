@@ -16,6 +16,7 @@ export const getPhotoLimitsByTier = (subscriptionTier: string | null): PhotoLimi
   if (!subscriptionTier) return defaultLimits;
 
   switch (subscriptionTier) {
+    case 'Trial': // Active trial from check-subscription function
     case 'Basic': // Free trial
     case 'Package1': // Limited Time Package 1
       return {
@@ -52,6 +53,7 @@ export const getPhotoLimitsByTier = (subscriptionTier: string | null): PhotoLimi
 
 export const getSubscriptionTierName = (tier: string | null): string => {
   switch (tier) {
+    case 'Trial':
     case 'Basic':
       return 'Free Trial';
     case 'Package1':

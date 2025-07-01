@@ -678,7 +678,7 @@ const UserProfilePage = () => {
                       </CardContent>
                     </Card>
 
-                    {/* Photo Limits Card for Escorts */}
+                    {/* Photo Management Card for Escorts */}
                     {profile?.role === 'escort' && !photoLimits.loading && (
                       <Card className="bg-card shadow-sm border-border">
                         <CardHeader>
@@ -785,6 +785,18 @@ const UserProfilePage = () => {
           </div>
         </div>
       </main>
+      
+      {/* Photo Gallery Manager Dialog */}
+      {profile?.role === 'escort' && (
+        <PhotoGalleryManager
+          isOpen={showPhotoGallery}
+          onClose={() => setShowPhotoGallery(false)}
+          userId={profile.id}
+          currentGallery={profile.gallery_images || []}
+          onGalleryUpdate={handlePhotoGalleryUpdate}
+          onUpgrade={handleShowUpgrade}
+        />
+      )}
       
       <Footer />
     </div>

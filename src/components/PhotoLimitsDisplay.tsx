@@ -7,8 +7,6 @@ import { getSubscriptionTierName } from '@/utils/photoLimits';
 
 interface PhotoLimitsDisplayProps {
   usage: {
-    profilePictureCount: number;
-    galleryCount: number;
     totalCount: number;
   };
   limits: {
@@ -61,15 +59,8 @@ const PhotoLimitsDisplay = ({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 text-sm">
-        <div>
-          <span className="text-muted-foreground">Profile Picture</span>
-          <div className="font-medium">{usage.profilePictureCount} / {limits.profilePhoto}</div>
-        </div>
-        <div>
-          <span className="text-muted-foreground">Gallery Photos</span>
-          <div className="font-medium">{usage.galleryCount} / {limits.galleryPhotos}</div>
-        </div>
+      <div className="text-sm text-muted-foreground">
+        <p>Upload photos to your gallery and choose which one to set as your profile picture.</p>
       </div>
 
       {isAtLimit && (
