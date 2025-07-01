@@ -52,16 +52,16 @@ const Index = () => {
           <FeaturedSection />
         </div>
         <div className="animate-on-scroll opacity-0" style={{ transitionDelay: '0.2s' }}>
-          <WhyChooseUs />
-        </div>
-        <div className="animate-on-scroll opacity-0" style={{ transitionDelay: '0.3s' }}>
           <LocationsSection />
         </div>
-        <div className="animate-on-scroll opacity-0" style={{ transitionDelay: '0.4s' }}>
+        <div className="animate-on-scroll opacity-0" style={{ transitionDelay: '0.3s' }}>
           <TestimonialSection />
         </div>
-        <div className="animate-on-scroll opacity-0" style={{ transitionDelay: '0.5s' }}>
+        <div className="animate-on-scroll opacity-0" style={{ transitionDelay: '0.4s' }}>
           <CallToAction />
+        </div>
+        <div className="animate-on-scroll opacity-0" style={{ transitionDelay: '0.5s' }}>
+          <WhyChooseUs />
         </div>
       </main>
       <Footer />
