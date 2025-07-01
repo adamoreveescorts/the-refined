@@ -20,6 +20,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { LocationSelector } from '@/components/LocationSelector';
 
 const EscortCard = ({ escort }: { escort: any }) => {
   return (
@@ -74,12 +75,10 @@ const FilterSheet = ({ onFilterChange, filters }: { onFilterChange: any, filters
       {/* Location */}
       <div>
         <label className="block text-sm font-medium mb-2 text-white">Location</label>
-        <Input 
-          type="text" 
-          placeholder="Enter city or region"
+        <LocationSelector
           value={filters.location || ''}
-          onChange={(e) => onFilterChange({ ...filters, location: e.target.value })}
-          className="bg-white/20 border-white/30 text-white placeholder:text-white/70"
+          onValueChange={(value) => onFilterChange({ ...filters, location: value })}
+          placeholder="Select location"
         />
       </div>
       
@@ -189,12 +188,10 @@ const DesktopFilters = ({ onFilterChange, filters }: { onFilterChange: any, filt
     <div className="hidden md:flex items-center gap-4 mb-4 p-4 bg-white/10 backdrop-blur-md rounded-lg">
       {/* Location */}
       <div className="flex-1">
-        <Input 
-          type="text" 
-          placeholder="Enter city or region"
+        <LocationSelector
           value={filters.location || ''}
-          onChange={(e) => onFilterChange({ ...filters, location: e.target.value })}
-          className="bg-white/20 border-white/30 text-white placeholder:text-white/70"
+          onValueChange={(value) => onFilterChange({ ...filters, location: value })}
+          placeholder="Select location"
         />
       </div>
       
