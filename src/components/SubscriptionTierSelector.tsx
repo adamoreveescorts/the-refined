@@ -239,7 +239,7 @@ const SubscriptionTierSelector = ({
                     {!tier.isTrial && <span className="text-sm font-normal">/{tier.duration.toLowerCase()}</span>}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {tier.isTrial ? "One-time offer" : `Billed ${tier.duration.toLowerCase()}`}
+                    {tier.isTrial ? "No payment required" : `Billed ${tier.duration.toLowerCase()}`}
                   </div>
                 </CardDescription>
               </CardHeader>

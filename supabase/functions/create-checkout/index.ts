@@ -13,8 +13,17 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
-// Define subscription tiers with consistent naming (removed trial)
+// Define subscription tiers including free trial
 const SUBSCRIPTION_TIERS = {
+  free_trial: {
+    name: "7 Day Free Trial",
+    price: 0, // $0 for trial
+    duration: "Trial", 
+    durationDays: 7,
+    subscriptionTier: "Basic",
+    interval: "week" as const,
+    isTrial: true
+  },
   package_1_weekly: { 
     name: "Limited Time Package 1", 
     price: 1500, // $15 in cents
@@ -128,8 +137,6 @@ serve(async (req) => {
     const selectedTier = SUBSCRIPTION_TIERS[tier as keyof typeof SUBSCRIPTION_TIERS];
     logStep("Tier selected", { tier, selectedTier });
 
-    // All tiers are now paid recurring subscriptions
-    logStep("Processing paid subscription");
     const stripe = new Stripe(stripeSecret, { 
       apiVersion: "2023-10-16" 
     });
@@ -146,7 +153,98 @@ serve(async (req) => {
       logStep("Found existing customer", { customerId });
     }
 
-    // Create line items for recurring subscription checkout
+    // Handle free trial differently - create a subscription with trial period
+    if (selectedTier.isTrial) {
+      logStep("Processing free trial subscription");
+      
+      // Create a product and price for the trial (that will convert to paid)
+      const product = await stripe.products.create({
+        name: selectedTier.name,
+        description: `${selectedTier.duration} trial for ${role} profile`
+      });
+
+      const price = await stripe.prices.create({
+        currency: 'aud',
+        product: product.id,
+        unit_amount: 1500, // Will charge $15 after trial
+        recurring: {
+          interval: 'week'
+        }
+      });
+
+      // Create subscription with 7-day trial
+      const subscription = await stripe.subscriptions.create({
+        customer: customerId,
+        items: [{ price: price.id }],
+        trial_period_days: 7,
+        cancel_at_period_end: true, // Auto-cancel after trial unless user updates
+        metadata: {
+          user_id: user.id,
+          role: role,
+          tier: tier,
+          subscription_tier: selectedTier.subscriptionTier,
+          is_trial: 'true'
+        }
+      });
+
+      logStep("Free trial subscription created", { subscriptionId: subscription.id });
+
+      // Update Supabase directly for trial
+      const now = new Date();
+      const trialEnd = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
+
+      const { error: upsertError } = await supabaseClient
+        .from('subscribers')
+        .upsert({
+          email: user.email,
+          user_id: user.id,
+          subscribed: true,
+          subscription_tier: 'Basic',
+          subscription_type: 'free',
+          trial_start_date: now.toISOString(),
+          trial_end_date: trialEnd.toISOString(),
+          expires_at: trialEnd.toISOString(),
+          subscription_end: trialEnd.toISOString(),
+          is_trial_active: true,
+          is_featured: false,
+          photo_verified: false,
+          stripe_customer_id: customerId,
+          updated_at: now.toISOString(),
+        }, { onConflict: 'email' });
+
+      if (upsertError) {
+        logStep("ERROR: Failed to update subscriber", { error: upsertError });
+        throw upsertError;
+      }
+
+      // Update profile to be active
+      const { error: profileError } = await supabaseClient
+        .from('profiles')
+        .update({ 
+          is_active: true,
+          payment_status: 'completed'
+        })
+        .eq('id', user.id);
+
+      if (profileError) {
+        logStep("ERROR: Failed to update profile", { error: profileError });
+        throw profileError;
+      }
+
+      return new Response(JSON.stringify({ 
+        success: true,
+        trial_activated: true,
+        trial_end: trialEnd.toISOString(),
+        message: "Free trial activated successfully"
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    // Handle paid subscriptions (existing logic)
+    logStep("Processing paid subscription");
+    
     const lineItems = [{
       price_data: {
         currency: 'aud',
@@ -163,12 +261,11 @@ serve(async (req) => {
       quantity: 1,
     }];
     
-    // Create recurring subscription checkout
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: lineItems,
-      mode: "subscription", // Recurring billing
+      mode: "subscription",
       success_url: `https://adamoreveescorts.com/auth?payment=success&tier=${tier}`,
       cancel_url: `https://adamoreveescorts.com/user-profile`,
       metadata: {

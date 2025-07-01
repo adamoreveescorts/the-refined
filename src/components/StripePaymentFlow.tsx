@@ -69,26 +69,6 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
         return;
       }
 
-      // Handle free trial differently - activate directly
-      if (tier.isTrial) {
-        const { data, error } = await supabase.functions.invoke('activate-free-trial', {
-          body: { role },
-          headers: {
-            Authorization: `Bearer ${currentSession.access_token}`,
-          },
-        });
-
-        if (error) {
-          console.error("Free trial activation error:", error);
-          throw error;
-        }
-
-        toast.success("Free trial activated! Your 7-day trial has started.");
-        onPaymentComplete();
-        return;
-      }
-
-      // Handle paid subscriptions
       console.log("Creating checkout with tier:", tier);
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
@@ -103,7 +83,14 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
         throw error;
       }
 
-      // All paid tiers redirect to Stripe
+      // Handle free trial response (no redirect needed)
+      if (data?.trial_activated) {
+        toast.success("Free trial activated! Your 7-day trial has started.");
+        onPaymentComplete();
+        return;
+      }
+
+      // Handle paid subscriptions (redirect to Stripe)
       if (data?.url) {
         window.open(data.url, '_blank');
         toast.success("Redirected to Stripe checkout. Complete your payment to activate your recurring plan.");

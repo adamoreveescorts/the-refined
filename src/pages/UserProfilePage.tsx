@@ -177,24 +177,6 @@ const UserProfilePage = () => {
         return;
       }
 
-      // Handle free trial differently - activate directly
-      if (tier.isTrial) {
-        const { data, error } = await supabase.functions.invoke('activate-free-trial', {
-          body: { role: profile?.role },
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        });
-
-        if (error) throw error;
-
-        toast.success("Free trial activated! Your 7-day trial has started.");
-        await checkSubscriptionStatus(session);
-        setShowUpgrade(false);
-        return;
-      }
-
-      // Handle paid subscriptions
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { role: profile?.role, tier: tier.id },
         headers: {
@@ -204,8 +186,21 @@ const UserProfilePage = () => {
 
       if (error) throw error;
 
-      window.open(data.url, '_blank');
-      toast.success("Redirected to Stripe checkout.");
+      // Handle free trial response (no redirect needed)
+      if (data?.trial_activated) {
+        toast.success("Free trial activated! Your 7-day trial has started.");
+        await checkSubscriptionStatus(session);
+        setShowUpgrade(false);
+        return;
+      }
+
+      // Handle paid subscriptions (redirect to Stripe)
+      if (data?.url) {
+        window.open(data.url, '_blank');
+        toast.success("Redirected to Stripe checkout.");
+      } else {
+        throw new Error("No checkout URL received");
+      }
     } catch (error: any) {
       console.error("Upgrade error:", error);
       toast.error(error.message || "Failed to process upgrade");
@@ -310,7 +305,7 @@ const UserProfilePage = () => {
     if (!subscription || !subscription.subscription_tier) return null;
     
     if (subscription.is_trial_active) {
-      return 'trial';
+      return 'free_trial';
     }
     
     if (subscription.subscription_tier === 'Package1') return 'package_1_weekly';
