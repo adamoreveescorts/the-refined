@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Star, Crown, Zap } from "lucide-react";
+import { CheckCircle, Star, Crown, Zap, Gift } from "lucide-react";
 
 export interface SubscriptionTier {
   id: string;
@@ -15,9 +15,28 @@ export interface SubscriptionTier {
   recommended?: boolean;
   recurring?: boolean;
   stripePriceId?: string;
+  isTrial?: boolean;
 }
 
 const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
+  {
+    id: "free_trial",
+    name: "7 Day Free Trial",
+    price: 0,
+    duration: "7 Days",
+    durationDays: 7,
+    isTrial: true,
+    features: [
+      "1 week account period",
+      "1 location base (within same area)",
+      "Ad positioning below standard ads",
+      "Auto boosting - push ad to top each week",
+      "Manual boosting available", 
+      "10 photos (+ 1 main photo)",
+      "Photo verification available",
+      "Photo blurring available"
+    ]
+  },
   {
     id: "package_1_weekly",
     name: "Limited Time Package 1",
@@ -133,6 +152,7 @@ const SubscriptionTierSelector = ({
   };
 
   const getTierIcon = (tierId: string) => {
+    if (tierId === "free_trial") return <Gift className="h-6 w-6 text-green-500" />;
     if (tierId === "package_1_weekly") return <Zap className="h-6 w-6 text-blue-500" />;
     if (tierId === "package_2_monthly") return <Zap className="h-6 w-6 text-purple-500" />;
     if (tierId === "package_3_quarterly") return <Star className="h-6 w-6 text-gold" />;
@@ -140,12 +160,18 @@ const SubscriptionTierSelector = ({
   };
 
   const isCurrentTier = (tierId: string) => {
+    if (currentTier === 'Trial' && tierId === 'free_trial') return true;
     if (currentTier === 'Package1' && tierId === 'package_1_weekly') return true;
     if (currentTier === 'Package2' && tierId === 'package_2_monthly') return true;
     if (currentTier === 'Package3' && tierId === 'package_3_quarterly') return true;
     if (currentTier === 'Package4' && tierId === 'package_4_yearly') return true;
     return false;
   };
+
+  // Filter out trial if user has already used it
+  const availableTiers = SUBSCRIPTION_TIERS.filter(tier => 
+    !tier.isTrial || !hasUsedTrial
+  );
 
   return (
     <div className="space-y-6">
@@ -158,8 +184,8 @@ const SubscriptionTierSelector = ({
         </div>
       )}
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-        {SUBSCRIPTION_TIERS.map((tier) => {
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {availableTiers.map((tier) => {
           const isCurrent = isCurrentTier(tier.id);
           
           return (
@@ -171,9 +197,20 @@ const SubscriptionTierSelector = ({
                 tier.recommended ? 'border-gold' : ''
               } ${
                 isCurrent ? 'ring-2 ring-green-500 bg-accent' : ''
+              } ${
+                tier.isTrial ? 'border-green-500' : ''
               }`}
             >
-              {tier.recommended && !isCurrent && (
+              {tier.isTrial && !isCurrent && (
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                  <Badge className="bg-green-500 text-white px-3 py-1">
+                    <Gift className="h-3 w-3 mr-1" />
+                    Free Trial
+                  </Badge>
+                </div>
+              )}
+
+              {tier.recommended && !isCurrent && !tier.isTrial && (
                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                   <Badge className="bg-gold text-white px-3 py-1">
                     <Star className="h-3 w-3 mr-1" />
@@ -198,11 +235,11 @@ const SubscriptionTierSelector = ({
                 <CardTitle className="text-foreground text-lg">{tier.name}</CardTitle>
                 <CardDescription className="space-y-1">
                   <div className="text-2xl font-bold text-foreground">
-                    ${tier.price} AUD
-                    <span className="text-sm font-normal">/{tier.duration.toLowerCase()}</span>
+                    {tier.isTrial ? "FREE" : `$${tier.price} AUD`}
+                    {!tier.isTrial && <span className="text-sm font-normal">/{tier.duration.toLowerCase()}</span>}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Billed {tier.duration.toLowerCase()}
+                    {tier.isTrial ? "One-time offer" : `Billed ${tier.duration.toLowerCase()}`}
                   </div>
                 </CardDescription>
               </CardHeader>
@@ -223,14 +260,18 @@ const SubscriptionTierSelector = ({
                   className={`w-full mt-auto ${
                     isCurrent 
                       ? "bg-green-500 hover:bg-green-500 cursor-not-allowed text-white" 
-                      : "btn-gold"
+                      : tier.isTrial
+                        ? "bg-green-500 hover:bg-green-600 text-white"
+                        : "btn-gold"
                   }`}
                 >
                   {loading === tier.id 
                     ? "Processing..." 
                     : isCurrent 
                       ? "Your Current Plan" 
-                      : `Subscribe ${tier.duration}`
+                      : tier.isTrial
+                        ? "Start Free Trial"
+                        : `Subscribe ${tier.duration}`
                   }
                 </Button>
               </CardContent>

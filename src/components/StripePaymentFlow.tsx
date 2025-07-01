@@ -69,6 +69,25 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
         return;
       }
 
+      // Handle free trial differently - activate directly
+      if (tier.isTrial) {
+        const { data, error } = await supabase.functions.invoke('activate-free-trial', {
+          body: { role },
+          headers: {
+            Authorization: `Bearer ${currentSession.access_token}`,
+          },
+        });
+
+        if (error) {
+          console.error("Free trial activation error:", error);
+          throw error;
+        }
+
+        toast.success("Free trial activated! Your 7-day trial has started.");
+        onPaymentComplete();
+        return;
+      }
+
       console.log("Creating checkout with tier:", tier);
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
@@ -83,7 +102,7 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
         throw error;
       }
 
-      // All tiers are now paid, redirect to Stripe
+      // All paid tiers redirect to Stripe
       if (data?.url) {
         window.open(data.url, '_blank');
         toast.success("Redirected to Stripe checkout. Complete your payment to activate your recurring plan.");
@@ -154,7 +173,7 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
         <CardDescription className="text-center text-muted-foreground">
           {role === 'agency' 
             ? "Select your agency subscription with recurring monthly or yearly billing"
-            : "Choose a recurring plan that fits your needs to get started"
+            : "Start with a free trial or choose a recurring plan that fits your needs"
           }
         </CardDescription>
       </CardHeader>
