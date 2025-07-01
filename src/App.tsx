@@ -46,7 +46,8 @@ function App() {
               <Route path="/faq" element={<FAQ />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/user-profile" element={<UserProfilePage />} />
+              <Route path="/user-profile/:id" element={<UserProfilePage />} />
+              <Route path="/my-profile" element={<UserProfilePage />} />
               <Route path="/edit-profile" element={<EditProfilePage />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/agency/dashboard" element={<AgencyDashboardPage />} />

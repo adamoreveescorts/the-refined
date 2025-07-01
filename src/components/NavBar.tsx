@@ -127,7 +127,7 @@ const NavBar = () => {
       case 'admin':
         return '/admin';
       default:
-        return '/user-profile';
+        return '/my-profile';
     }
   };
 

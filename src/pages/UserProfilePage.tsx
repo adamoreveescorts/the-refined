@@ -20,7 +20,7 @@ interface Profile {
   phone: string;
   role: string;
   bio: string;
-  age: string; // Changed from number to string to match database
+  age: string;
   height: string;
   weight: string;
   ethnicity: string;
@@ -40,18 +40,18 @@ interface Profile {
   profile_picture: string;
   gallery_images: string[];
   gallery_videos: string[];
-  hourly_rate: number;
-  two_hour_rate: number;
-  dinner_rate: number;
-  overnight_rate: number;
-	incall_hourly_rate: number;
-	outcall_hourly_rate: number;
-	incall_two_hour_rate: number;
-	outcall_two_hour_rate: number;
-	incall_dinner_rate: number;
-	outcall_dinner_rate: number;
-	incall_overnight_rate: number;
-	outcall_overnight_rate: number;
+  hourly_rate: string;
+  two_hour_rate: string;
+  dinner_rate: string;
+  overnight_rate: string;
+  incall_hourly_rate: string;
+  outcall_hourly_rate: string;
+  incall_two_hour_rate: string;
+  outcall_two_hour_rate: string;
+  incall_dinner_rate: string;
+  outcall_dinner_rate: string;
+  incall_overnight_rate: string;
+  outcall_overnight_rate: string;
   country_code: string;
   instagram_url: string;
   twitter_url: string;
@@ -75,25 +75,47 @@ const UserProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<Image | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [showContactDialog, setShowContactDialog] = useState(false);
 
   useEffect(() => {
+    // Get current user
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUser(user);
+      return user;
+    };
+
     const fetchProfile = async () => {
       try {
         setLoading(true);
+        let profileId = id;
+        
+        // If no ID in URL, get current user's profile
         if (!id) {
+          const user = await getCurrentUser();
+          if (!user) {
+            toast.error("Please log in to view your profile");
+            return;
+          }
+          profileId = user.id;
+        }
+
+        if (!profileId) {
           throw new Error("No user ID provided");
         }
+
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', id)
+          .eq('id', profileId)
           .single();
 
         if (error) {
           throw error;
         }
 
-        setProfile(data);
+        setProfile(data as Profile);
       } catch (error: any) {
         console.error('Error fetching profile:', error);
         toast.error(`Failed to load profile: ${error.message}`);
@@ -109,6 +131,8 @@ const UserProfilePage = () => {
     setSelectedImage({ url: imageUrl, alt: altText });
     setIsZoomModalOpen(true);
   };
+
+  const isOwnProfile = currentUser && profile && currentUser.id === profile.id;
 
   if (loading) {
     return (
@@ -285,24 +309,28 @@ const UserProfilePage = () => {
               )}
             </div>
 
-            {/* Contact Section */}
-            <div className="mt-6 bg-card rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold text-foreground mb-4">Contact</h2>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <ContactRequestDialog 
-                  escortId={profile.id}
-                  escortName={profile.display_name || profile.username || 'Anonymous'}
-                />
-                <MessageButton 
-                  escortId={profile.id} 
-                  escortName={profile.display_name || profile.username || 'Anonymous'}
-                />
-                <FollowButton 
-                  escortId={profile.id}
-                  escortName={profile.display_name || profile.username || 'Anonymous'}
-                />
+            {/* Contact Section - Only show for other users' profiles */}
+            {!isOwnProfile && (
+              <div className="mt-6 bg-card rounded-lg shadow-md p-6">
+                <h2 className="text-xl font-semibold text-foreground mb-4">Contact</h2>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <ContactRequestDialog 
+                    escortId={profile.id}
+                    escortName={profile.display_name || profile.username || 'Anonymous'}
+                    isOpen={showContactDialog}
+                    onClose={() => setShowContactDialog(false)}
+                  />
+                  <MessageButton 
+                    escortId={profile.id} 
+                    escortName={profile.display_name || profile.username || 'Anonymous'}
+                  />
+                  <FollowButton 
+                    escortId={profile.id}
+                    escortName={profile.display_name || profile.username || 'Anonymous'}
+                  />
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </main>
