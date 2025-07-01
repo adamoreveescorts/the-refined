@@ -680,6 +680,159 @@ const UserProfilePage = () => {
               </div>
             )}
 
+            {/* Detailed Profile Information - Only for escorts viewing their own profile */}
+            {isEscort && isOwnProfile && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                {/* Personal Information */}
+                <div className="bg-card rounded-lg shadow-md p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Personal Information</h3>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <span className="text-muted-foreground text-sm">Age:</span>
+                        <p className="text-foreground">{profile.age || 'Not specified'}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground text-sm">Height:</span>
+                        <p className="text-foreground">{profile.height || 'Not specified'}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground text-sm">Weight:</span>
+                        <p className="text-foreground">{profile.weight || 'Not specified'}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground text-sm">Body Type:</span>
+                        <p className="text-foreground">{profile.body_type || 'Not specified'}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground text-sm">Ethnicity:</span>
+                        <p className="text-foreground">{profile.ethnicity || 'Not specified'}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground text-sm">Nationality:</span>
+                        <p className="text-foreground">{profile.nationality || 'Not specified'}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground text-sm">Hair Color:</span>
+                        <p className="text-foreground">{profile.hair_color || 'Not specified'}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground text-sm">Eye Color:</span>
+                        <p className="text-foreground">{profile.eye_color || 'Not specified'}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground text-sm">Cup Size:</span>
+                        <p className="text-foreground">{profile.cup_size || 'Not specified'}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground text-sm">Languages:</span>
+                        <p className="text-foreground">{profile.languages || 'Not specified'}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground text-sm">Smoking:</span>
+                        <p className="text-foreground">{profile.smoking || 'Not specified'}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground text-sm">Drinking:</span>
+                        <p className="text-foreground">{profile.drinking || 'Not specified'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rates Information */}
+                <div className="bg-card rounded-lg shadow-md p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Rates & Services</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-medium text-foreground mb-2">Incall Rates</h4>
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">Hourly:</span>
+                          <p className="text-foreground">{profile.incall_hourly_rate ? `$${profile.incall_hourly_rate}` : 'Not set'}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">2 Hours:</span>
+                          <p className="text-foreground">{profile.incall_two_hour_rate ? `$${profile.incall_two_hour_rate}` : 'Not set'}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Dinner:</span>
+                          <p className="text-foreground">{profile.incall_dinner_rate ? `$${profile.incall_dinner_rate}` : 'Not set'}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Overnight:</span>
+                          <p className="text-foreground">{profile.incall_overnight_rate ? `$${profile.incall_overnight_rate}` : 'Not set'}</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium text-foreground mb-2">Outcall Rates</h4>
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">Hourly:</span>
+                          <p className="text-foreground">{profile.outcall_hourly_rate ? `$${profile.outcall_hourly_rate}` : 'Not set'}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">2 Hours:</span>
+                          <p className="text-foreground">{profile.outcall_two_hour_rate ? `$${profile.outcall_two_hour_rate}` : 'Not set'}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Dinner:</span>
+                          <p className="text-foreground">{profile.outcall_dinner_rate ? `$${profile.outcall_dinner_rate}` : 'Not set'}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Overnight:</span>
+                          <p className="text-foreground">{profile.outcall_overnight_rate ? `$${profile.outcall_overnight_rate}` : 'Not set'}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <span className="text-muted-foreground text-sm">Availability:</span>
+                      <p className="text-foreground mt-1">{profile.availability || 'Not specified'}</p>
+                    </div>
+
+                    {profile.tags && (
+                      <div>
+                        <span className="text-muted-foreground text-sm">Tags:</span>
+                        <p className="text-foreground mt-1">{profile.tags}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Social Media Links - Only for escorts viewing their own profile */}
+            {isEscort && isOwnProfile && (
+              <div className="bg-card rounded-lg shadow-md p-6 mb-6">
+                <h3 className="text-lg font-semibold text-foreground mb-4">Social Media</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div>
+                    <span className="text-muted-foreground text-sm">Instagram:</span>
+                    <p className="text-foreground">{profile.instagram_url || 'Not provided'}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground text-sm">Twitter:</span>
+                    <p className="text-foreground">{profile.twitter_url || 'Not provided'}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground text-sm">Facebook:</span>
+                    <p className="text-foreground">{profile.facebook_url || 'Not provided'}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground text-sm">LinkedIn:</span>
+                    <p className="text-foreground">{profile.linkedin_url || 'Not provided'}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground text-sm">YouTube:</span>
+                    <p className="text-foreground">{profile.youtube_url || 'Not provided'}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Followed Users Section - Only for clients viewing their own profile */}
             {isClient && isOwnProfile && followedUsers.length > 0 && (
               <div className="bg-card rounded-lg shadow-md p-6 mb-6">
