@@ -88,6 +88,7 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
         return;
       }
 
+      // Handle paid subscriptions
       console.log("Creating checkout with tier:", tier);
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
