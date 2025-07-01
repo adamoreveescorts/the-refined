@@ -146,15 +146,15 @@ const EditProfilePage = () => {
   const handleProfileUpdate = (updatedProfile: any) => {
     setProfile(prev => prev ? { ...prev, ...updatedProfile } : null);
     toast.success("Profile updated successfully!");
-    navigate("/user-profile");
+    navigate("/my-profile");
   };
 
   const handleCancel = () => {
-    navigate("/user-profile");
+    navigate("/my-profile");
   };
 
   const handleShowUpgrade = () => {
-    navigate("/user-profile");
+    navigate("/my-profile");
   };
 
   const handlePhotoGalleryUpdate = (newGallery: string[]) => {
