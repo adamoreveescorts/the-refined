@@ -169,7 +169,7 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
       <Card className="w-full max-w-4xl mx-auto">
         <CardHeader>
           <CardTitle className="text-center text-foreground">
-            {userRole === 'agency' ? 'Agency Subscription Plans' : 'Subscription Plans'}
+            {role === 'agency' ? 'Agency Subscription Plans' : 'Subscription Plans'}
           </CardTitle>
           <CardDescription className="text-center text-muted-foreground">
             {role === 'agency' 
