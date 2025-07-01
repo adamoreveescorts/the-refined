@@ -11,6 +11,7 @@ interface LocationSelectorProps {
   value: string;
   onValueChange: (value: string) => void;
   placeholder?: string;
+  className?: string;
 }
 
 const LOCATION_OPTIONS = [
@@ -31,16 +32,16 @@ const LOCATION_OPTIONS = [
   'Phuket'
 ];
 
-export const LocationSelector = ({ value, onValueChange, placeholder = "Select location" }: LocationSelectorProps) => {
+export const LocationSelector = ({ value, onValueChange, placeholder = "Select location", className }: LocationSelectorProps) => {
   return (
     <Select 
       value={value || 'all'} 
       onValueChange={(selectedValue) => onValueChange(selectedValue === 'all' ? '' : selectedValue)}
     >
-      <SelectTrigger>
+      <SelectTrigger className={className}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="bg-white border border-gray-200 text-gray-900 z-50">
         <SelectItem value="all">All Locations</SelectItem>
         {LOCATION_OPTIONS.slice(1).map((location) => (
           <SelectItem key={location} value={location}>

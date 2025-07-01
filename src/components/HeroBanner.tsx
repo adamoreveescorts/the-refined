@@ -79,6 +79,7 @@ const FilterSheet = ({ onFilterChange, filters }: { onFilterChange: any, filters
           value={filters.location || ''}
           onValueChange={(value) => onFilterChange({ ...filters, location: value })}
           placeholder="Select location"
+          className="bg-white/20 border-white/30 text-white"
         />
       </div>
       
@@ -192,6 +193,7 @@ const DesktopFilters = ({ onFilterChange, filters }: { onFilterChange: any, filt
           value={filters.location || ''}
           onValueChange={(value) => onFilterChange({ ...filters, location: value })}
           placeholder="Select location"
+          className="bg-white/20 border-white/30 text-white"
         />
       </div>
       
