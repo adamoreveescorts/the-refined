@@ -1,350 +1,149 @@
-
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { 
-  User, 
-  Mail, 
-  Camera, 
-  Star, 
-  Edit,
-  Settings,
-  Shield,
-  Bell,
-  Megaphone,
-  Heart
-} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { User, Settings, CreditCard, MessageSquare, Users, Bell } from "lucide-react";
 import { toast } from "sonner";
-import NavBar from "@/components/NavBar";
-import Footer from "@/components/Footer";
-import { Link } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
-import { AnnouncementManager } from "@/components/AnnouncementManager";
-import { AnnouncementFeed } from "@/components/AnnouncementFeed";
+import EditProfileForm from "@/components/EditProfileForm";
+import PhotoGalleryManager from "@/components/PhotoGalleryManager";
+import PaymentFlow from "@/components/PaymentFlow";
+import AnnouncementManager from "@/components/AnnouncementManager";
+import AnnouncementFeed from "@/components/AnnouncementFeed";
 
 const UserProfilePage = () => {
-  const { user, profile, loading: userLoading } = useUserRole();
-  const [loading, setLoading] = useState(true);
-  const [profileData, setProfileData] = useState<any>(null);
+  const navigate = useNavigate();
+  const { user, profile, isLoading, refreshProfile } = useUserRole();
+  const [activeTab, setActiveTab] = useState("profile");
+  const [showPaymentFlow, setShowPaymentFlow] = useState(false);
 
   useEffect(() => {
-    if (user && !userLoading) {
-      fetchProfileData();
+    if (!isLoading && !user) {
+      navigate("/auth");
     }
-  }, [user, userLoading]);
+  }, [user, isLoading, navigate]);
 
-  const fetchProfileData = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-
-      if (error) throw error;
-      setProfileData(data);
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-      toast.error("Failed to load profile data");
-    } finally {
-      setLoading(false);
-    }
+  const handlePaymentSuccess = () => {
+    setShowPaymentFlow(false);
+    refreshProfile();
   };
 
-  if (userLoading || loading) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col bg-background">
-        <NavBar />
-        <div className="flex-grow flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-16 h-16 border-4 border-secondary border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="mt-4 text-foreground">Loading your profile...</p>
-          </div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary mx-auto mb-4"></div>
+          <p className="text-foreground">Loading...</p>
         </div>
-        <Footer />
       </div>
     );
   }
 
-  if (!user) {
+  if (!user || !profile) {
     return (
-      <div className="min-h-screen flex flex-col bg-background">
-        <NavBar />
-        <div className="flex-grow flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-red-500">Please sign in to view your profile</p>
-          </div>
-        </div>
-        <Footer />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Authentication Required</CardTitle>
+            <CardDescription>Please sign in to view your profile.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4">
+            <Button onClick={() => navigate("/auth")}>Go to Sign In</Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
-
-  const completionPercentage = profileData?.profile_completion_percentage || 0;
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <NavBar />
-      
-      <main className="flex-grow py-8">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-6xl mx-auto">
-            {/* Header */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-3xl font-bold">
-                    Welcome, {profileData?.display_name || "User"}
-                  </h1>
-                  <p className="text-muted-foreground mt-1">
-                    Manage your profile and account settings
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="capitalize">
-                    {profile?.role || "User"}
-                  </Badge>
-                  {profileData?.verified && (
-                    <Badge className="bg-green-100 text-green-800">
-                      <Shield className="h-3 w-3 mr-1" />
-                      Verified
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Profile Completion */}
-            {(profile?.role === 'escort' || profile?.role === 'agency') && (
-              <Card className="mb-6">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <User className="h-5 w-5" />
-                    Profile Completion
-                  </CardTitle>
-                  <CardDescription>
-                    Complete your profile to increase visibility and bookings
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Profile completed</span>
-                      <span>{completionPercentage}%</span>
-                    </div>
-                    <Progress value={completionPercentage} className="h-2" />
-                    {completionPercentage < 100 && (
-                      <p className="text-sm text-muted-foreground">
-                        <Link to="/edit-profile" className="text-primary hover:underline">
-                          Complete your profile
-                        </Link>{" "}
-                        to improve your visibility in search results.
-                      </p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Main Content Tabs */}
-            <Tabs defaultValue="overview" className="space-y-6">
-              <TabsList className="grid grid-cols-2 lg:grid-cols-4 w-full">
-                <TabsTrigger value="overview" className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  Overview
+    <div className="min-h-screen bg-background py-6">
+      <div className="container max-w-5xl mx-auto space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-4">
+              <Avatar>
+                <AvatarImage src={profile?.avatar_url} alt={profile?.username} />
+                <AvatarFallback>{profile?.username?.charAt(0).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <span>{profile?.display_name || profile?.username}</span>
+              {profile?.role && (
+                <Badge variant="secondary">{profile?.role}</Badge>
+              )}
+            </CardTitle>
+            <CardDescription>
+              Manage your profile information, settings, and subscription.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue={activeTab} className="w-full">
+              <TabsList>
+                <TabsTrigger value="profile" onClick={() => setActiveTab("profile")}>
+                  <User className="h-4 w-4 mr-2" />
+                  Profile
                 </TabsTrigger>
                 {profile?.role === 'escort' && (
-                  <TabsTrigger value="announcements" className="flex items-center gap-2">
-                    <Megaphone className="h-4 w-4" />
+                  <TabsTrigger value="announcements" onClick={() => setActiveTab("announcements")}>
+                    <Bell className="h-4 w-4 mr-2" />
                     Announcements
                   </TabsTrigger>
                 )}
-                {profile?.role === 'client' && (
-                  <TabsTrigger value="feed" className="flex items-center gap-2">
-                    <Bell className="h-4 w-4" />
-                    Feed
+                {profile?.role === 'escort' && (
+                  <TabsTrigger value="gallery" onClick={() => setActiveTab("gallery")}>
+                    <Users className="h-4 w-4 mr-2" />
+                    Gallery
                   </TabsTrigger>
                 )}
-                <TabsTrigger value="settings" className="flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
+                <TabsTrigger value="settings" onClick={() => setActiveTab("settings")}>
+                  <Settings className="h-4 w-4 mr-2" />
                   Settings
                 </TabsTrigger>
+                {profile?.payment_status !== 'active' && (
+                  <TabsTrigger value="subscription" onClick={() => {
+                    setActiveTab("subscription");
+                    setShowPaymentFlow(true);
+                  }}>
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Subscription
+                  </TabsTrigger>
+                )}
               </TabsList>
-
-              {/* Overview Tab */}
-              <TabsContent value="overview" className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {/* Profile Info Card */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <User className="h-5 w-5" />
-                        Profile Information
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm font-medium">Display Name:</span>
-                        <span className="text-sm text-muted-foreground">
-                          {profileData?.display_name || "Not set"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm font-medium">Email:</span>
-                        <span className="text-sm text-muted-foreground">
-                          {profileData?.email || "Not set"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm font-medium">Location:</span>
-                        <span className="text-sm text-muted-foreground">
-                          {profileData?.location || "Not set"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm font-medium">Status:</span>
-                        <Badge variant="outline" className="capitalize">
-                          {profileData?.status || "Pending"}
-                        </Badge>
-                      </div>
-                      <div className="pt-4">
-                        <Link to="/edit-profile">
-                          <Button className="w-full" variant="outline">
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit Profile
-                          </Button>
-                        </Link>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Account Status Card */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Shield className="h-5 w-5" />
-                        Account Status
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">Verification:</span>
-                        <Badge className={profileData?.verified ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}>
-                          {profileData?.verified ? "Verified" : "Pending"}
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">Profile Active:</span>
-                        <Badge className={profileData?.is_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
-                          {profileData?.is_active ? "Active" : "Inactive"}
-                        </Badge>
-                      </div>
-                      {!profileData?.verified && (
-                        <div className="pt-4">
-                          <Link to="/photo-verification">
-                            <Button className="w-full btn-gold" size="sm">
-                              <Camera className="h-4 w-4 mr-2" />
-                              Get Verified
-                            </Button>
-                          </Link>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  {/* Quick Actions Card */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Quick Actions</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <Link to="/messages">
-                        <Button variant="outline" className="w-full justify-start">
-                          <Mail className="h-4 w-4 mr-2" />
-                          View Messages
-                        </Button>
-                      </Link>
-                      {profile?.role === 'escort' && (
-                        <Link to={`/profile/${user.id}`}>
-                          <Button variant="outline" className="w-full justify-start">
-                            <User className="h-4 w-4 mr-2" />
-                            View Public Profile
-                          </Button>
-                        </Link>
-                      )}
-                      {profile?.role === 'client' && (
-                        <Link to="/directory">
-                          <Button variant="outline" className="w-full justify-start">
-                            <Heart className="h-4 w-4 mr-2" />
-                            Browse Directory
-                          </Button>
-                        </Link>
-                      )}
-                    </CardContent>
-                  </Card>
+              <TabsContent value="profile">
+                <EditProfileForm refreshProfile={refreshProfile} />
+              </TabsContent>
+              <TabsContent value="announcements">
+                <AnnouncementManager />
+                <AnnouncementFeed />
+              </TabsContent>
+              <TabsContent value="gallery">
+                <PhotoGalleryManager />
+              </TabsContent>
+              <TabsContent value="settings">
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">Account Settings</h3>
+                  <p className="text-muted-foreground">Manage your account preferences.</p>
+                  <Button onClick={() => supabase.auth.signOut()} variant="destructive" className="mt-4">
+                    Sign Out
+                  </Button>
                 </div>
               </TabsContent>
-
-              {/* Announcements Tab (Escorts only) */}
-              {profile?.role === 'escort' && (
-                <TabsContent value="announcements">
-                  <AnnouncementManager />
-                </TabsContent>
-              )}
-
-              {/* Feed Tab (Clients only) */}
-              {profile?.role === 'client' && (
-                <TabsContent value="feed">
-                  <AnnouncementFeed />
-                </TabsContent>
-              )}
-
-              {/* Settings Tab */}
-              <TabsContent value="settings">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Account Settings</CardTitle>
-                    <CardDescription>
-                      Manage your account preferences and settings
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <p className="text-sm text-muted-foreground">
-                        More settings coming soon...
-                      </p>
-                      <div className="flex gap-2">
-                        <Link to="/edit-profile">
-                          <Button variant="outline">
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit Profile
-                          </Button>
-                        </Link>
-                        {!profileData?.verified && (
-                          <Link to="/photo-verification">
-                            <Button className="btn-gold">
-                              <Camera className="h-4 w-4 mr-2" />
-                              Get Verified
-                            </Button>
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+              <TabsContent value="subscription">
+                {showPaymentFlow ? (
+                  <PaymentFlow role={profile.role} onPaymentComplete={handlePaymentSuccess} />
+                ) : (
+                  <div className="text-center">
+                    <p className="text-muted-foreground">Loading subscription options...</p>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary mx-auto"></div>
+                  </div>
+                )}
               </TabsContent>
             </Tabs>
-          </div>
-        </div>
-      </main>
-      
-      <Footer />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

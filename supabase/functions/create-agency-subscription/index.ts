@@ -20,32 +20,33 @@ const AGENCY_PACKAGES = {
     price: 7900, // $79 
     maxProfiles: 12,
     periodWeeks: 1,
-    stripePriceId: "price_package_1_weekly_aud",
-    billingCycle: "weekly"
+    billingCycle: "weekly",
+    interval: "week" as const
   },
   package_2: {
     name: "Package 2", 
     price: 9900, // $99
     maxProfiles: 18,
     periodWeeks: 1,
-    stripePriceId: "price_package_2_weekly_aud",
-    billingCycle: "weekly"
+    billingCycle: "weekly",
+    interval: "week" as const
   },
   package_3: {
     name: "Package 3",
     price: 24900, // $249
     maxProfiles: 24,
     periodWeeks: 4,
-    stripePriceId: "price_package_3_monthly_aud",
-    billingCycle: "monthly"
+    billingCycle: "monthly",
+    interval: "month" as const
   },
   package_4: {
     name: "Package 4",
     price: 49900, // $499
     maxProfiles: 24,
     periodWeeks: 12,
-    stripePriceId: "price_package_4_quarterly_aud",
-    billingCycle: "quarterly"
+    billingCycle: "quarterly",
+    interval: "month" as const,
+    intervalCount: 3
   }
 };
 
@@ -118,12 +119,62 @@ serve(async (req) => {
       customerId = customer.id;
     }
 
+    // Create or find product
+    let product;
+    const products = await stripe.products.list({ 
+      limit: 1,
+      metadata: { package_id: packageId }
+    });
+
+    if (products.data.length > 0) {
+      product = products.data[0];
+    } else {
+      product = await stripe.products.create({
+        name: `Agency ${selectedPackage.name}`,
+        description: `Up to ${selectedPackage.maxProfiles} contained profiles accessed within agency profile`,
+        metadata: {
+          package_id: packageId,
+          type: 'agency_subscription'
+        }
+      });
+    }
+
+    // Create or find price
+    let price;
+    const prices = await stripe.prices.list({
+      product: product.id,
+      limit: 1
+    });
+
+    if (prices.data.length > 0) {
+      price = prices.data[0];
+    } else {
+      const priceData: any = {
+        product: product.id,
+        unit_amount: selectedPackage.price,
+        currency: 'aud',
+        recurring: {
+          interval: selectedPackage.interval,
+        },
+        metadata: {
+          package_id: packageId,
+          billing_cycle: selectedPackage.billingCycle
+        }
+      };
+
+      if (selectedPackage.intervalCount) {
+        priceData.recurring.interval_count = selectedPackage.intervalCount;
+      }
+
+      price = await stripe.prices.create(priceData);
+    }
+
     // Create recurring subscription checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
       line_items: [{
-        price: selectedPackage.stripePriceId,
+        price: price.id,
         quantity: 1,
       }],
       mode: 'subscription',
@@ -149,7 +200,7 @@ serve(async (req) => {
       subscription_tier: 'platinum',
       billing_cycle: selectedPackage.billingCycle,
       status: 'pending',
-      stripe_price_id: selectedPackage.stripePriceId,
+      stripe_price_id: price.id,
       subscription_status: 'pending',
       updated_at: new Date().toISOString(),
     };
