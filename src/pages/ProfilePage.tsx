@@ -210,7 +210,10 @@ const ProfilePage = () => {
                 </div>
                 <div className="flex flex-col gap-2">
                   {currentUser && currentUser.id !== profile.id && (
-                    <MessageButton escortId={profile.id} />
+                    <MessageButton 
+                      escortId={profile.id} 
+                      escortName={profile.display_name || "Anonymous"} 
+                    />
                   )}
                 </div>
               </CardHeader>
