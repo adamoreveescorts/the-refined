@@ -97,7 +97,7 @@ serve(async (req) => {
         email: user.email,
         user_id: user.id,
         subscribed: true,
-        subscription_tier: 'Trial',
+        subscription_tier: 'Basic',
         subscription_type: 'free',
         trial_start_date: now.toISOString(),
         trial_end_date: trialEnd.toISOString(),
