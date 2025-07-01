@@ -141,7 +141,7 @@ serve(async (req) => {
       apiVersion: "2023-10-16" 
     });
 
-    // Check if customer already exists
+    // Check if customer already exists or create one
     const customers = await stripe.customers.list({ 
       email: user.email, 
       limit: 1 
@@ -151,13 +151,24 @@ serve(async (req) => {
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
       logStep("Found existing customer", { customerId });
+    } else {
+      // Create new customer
+      const newCustomer = await stripe.customers.create({
+        email: user.email,
+        metadata: {
+          user_id: user.id,
+          role: role
+        }
+      });
+      customerId = newCustomer.id;
+      logStep("Created new customer", { customerId });
     }
 
-    // Handle free trial differently - create a subscription with trial period
+    // Handle free trial - create a subscription with trial period
     if (selectedTier.isTrial) {
       logStep("Processing free trial subscription");
       
-      // Create a product and price for the trial (that will convert to paid)
+      // Create a product and price for the trial
       const product = await stripe.products.create({
         name: selectedTier.name,
         description: `${selectedTier.duration} trial for ${role} profile`
@@ -166,18 +177,18 @@ serve(async (req) => {
       const price = await stripe.prices.create({
         currency: 'aud',
         product: product.id,
-        unit_amount: 1500, // Will charge $15 after trial
+        unit_amount: 1500, // Will charge $15 after trial if not cancelled
         recurring: {
           interval: 'week'
         }
       });
 
-      // Create subscription with 7-day trial
+      // Create subscription with 7-day trial that auto-cancels
       const subscription = await stripe.subscriptions.create({
         customer: customerId,
         items: [{ price: price.id }],
         trial_period_days: 7,
-        cancel_at_period_end: true, // Auto-cancel after trial unless user updates
+        cancel_at_period_end: true, // Auto-cancel after trial
         metadata: {
           user_id: user.id,
           role: role,
@@ -263,7 +274,6 @@ serve(async (req) => {
     
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_email: customerId ? undefined : user.email,
       line_items: lineItems,
       mode: "subscription",
       success_url: `https://adamoreveescorts.com/auth?payment=success&tier=${tier}`,
