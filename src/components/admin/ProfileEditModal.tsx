@@ -142,20 +142,19 @@ const ProfileEditModal = ({ profile, open, onOpenChange, onProfileUpdate }: Prof
     try {
       // Create a unique filename
       const fileExt = file.name.split('.').pop();
-      const fileName = `${profile.id}-${Date.now()}.${fileExt}`;
-      const filePath = `profile-pictures/${fileName}`;
+      const fileName = `${profile.id}/profile-${Date.now()}.${fileExt}`;
 
       // Upload the file to Supabase Storage
       const { data, error: uploadError } = await supabase.storage
-        .from('profile-images')
-        .upload(filePath, file);
+        .from('profile-pictures')
+        .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
       // Get the public URL
       const { data: publicUrlData } = supabase.storage
-        .from('profile-images')
-        .getPublicUrl(filePath);
+        .from('profile-pictures')
+        .getPublicUrl(fileName);
 
       const publicUrl = publicUrlData.publicUrl;
 
