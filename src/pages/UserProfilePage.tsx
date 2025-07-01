@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Check, Star } from 'lucide-react';
 import { ImageZoomModal } from '@/components/ImageZoomModal';
 import { ContactRequestDialog } from '@/components/ContactRequestDialog';
-import { MessageButton } from '@/components/MessageButton';
+import { MessageButton } from '@/components/messaging/MessageButton';
 import { FollowButton } from '@/components/FollowButton';
 
 interface Profile {
@@ -19,7 +20,7 @@ interface Profile {
   phone: string;
   role: string;
   bio: string;
-  age: number;
+  age: string; // Changed from number to string to match database
   height: string;
   weight: string;
   ethnicity: string;
@@ -164,7 +165,7 @@ const UserProfilePage = () => {
                       {profile.display_name || profile.username || 'Anonymous'}
                     </h1>
                     {profile.verified && (
-                      <Badge variant="outline" className="flex items-center border-green-500 text-green-400">
+                      <Badge variant="outline" className="border-green-500 text-green-400">
                         <Check className="h-4 w-4 mr-1" />
                         Verified
                       </Badge>
@@ -289,56 +290,17 @@ const UserProfilePage = () => {
               <h2 className="text-xl font-semibold text-foreground mb-4">Contact</h2>
               <div className="flex flex-col sm:flex-row gap-4">
                 <ContactRequestDialog 
-                  escort={{
-                    id: profile.id,
-                    username: profile.username || 'Anonymous',
-                    display_name: profile.display_name || profile.username || 'Anonymous',
-                    email: profile.email || '',
-                    phone: profile.phone,
-                    role: profile.role || 'escort',
-                    bio: profile.bio,
-                    age: profile.age,
-                    height: profile.height,
-                    weight: profile.weight,
-                    ethnicity: profile.ethnicity,
-                    body_type: profile.body_type,
-                    hair_color: profile.hair_color,
-                    eye_color: profile.eye_color,
-                    cup_size: profile.cup_size,
-                    nationality: profile.nationality,
-                    smoking: profile.smoking,
-                    drinking: profile.drinking,
-                    location: profile.location,
-                    languages: profile.languages,
-                    services: profile.services,
-                    rates: profile.rates,
-                    availability: profile.availability,
-                    tags: profile.tags,
-                    profile_picture: profile.profile_picture,
-                    gallery_images: profile.gallery_images,
-                    gallery_videos: profile.gallery_videos,
-                    hourly_rate: profile.hourly_rate,
-                    two_hour_rate: profile.two_hour_rate,
-                    dinner_rate: profile.dinner_rate,
-                    overnight_rate: profile.overnight_rate,
-                    incall_hourly_rate: profile.incall_hourly_rate,
-                    outcall_hourly_rate: profile.outcall_hourly_rate,
-                    incall_two_hour_rate: profile.incall_two_hour_rate,
-                    outcall_two_hour_rate: profile.outcall_two_hour_rate,
-                    incall_dinner_rate: profile.incall_dinner_rate,
-                    outcall_dinner_rate: profile.outcall_dinner_rate,
-                    incall_overnight_rate: profile.incall_overnight_rate,
-                    outcall_overnight_rate: profile.outcall_overnight_rate,
-                    country_code: profile.country_code,
-                    instagram_url: profile.instagram_url,
-                    twitter_url: profile.twitter_url,
-                    facebook_url: profile.facebook_url,
-                    linkedin_url: profile.linkedin_url,
-                    youtube_url: profile.youtube_url
-                  }}
+                  escortId={profile.id}
+                  escortName={profile.display_name || profile.username || 'Anonymous'}
                 />
-                <MessageButton escortId={profile.id} />
-                <FollowButton escortId={profile.id} />
+                <MessageButton 
+                  escortId={profile.id} 
+                  escortName={profile.display_name || profile.username || 'Anonymous'}
+                />
+                <FollowButton 
+                  escortId={profile.id}
+                  escortName={profile.display_name || profile.username || 'Anonymous'}
+                />
               </div>
             </div>
           </div>
