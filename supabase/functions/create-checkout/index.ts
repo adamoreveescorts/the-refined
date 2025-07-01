@@ -161,7 +161,7 @@ serve(async (req) => {
         stripe_customer_id: null,
         subscribed: false,
         subscription_tier: selectedTier.subscriptionTier,
-        subscription_type: 'trial',
+        subscription_type: 'premium', // Use valid enum value instead of 'trial'
         plan_duration: selectedTier.duration,
         plan_price: 0,
         expires_at: trialEnd.toISOString(),
