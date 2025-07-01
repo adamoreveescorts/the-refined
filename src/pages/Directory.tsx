@@ -633,6 +633,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
 const Directory = () => {
   const [searchParams] = useSearchParams();
   const initialLocation = searchParams.get('location') || '';
+  const initialSearch = searchParams.get('search') || '';
   
   const [escorts, setEscorts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -664,7 +665,7 @@ const Directory = () => {
     tattoos: false,
     piercings: false,
     activeToday: false,
-    searchQuery: ''
+    searchQuery: initialSearch
   });
   
   const [sortBy, setSortBy] = useState('featured');
