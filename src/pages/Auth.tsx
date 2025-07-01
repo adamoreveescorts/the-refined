@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { z } from "zod";
@@ -18,8 +17,28 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RoleSelectionModal, { UserRole } from "@/components/RoleSelectionModal";
+
+// Country codes with their phone number formats
+const countries = [
+  { code: "US", name: "United States", dialCode: "+1", flag: "🇺🇸", format: "(XXX) XXX-XXXX" },
+  { code: "CA", name: "Canada", dialCode: "+1", flag: "🇨🇦", format: "(XXX) XXX-XXXX" },
+  { code: "GB", name: "United Kingdom", dialCode: "+44", flag: "🇬🇧", format: "XXXX XXX XXXX" },
+  { code: "AU", name: "Australia", dialCode: "+61", flag: "🇦🇺", format: "XXX XXX XXX" },
+  { code: "DE", name: "Germany", dialCode: "+49", flag: "🇩🇪", format: "XXX XXXXXXX" },
+  { code: "FR", name: "France", dialCode: "+33", flag: "🇫🇷", format: "X XX XX XX XX" },
+  { code: "TH", name: "Thailand", dialCode: "+66", flag: "🇹🇭", format: "XX XXX XXXX" },
+  { code: "SG", name: "Singapore", dialCode: "+65", flag: "🇸🇬", format: "XXXX XXXX" },
+  { code: "MY", name: "Malaysia", dialCode: "+60", flag: "🇲🇾", format: "XX XXX XXXX" },
+  { code: "PH", name: "Philippines", dialCode: "+63", flag: "🇵🇭", format: "XXX XXX XXXX" },
+  { code: "IN", name: "India", dialCode: "+91", flag: "🇮🇳", format: "XXXXX XXXXX" },
+  { code: "CN", name: "China", dialCode: "+86", flag: "🇨🇳", format: "XXX XXXX XXXX" },
+  { code: "JP", name: "Japan", dialCode: "+81", flag: "🇯🇵", format: "XX XXXX XXXX" },
+  { code: "KR", name: "South Korea", dialCode: "+82", flag: "🇰🇷", format: "XX XXXX XXXX" },
+  { code: "HK", name: "Hong Kong", dialCode: "+852", flag: "🇭🇰", format: "XXXX XXXX" },
+];
 
 // Schema for login form
 const loginSchema = z.object({
@@ -33,6 +52,8 @@ const signupSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
   confirmPassword: z.string(),
+  countryCode: z.string({ required_error: "Please select a country" }),
+  mobileNumber: z.string().min(6, { message: "Please enter a valid mobile number" }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -129,8 +150,32 @@ const Auth = () => {
       email: "",
       password: "",
       confirmPassword: "",
+      countryCode: "",
+      mobileNumber: "",
     },
   });
+
+  const selectedCountry = countries.find(c => c.code === signupForm.watch("countryCode"));
+
+  // Format mobile number based on selected country
+  const formatMobileNumber = (value: string, countryCode: string) => {
+    const country = countries.find(c => c.code === countryCode);
+    if (!country) return value;
+    
+    // Remove all non-digits
+    const digits = value.replace(/\D/g, '');
+    
+    // Apply formatting based on country format
+    let formatted = digits;
+    const format = country.format;
+    let digitIndex = 0;
+    
+    formatted = format.replace(/X/g, () => {
+      return digitIndex < digits.length ? digits[digitIndex++] : '';
+    });
+    
+    return formatted.slice(0, formatted.lastIndexOf('X') + 1 >= 0 ? formatted.lastIndexOf(digits[digits.length - 1]) + 1 : formatted.length);
+  };
 
   const handleLogin = async (values: LoginFormValues) => {
     setIsLoading(true);
@@ -191,6 +236,11 @@ const Auth = () => {
   const handleSignup = async (values: SignupFormValues) => {
     if (!selectedRole) return;
     
+    const selectedCountryData = countries.find(c => c.code === values.countryCode);
+    const fullMobileNumber = selectedCountryData 
+      ? `${selectedCountryData.dialCode}${values.mobileNumber.replace(/\D/g, '')}`
+      : values.mobileNumber;
+    
     setIsLoading(true);
     try {
       if (selectedRole === 'client') {
@@ -200,7 +250,9 @@ const Auth = () => {
           options: {
             data: { 
               role: selectedRole,
-              username: values.username 
+              username: values.username,
+              mobile_number: fullMobileNumber,
+              country_code: values.countryCode
             },
             emailRedirectTo: "https://adamoreveescorts.com/"
           }
@@ -220,7 +272,9 @@ const Auth = () => {
           options: {
             data: { 
               role: selectedRole,
-              username: values.username 
+              username: values.username,
+              mobile_number: fullMobileNumber,
+              country_code: values.countryCode
             },
             emailRedirectTo: "https://adamoreveescorts.com/choose-plan"
           }
@@ -442,6 +496,68 @@ const Auth = () => {
                               <FormLabel className="text-foreground">Email</FormLabel>
                               <FormControl>
                                 <Input placeholder="you@example.com" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={signupForm.control}
+                          name="countryCode"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-foreground">Country</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select your country" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="bg-background border border-border shadow-lg z-50">
+                                  {countries.map((country) => (
+                                    <SelectItem key={country.code} value={country.code}>
+                                      <div className="flex items-center gap-2">
+                                        <span>{country.flag}</span>
+                                        <span>{country.name}</span>
+                                        <span className="text-muted-foreground">({country.dialCode})</span>
+                                      </div>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={signupForm.control}
+                          name="mobileNumber"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-foreground">Mobile Number</FormLabel>
+                              <FormControl>
+                                <div className="flex">
+                                  {selectedCountry && (
+                                    <div className="flex items-center px-3 border border-r-0 border-input bg-muted rounded-l-md">
+                                      <span className="text-sm text-muted-foreground">
+                                        {selectedCountry.flag} {selectedCountry.dialCode}
+                                      </span>
+                                    </div>
+                                  )}
+                                  <Input 
+                                    placeholder={selectedCountry ? selectedCountry.format.replace(/X/g, '0') : "Enter mobile number"}
+                                    className={selectedCountry ? "rounded-l-none" : ""}
+                                    {...field}
+                                    onChange={(e) => {
+                                      const formatted = signupForm.watch("countryCode") 
+                                        ? formatMobileNumber(e.target.value, signupForm.watch("countryCode"))
+                                        : e.target.value;
+                                      field.onChange(formatted);
+                                    }}
+                                  />
+                                </div>
                               </FormControl>
                               <FormMessage />
                             </FormItem>
