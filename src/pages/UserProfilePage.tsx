@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,13 +14,14 @@ import EditProfileForm from "@/components/EditProfileForm";
 import PhotoGalleryManager from "@/components/PhotoGalleryManager";
 import PaymentFlow from "@/components/PaymentFlow";
 import AnnouncementManager from "@/components/AnnouncementManager";
-import AnnouncementFeed from "@/components/AnnouncementFeed";
+import { AnnouncementFeed } from "@/components/AnnouncementFeed";
 
 const UserProfilePage = () => {
   const navigate = useNavigate();
   const { user, profile, isLoading, refreshProfile } = useUserRole();
   const [activeTab, setActiveTab] = useState("profile");
   const [showPaymentFlow, setShowPaymentFlow] = useState(false);
+  const [showGalleryManager, setShowGalleryManager] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -29,6 +31,11 @@ const UserProfilePage = () => {
 
   const handlePaymentSuccess = () => {
     setShowPaymentFlow(false);
+    refreshProfile();
+  };
+
+  const handleGalleryUpdate = (newGallery: string[]) => {
+    // Handle gallery update
     refreshProfile();
   };
 
@@ -66,8 +73,8 @@ const UserProfilePage = () => {
           <CardHeader>
             <CardTitle className="flex items-center space-x-4">
               <Avatar>
-                <AvatarImage src={profile?.avatar_url} alt={profile?.username} />
-                <AvatarFallback>{profile?.username?.charAt(0).toUpperCase()}</AvatarFallback>
+                <AvatarImage src={profile?.avatar_url} alt={profile?.display_name || profile?.username} />
+                <AvatarFallback>{(profile?.display_name || profile?.username || 'U')?.charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
               <span>{profile?.display_name || profile?.username}</span>
               {profile?.role && (
@@ -112,14 +119,16 @@ const UserProfilePage = () => {
                 )}
               </TabsList>
               <TabsContent value="profile">
-                <EditProfileForm refreshProfile={refreshProfile} />
+                <EditProfileForm />
               </TabsContent>
               <TabsContent value="announcements">
                 <AnnouncementManager />
                 <AnnouncementFeed />
               </TabsContent>
               <TabsContent value="gallery">
-                <PhotoGalleryManager />
+                <Button onClick={() => setShowGalleryManager(true)}>
+                  Manage Photo Gallery
+                </Button>
               </TabsContent>
               <TabsContent value="settings">
                 <div>
@@ -132,7 +141,7 @@ const UserProfilePage = () => {
               </TabsContent>
               <TabsContent value="subscription">
                 {showPaymentFlow ? (
-                  <PaymentFlow role={profile.role} onPaymentComplete={handlePaymentSuccess} />
+                  <PaymentFlow onPaymentComplete={handlePaymentSuccess} />
                 ) : (
                   <div className="text-center">
                     <p className="text-muted-foreground">Loading subscription options...</p>
@@ -144,6 +153,17 @@ const UserProfilePage = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Photo Gallery Manager Dialog */}
+      {showGalleryManager && user && (
+        <PhotoGalleryManager
+          isOpen={showGalleryManager}
+          onClose={() => setShowGalleryManager(false)}
+          userId={user.id}
+          currentGallery={[]}
+          onGalleryUpdate={handleGalleryUpdate}
+        />
+      )}
     </div>
   );
 };

@@ -8,6 +8,9 @@ interface UserProfile {
   role: 'escort' | 'client' | 'agency' | 'admin';
   display_name?: string;
   email?: string;
+  username?: string;
+  avatar_url?: string;
+  payment_status?: string;
 }
 
 interface UserRoleContextType {
@@ -15,6 +18,8 @@ interface UserRoleContextType {
   session: Session | null;
   profile: UserProfile | null;
   loading: boolean;
+  isLoading: boolean;
+  refreshProfile: () => Promise<void>;
 }
 
 const UserRoleContext = createContext<UserRoleContextType>({
@@ -22,6 +27,8 @@ const UserRoleContext = createContext<UserRoleContextType>({
   session: null,
   profile: null,
   loading: true,
+  isLoading: true,
+  refreshProfile: async () => {},
 });
 
 export const UserRoleProvider = ({ children }: { children: React.ReactNode }) => {
@@ -34,7 +41,7 @@ export const UserRoleProvider = ({ children }: { children: React.ReactNode }) =>
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, role, display_name, email')
+        .select('id, role, display_name, email, username, profile_picture, payment_status')
         .eq('id', userId)
         .single();
 
@@ -43,10 +50,20 @@ export const UserRoleProvider = ({ children }: { children: React.ReactNode }) =>
         return null;
       }
 
-      return data as UserProfile;
+      return {
+        ...data,
+        avatar_url: data.profile_picture
+      } as UserProfile;
     } catch (error) {
       console.error('Error fetching profile:', error);
       return null;
+    }
+  };
+
+  const refreshProfile = async () => {
+    if (user) {
+      const userProfile = await fetchProfile(user.id);
+      setProfile(userProfile);
     }
   };
 
@@ -85,7 +102,14 @@ export const UserRoleProvider = ({ children }: { children: React.ReactNode }) =>
   }, []);
 
   return (
-    <UserRoleContext.Provider value={{ user, session, profile, loading }}>
+    <UserRoleContext.Provider value={{ 
+      user, 
+      session, 
+      profile, 
+      loading, 
+      isLoading: loading, 
+      refreshProfile 
+    }}>
       {children}
     </UserRoleContext.Provider>
   );
