@@ -5,20 +5,22 @@ import { getPhotoLimitsByTier, PhotoLimits } from '@/utils/photoLimits';
 
 interface PhotoUsage {
   totalCount: number;
+  videoCount: number;
 }
 
 interface UsePhotoLimitsReturn {
   limits: PhotoLimits;
   usage: PhotoUsage;
   canUploadMore: boolean;
+  canUploadVideo: boolean;
   subscriptionTier: string | null;
   loading: boolean;
   refresh: () => Promise<void>;
 }
 
 export const usePhotoLimits = (userId: string): UsePhotoLimitsReturn => {
-  const [limits, setLimits] = useState<PhotoLimits>({ totalPhotos: 1, galleryPhotos: 0, profilePhoto: 1 });
-  const [usage, setUsage] = useState<PhotoUsage>({ totalCount: 0 });
+  const [limits, setLimits] = useState<PhotoLimits>({ totalPhotos: 1, galleryPhotos: 0, profilePhoto: 1, videos: 1 });
+  const [usage, setUsage] = useState<PhotoUsage>({ totalCount: 0, videoCount: 0 });
   const [subscriptionTier, setSubscriptionTier] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -42,10 +44,10 @@ export const usePhotoLimits = (userId: string): UsePhotoLimitsReturn => {
         }
       }
 
-      // Get current photo usage - count all photos in gallery_images array
+      // Get current photo and video usage
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('gallery_images')
+        .select('gallery_images, gallery_videos')
         .eq('id', userId)
         .single();
 
@@ -54,11 +56,13 @@ export const usePhotoLimits = (userId: string): UsePhotoLimitsReturn => {
         return;
       }
 
-      // Count total photos in the unified photo pool
+      // Count total photos and videos
       const totalCount = profile?.gallery_images ? profile.gallery_images.length : 0;
+      const videoCount = profile?.gallery_videos ? profile.gallery_videos.length : 0;
 
       setUsage({
-        totalCount
+        totalCount,
+        videoCount
       });
 
     } catch (error) {
@@ -77,11 +81,13 @@ export const usePhotoLimits = (userId: string): UsePhotoLimitsReturn => {
   }, [subscriptionTier]);
 
   const canUploadMore = usage.totalCount < limits.totalPhotos;
+  const canUploadVideo = usage.videoCount < limits.videos;
 
   return {
     limits,
     usage,
     canUploadMore,
+    canUploadVideo,
     subscriptionTier,
     loading,
     refresh: fetchPhotoLimitsAndUsage

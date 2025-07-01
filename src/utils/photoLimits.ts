@@ -3,6 +3,7 @@ export interface PhotoLimits {
   totalPhotos: number;
   galleryPhotos: number;
   profilePhoto: number;
+  videos: number;
 }
 
 export const getPhotoLimitsByTier = (subscriptionTier: string | null): PhotoLimits => {
@@ -10,7 +11,8 @@ export const getPhotoLimitsByTier = (subscriptionTier: string | null): PhotoLimi
   const defaultLimits: PhotoLimits = {
     totalPhotos: 1,
     galleryPhotos: 0,
-    profilePhoto: 1
+    profilePhoto: 1,
+    videos: 1 // All tiers get 1 video
   };
 
   if (!subscriptionTier) return defaultLimits;
@@ -22,28 +24,32 @@ export const getPhotoLimitsByTier = (subscriptionTier: string | null): PhotoLimi
       return {
         totalPhotos: 11,
         galleryPhotos: 10,
-        profilePhoto: 1
+        profilePhoto: 1,
+        videos: 1
       };
     
     case 'Package2': // 4 Weeks Package 2
       return {
         totalPhotos: 16,
         galleryPhotos: 15,
-        profilePhoto: 1
+        profilePhoto: 1,
+        videos: 1
       };
     
     case 'Package3': // 12 Weeks Package 3
       return {
         totalPhotos: 31,
         galleryPhotos: 30,
-        profilePhoto: 1
+        profilePhoto: 1,
+        videos: 1
       };
     
     case 'Package4': // 52 Weeks Package 4
       return {
         totalPhotos: 51,
         galleryPhotos: 50,
-        profilePhoto: 1
+        profilePhoto: 1,
+        videos: 1
       };
     
     default:
