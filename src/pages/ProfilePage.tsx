@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,7 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
-import MessageButton from "@/components/messaging/MessageButton";
+import { MessageButton } from "@/components/messaging/MessageButton";
 import SocialMediaLinks from "@/components/SocialMediaLinks";
 
 interface ProfileData {
