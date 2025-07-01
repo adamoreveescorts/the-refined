@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Check, Search, Filter, Star, X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { LocationSelector } from '@/components/LocationSelector';
 import {
   Select,
   SelectContent,
@@ -175,12 +177,10 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
       {/* Location */}
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Location</label>
-        <Input 
-          type="text" 
-          placeholder="Enter city or region"
+        <LocationSelector
           value={filters.location || ''}
-          onChange={(e) => handleFilterChange({ ...filters, location: e.target.value })}
-          className="bg-background border-border text-foreground"
+          onValueChange={(value) => handleFilterChange({ ...filters, location: value })}
+          placeholder="Select city or region"
         />
       </div>
       
