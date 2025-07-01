@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -18,7 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Eye, Edit, Star, StarOff, Check, X, Shield, User, Camera } from 'lucide-react';
+import { MoreHorizontal, Eye, Edit, Star, StarOff, Check, X, Shield, User, Camera, Phone, Flag } from 'lucide-react';
 import ProfileDetailsModal from './ProfileDetailsModal';
 import ProfileEditModal from './ProfileEditModal';
 import AdminPhotoGalleryManager from './AdminPhotoGalleryManager';
@@ -152,6 +153,7 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
               <TableHead className="w-16">Photo</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
+              <TableHead>Phone</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Location</TableHead>
@@ -184,6 +186,22 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
                   </div>
                 </TableCell>
                 <TableCell>{profile.email}</TableCell>
+                <TableCell>
+                  {profile.phone ? (
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-sm">{profile.phone}</span>
+                      {profile.country_code && (
+                        <Badge variant="outline" className="text-xs">
+                          <Flag className="h-2 w-2 mr-1" />
+                          {profile.country_code}
+                        </Badge>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground text-sm">N/A</span>
+                  )}
+                </TableCell>
                 <TableCell>{getRoleBadge(profile.role)}</TableCell>
                 <TableCell>{getStatusBadge(profile.status)}</TableCell>
                 <TableCell>{profile.location || 'N/A'}</TableCell>

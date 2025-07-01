@@ -317,6 +317,7 @@ export type Database = {
           availability: string | null
           bio: string | null
           body_type: string | null
+          country_code: string | null
           created_at: string
           cup_size: string | null
           dinner_rate: string | null
@@ -374,6 +375,7 @@ export type Database = {
           availability?: string | null
           bio?: string | null
           body_type?: string | null
+          country_code?: string | null
           created_at?: string
           cup_size?: string | null
           dinner_rate?: string | null
@@ -431,6 +433,7 @@ export type Database = {
           availability?: string | null
           bio?: string | null
           body_type?: string | null
+          country_code?: string | null
           created_at?: string
           cup_size?: string | null
           dinner_rate?: string | null

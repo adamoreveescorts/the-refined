@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,6 +48,7 @@ interface UserProfile {
   tattoos?: boolean | null;
   piercings?: boolean | null;
   phone?: string | null;
+  country_code?: string | null;
   gallery_images?: string[] | null;
 }
 
@@ -121,6 +123,7 @@ const EditProfilePage = () => {
         tattoos: data.tattoos,
         piercings: data.piercings,
         phone: data.phone,
+        country_code: data.country_code,
         gallery_images: data.gallery_images,
       });
     } catch (error) {

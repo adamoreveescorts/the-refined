@@ -243,48 +243,32 @@ const Auth = () => {
     
     setIsLoading(true);
     try {
-      if (selectedRole === 'client') {
-        const { data, error } = await supabase.auth.signUp({
-          email: values.email,
-          password: values.password,
-          options: {
-            data: { 
-              role: selectedRole,
-              username: values.username,
-              mobile_number: fullMobileNumber,
-              country_code: values.countryCode
-            },
-            emailRedirectTo: "https://adamoreveescorts.com/"
-          }
-        });
-        
-        if (error) {
-          throw error;
+      const signupData = {
+        email: values.email,
+        password: values.password,
+        options: {
+          data: { 
+            role: selectedRole,
+            username: values.username,
+            mobile_number: fullMobileNumber,
+            country_code: values.countryCode
+          },
+          emailRedirectTo: selectedRole === 'client' 
+            ? "https://adamoreveescorts.com/"
+            : "https://adamoreveescorts.com/choose-plan"
         }
-        
-        setVerificationSent(true);
+      };
+
+      const { data, error } = await supabase.auth.signUp(signupData);
+      
+      if (error) {
+        throw error;
+      }
+      
+      setVerificationSent(true);
+      if (selectedRole === 'client') {
         toast.success("Verification email sent! Please check your inbox.");
       } else {
-        // For escorts and agencies, create account and redirect to choose-plan after verification
-        const { data, error } = await supabase.auth.signUp({
-          email: values.email,
-          password: values.password,
-          options: {
-            data: { 
-              role: selectedRole,
-              username: values.username,
-              mobile_number: fullMobileNumber,
-              country_code: values.countryCode
-            },
-            emailRedirectTo: "https://adamoreveescorts.com/choose-plan"
-          }
-        });
-        
-        if (error) {
-          throw error;
-        }
-        
-        setVerificationSent(true);
         toast.success("Account created! Please check your email for verification, then you'll be able to choose your subscription plan.");
       }
     } catch (error: any) {
