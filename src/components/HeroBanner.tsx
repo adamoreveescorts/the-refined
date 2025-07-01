@@ -408,7 +408,7 @@ const HeroBanner = () => {
           </p>
           
           {/* CTA Buttons */}
-          <div className={`flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center px-2 sm:px-0 transition-all duration-700 delay-200 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+          <div className={`flex flex-row gap-2 sm:gap-4 justify-center px-2 sm:px-0 transition-all duration-700 delay-200 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
             <Link to="/directory">
               <Button variant="outline" className="text-white border-white bg-zinc-500 hover:bg-zinc-400 text-sm sm:text-base px-4 py-2 sm:px-6 sm:py-3">
                 Browse Escorts
