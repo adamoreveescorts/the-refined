@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Star, Crown, Shield, Clock, Zap } from "lucide-react";
+import { CheckCircle, Star, Crown, Zap } from "lucide-react";
 
 export interface SubscriptionTier {
   id: string;
@@ -13,29 +13,11 @@ export interface SubscriptionTier {
   durationDays: number;
   features: string[];
   recommended?: boolean;
-  trial?: boolean;
   recurring?: boolean;
   stripePriceId?: string;
 }
 
 const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
-  {
-    id: "trial",
-    name: "7-Day Free Trial",
-    price: 0,
-    duration: "7 Days",
-    durationDays: 7,
-    trial: true,
-    features: [
-      "7 days free access to all features",
-      "Same State base locations",
-      "Ad positioning below standard ads",
-      "6 photos (+ 1 main photo)",
-      "Photo verification available",
-      "Photo blurring available",
-      "Manual boosting available"
-    ]
-  },
   {
     id: "package_1_weekly",
     name: "Limited Time Package 1",
@@ -151,15 +133,13 @@ const SubscriptionTierSelector = ({
   };
 
   const getTierIcon = (tierId: string) => {
-    if (tierId === "trial") return <Clock className="h-6 w-6 text-blue-500" />;
-    if (tierId === "package_1_weekly") return <Clock className="h-6 w-6 text-blue-500" />;
+    if (tierId === "package_1_weekly") return <Zap className="h-6 w-6 text-blue-500" />;
     if (tierId === "package_2_monthly") return <Zap className="h-6 w-6 text-purple-500" />;
     if (tierId === "package_3_quarterly") return <Star className="h-6 w-6 text-gold" />;
     return <Crown className="h-6 w-6 text-gold" />;
   };
 
   const isCurrentTier = (tierId: string) => {
-    if (currentTier === 'Trial' && tierId === 'trial') return true;
     if (currentTier === 'Package1' && tierId === 'package_1_weekly') return true;
     if (currentTier === 'Package2' && tierId === 'package_2_monthly') return true;
     if (currentTier === 'Package3' && tierId === 'package_3_quarterly') return true;
@@ -173,13 +153,13 @@ const SubscriptionTierSelector = ({
         <div className="text-center space-y-2 mb-8">
           <h3 className="text-xl font-semibold text-foreground">Choose Your First Plan</h3>
           <p className="text-muted-foreground">
-            You don't have an active subscription yet. Select a plan to start using premium features.
+            Select a subscription plan to start using premium features and get your profile listed.
           </p>
         </div>
       )}
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {SUBSCRIPTION_TIERS.filter(tier => !(tier.trial && hasUsedTrial)).map((tier) => {
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+        {SUBSCRIPTION_TIERS.map((tier) => {
           const isCurrent = isCurrentTier(tier.id);
           
           return (
@@ -191,19 +171,8 @@ const SubscriptionTierSelector = ({
                 tier.recommended ? 'border-gold' : ''
               } ${
                 isCurrent ? 'ring-2 ring-green-500 bg-accent' : ''
-              } ${
-                tier.trial ? 'border-blue-500' : ''
               }`}
             >
-              {tier.trial && !hasUsedTrial && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-blue-500 text-white px-3 py-1">
-                    <Clock className="h-3 w-3 mr-1" />
-                    Free Trial
-                  </Badge>
-                </div>
-              )}
-              
               {tier.recommended && !isCurrent && (
                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                   <Badge className="bg-gold text-white px-3 py-1">
@@ -229,18 +198,11 @@ const SubscriptionTierSelector = ({
                 <CardTitle className="text-foreground text-lg">{tier.name}</CardTitle>
                 <CardDescription className="space-y-1">
                   <div className="text-2xl font-bold text-foreground">
-                    {tier.price === 0 ? "Free" : `$${tier.price} AUD`}
-                    {tier.recurring && (
-                      <span className="text-sm font-normal">/{tier.duration.toLowerCase()}</span>
-                    )}
+                    ${tier.price} AUD
+                    <span className="text-sm font-normal">/{tier.duration.toLowerCase()}</span>
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {tier.trial 
-                      ? "7 days free, then choose a plan" 
-                      : tier.recurring 
-                        ? `Billed ${tier.duration.toLowerCase()}` 
-                        : tier.duration
-                    }
+                    Billed {tier.duration.toLowerCase()}
                   </div>
                 </CardDescription>
               </CardHeader>
@@ -257,26 +219,18 @@ const SubscriptionTierSelector = ({
                 
                 <Button
                   onClick={() => handleSelectTier(tier)}
-                  disabled={loading === tier.id || isCurrent || (tier.trial && hasUsedTrial)}
+                  disabled={loading === tier.id || isCurrent}
                   className={`w-full mt-auto ${
                     isCurrent 
                       ? "bg-green-500 hover:bg-green-500 cursor-not-allowed text-white" 
-                      : tier.trial 
-                        ? "bg-blue-500 hover:bg-blue-600 text-white" 
-                        : "btn-gold"
+                      : "btn-gold"
                   }`}
                 >
                   {loading === tier.id 
                     ? "Processing..." 
                     : isCurrent 
                       ? "Your Current Plan" 
-                      : tier.trial && hasUsedTrial 
-                        ? "Trial Used" 
-                        : tier.trial 
-                          ? "Start Free Trial" 
-                          : tier.recurring 
-                            ? `Subscribe ${tier.duration}` 
-                            : "Select Package"
+                      : `Subscribe ${tier.duration}`
                   }
                 </Button>
               </CardContent>

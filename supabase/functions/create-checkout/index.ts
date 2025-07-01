@@ -13,15 +13,8 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
-// Define subscription tiers with consistent naming
+// Define subscription tiers with consistent naming (removed trial)
 const SUBSCRIPTION_TIERS = {
-  trial: { 
-    name: "7-Day Free Trial", 
-    price: 0, 
-    duration: "7 Days", 
-    durationDays: 7, 
-    subscriptionTier: "Trial"
-  },
   package_1_weekly: { 
     name: "Limited Time Package 1", 
     price: 1500, // $15 in cents
@@ -135,95 +128,7 @@ serve(async (req) => {
     const selectedTier = SUBSCRIPTION_TIERS[tier as keyof typeof SUBSCRIPTION_TIERS];
     logStep("Tier selected", { tier, selectedTier });
 
-    // Handle free trial activation - separate flow
-    if (tier === 'trial') {
-      logStep("Processing free trial activation");
-      
-      // Check if user has already used trial
-      const { data: existingSubscriber, error: checkError } = await supabaseClient
-        .from("subscribers")
-        .select("trial_start_date, subscription_tier")
-        .eq("email", user.email)
-        .single();
-
-      if (checkError && checkError.code !== 'PGRST116') {
-        logStep("ERROR: Database error checking existing subscriber", { error: checkError });
-        return new Response(JSON.stringify({ error: "Database error" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 500,
-        });
-      }
-
-      if (existingSubscriber?.trial_start_date) {
-        logStep("ERROR: Trial already used", { existingSubscriber });
-        return new Response(JSON.stringify({ error: "Free trial has already been used" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 400,
-        });
-      }
-
-      const now = new Date();
-      const trialEnd = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000)); // 7 days from now
-
-      logStep("Creating trial subscription record", { now: now.toISOString(), trialEnd: trialEnd.toISOString() });
-
-      const { error: updateError } = await supabaseClient.from("subscribers").upsert({
-        email: user.email,
-        user_id: user.id,
-        stripe_customer_id: null,
-        subscribed: false,
-        subscription_tier: "Trial", // Use consistent tier naming
-        subscription_type: 'free', // Use 'free' for trial subscriptions
-        plan_duration: selectedTier.duration,
-        plan_price: 0,
-        expires_at: trialEnd.toISOString(),
-        trial_start_date: now.toISOString(),
-        trial_end_date: trialEnd.toISOString(),
-        is_trial_active: true,
-        is_featured: false,
-        photo_verified: false,
-        subscription_status: 'active',
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'email' });
-
-      if (updateError) {
-        logStep("ERROR: Failed to update subscriber record", { error: updateError });
-        return new Response(JSON.stringify({ 
-          error: "Failed to activate trial", 
-          details: updateError.message 
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 500,
-        });
-      }
-
-      // Update profile status
-      const { error: profileError } = await supabaseClient
-        .from('profiles')
-        .update({ 
-          payment_status: 'completed',
-          is_active: true 
-        })
-        .eq('id', user.id);
-
-      if (profileError) {
-        logStep("WARNING: Failed to update profile", { error: profileError });
-        // Don't fail the entire request for profile update issues
-      }
-
-      logStep("Free trial activated successfully", { userId: user.id, trialEnd });
-      return new Response(JSON.stringify({ 
-        success: true, 
-        message: "7-day free trial activated successfully!",
-        tier: "Trial",
-        expires_at: trialEnd.toISOString()
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
-
-    // Handle paid recurring subscriptions
+    // All tiers are now paid recurring subscriptions
     logStep("Processing paid subscription");
     const stripe = new Stripe(stripeSecret, { 
       apiVersion: "2023-10-16" 

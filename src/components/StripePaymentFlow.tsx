@@ -1,10 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import SubscriptionTierSelector, { SubscriptionTier } from "./SubscriptionTierSelector";
-import FreeTrialConfirmDialog from "./FreeTrialConfirmDialog";
 import AgencySubscriptionSetup from "./AgencySubscriptionSetup";
 
 interface StripePaymentFlowProps {
@@ -17,7 +17,6 @@ interface StripePaymentFlowProps {
 const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: StripePaymentFlowProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [subscriptionInfo, setSubscriptionInfo] = useState<any>(null);
-  const [showTrialDialog, setShowTrialDialog] = useState(false);
 
   useEffect(() => {
     checkSubscriptionStatus();
@@ -53,12 +52,6 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
   };
 
   const handleTierSelect = async (tier: SubscriptionTier) => {
-    // Handle free trial with confirmation dialog (only for escorts)
-    if (tier.id === 'trial' && role === 'escort') {
-      setShowTrialDialog(true);
-      return;
-    }
-
     setIsLoading(true);
     try {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -90,19 +83,13 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
         throw error;
       }
 
-      if (tier.id === 'basic') {
-        // Free tier, no payment needed
-        toast.success("Basic plan activated successfully!");
+      // All tiers are now paid, redirect to Stripe
+      if (data?.url) {
+        window.open(data.url, '_blank');
+        toast.success("Redirected to Stripe checkout. Complete your payment to activate your recurring plan.");
         onPaymentComplete();
       } else {
-        // Paid tier, redirect to Stripe
-        if (data?.url) {
-          window.open(data.url, '_blank');
-          toast.success("Redirected to Stripe checkout. Complete your payment to activate your recurring plan.");
-          onPaymentComplete();
-        } else {
-          throw new Error("No checkout URL received");
-        }
+        throw new Error("No checkout URL received");
       }
     } catch (error: any) {
       console.error("Payment error:", error);
@@ -158,60 +145,46 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
     }
   };
 
-  const handleTrialActivated = () => {
-    checkSubscriptionStatus();
-    onPaymentComplete();
-  };
-
   return (
-    <>
-      <Card className="w-full max-w-4xl mx-auto">
-        <CardHeader>
-          <CardTitle className="text-center text-foreground">
-            Choose Your Subscription Plan
-          </CardTitle>
-          <CardDescription className="text-center text-muted-foreground">
-            {role === 'agency' 
-              ? "Select your agency subscription with recurring monthly or yearly billing"
-              : "Start with a free 7-day trial, then choose a recurring plan that fits your needs"
-            }
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {role === 'agency' ? (
-            <AgencySubscriptionSetup 
-              onSubscriptionCreate={handleAgencySubscriptionCreate}
-              isLoading={isLoading}
-            />
-          ) : (
-            <SubscriptionTierSelector 
-              onTierSelect={handleTierSelect}
-              role={role}
-              currentTier={subscriptionInfo?.subscription_tier}
-              hasUsedTrial={subscriptionInfo?.has_used_trial}
-            />
-          )}
-          
-          <div className="flex justify-center">
-            <button 
-              onClick={onCancel}
-              className="flex items-center text-muted-foreground hover:text-foreground"
-              disabled={isLoading}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Registration
-            </button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <FreeTrialConfirmDialog
-        open={showTrialDialog}
-        onOpenChange={setShowTrialDialog}
-        role={role}
-        onTrialActivated={handleTrialActivated}
-      />
-    </>
+    <Card className="w-full max-w-4xl mx-auto">
+      <CardHeader>
+        <CardTitle className="text-center text-foreground">
+          Choose Your Subscription Plan
+        </CardTitle>
+        <CardDescription className="text-center text-muted-foreground">
+          {role === 'agency' 
+            ? "Select your agency subscription with recurring monthly or yearly billing"
+            : "Choose a recurring plan that fits your needs to get started"
+          }
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {role === 'agency' ? (
+          <AgencySubscriptionSetup 
+            onSubscriptionCreate={handleAgencySubscriptionCreate}
+            isLoading={isLoading}
+          />
+        ) : (
+          <SubscriptionTierSelector 
+            onTierSelect={handleTierSelect}
+            role={role}
+            currentTier={subscriptionInfo?.subscription_tier}
+            hasUsedTrial={subscriptionInfo?.has_used_trial}
+          />
+        )}
+        
+        <div className="flex justify-center">
+          <button 
+            onClick={onCancel}
+            className="flex items-center text-muted-foreground hover:text-foreground"
+            disabled={isLoading}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Registration
+          </button>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

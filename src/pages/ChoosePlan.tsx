@@ -78,7 +78,7 @@ const ChoosePlan = () => {
           setShowPaymentFlow(true);
         }
       } else if (profile.role === 'escort') {
-        // For escorts, they need to choose a plan (no more automatic Basic assignment)
+        // For escorts, they need to choose a paid plan (no free trial)
         setShowPaymentFlow(true);
       }
 
