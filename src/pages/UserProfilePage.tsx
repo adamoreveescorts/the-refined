@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,12 +13,14 @@ import EditProfileForm from "@/components/EditProfileForm";
 import PhotoGalleryManager from "@/components/PhotoGalleryManager";
 import AnnouncementManager from "@/components/AnnouncementManager";
 import { AnnouncementFeed } from "@/components/AnnouncementFeed";
+import { ImageZoomModal } from "@/components/ImageZoomModal";
 
 const UserProfilePage = () => {
   const navigate = useNavigate();
   const { user, profile, isLoading, refreshProfile } = useUserRole();
   const [activeTab, setActiveTab] = useState("profile");
   const [showGalleryManager, setShowGalleryManager] = useState(false);
+  const [showZoomModal, setShowZoomModal] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -65,10 +66,15 @@ const UserProfilePage = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-4">
-              <Avatar>
-                <AvatarImage src={profile?.avatar_url} alt={profile?.display_name || profile?.username} />
-                <AvatarFallback>{(profile?.display_name || profile?.username || 'U')?.charAt(0).toUpperCase()}</AvatarFallback>
-              </Avatar>
+              <div 
+                className="cursor-pointer transition-transform hover:scale-105"
+                onClick={() => setShowZoomModal(true)}
+              >
+                <Avatar>
+                  <AvatarImage src={profile?.avatar_url} alt={profile?.display_name || profile?.username} />
+                  <AvatarFallback>{(profile?.display_name || profile?.username || 'U')?.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+              </div>
               <span>{profile?.display_name || profile?.username}</span>
               {profile?.role && (
                 <Badge variant="secondary">{profile?.role}</Badge>
@@ -142,6 +148,14 @@ const UserProfilePage = () => {
           onGalleryUpdate={handleGalleryUpdate}
         />
       )}
+
+      {/* Image Zoom Modal */}
+      <ImageZoomModal
+        isOpen={showZoomModal}
+        onClose={() => setShowZoomModal(false)}
+        imageUrl={profile?.avatar_url || ''}
+        altText={`${profile?.display_name || profile?.username || 'User'} profile picture`}
+      />
     </div>
   );
 };

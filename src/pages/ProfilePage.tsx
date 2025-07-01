@@ -26,6 +26,7 @@ import { MessageButton } from "@/components/messaging/MessageButton";
 import SocialMediaLinks from "@/components/SocialMediaLinks";
 import { ContactRequestDialog } from "@/components/ContactRequestDialog";
 import { FollowButton } from "@/components/FollowButton";
+import { ImageZoomModal } from "@/components/ImageZoomModal";
 
 interface ProfileData {
   id: string;
@@ -75,6 +76,7 @@ const ProfilePage = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showContactDialog, setShowContactDialog] = useState(false);
+  const [showZoomModal, setShowZoomModal] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -178,7 +180,8 @@ const ProfilePage = () => {
                       <img
                         src={allImages[currentImageIndex]}
                         alt={`${profile.display_name || "Profile"} - Image ${currentImageIndex + 1}`}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
+                        onClick={() => setShowZoomModal(true)}
                       />
                       {allImages.length > 1 && (
                         <>
@@ -557,6 +560,14 @@ const ProfilePage = () => {
         onClose={() => setShowContactDialog(false)}
         escortId={profile.id}
         escortName={profile.display_name || "Anonymous"}
+      />
+
+      {/* Image Zoom Modal */}
+      <ImageZoomModal
+        isOpen={showZoomModal}
+        onClose={() => setShowZoomModal(false)}
+        imageUrl={allImages[currentImageIndex] || ''}
+        altText={`${profile.display_name || "Profile"} - Image ${currentImageIndex + 1}`}
       />
     </div>
   );
