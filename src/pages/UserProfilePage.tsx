@@ -50,30 +50,25 @@ const UserProfilePage = () => {
   const checkAuthAndFetchProfile = async () => {
     try {
       setLoading(true);
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const {
+        data: {
+          session
+        }
+      } = await supabase.auth.getSession();
       if (!session) {
         toast.error("Please log in to view your profile");
         navigate("/auth");
         return;
       }
-      
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", session.user.id)
-        .single();
-        
+      const {
+        data,
+        error
+      } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
       if (error) {
         console.error("Error fetching profile:", error);
         toast.error("Failed to load profile");
         return;
       }
-      
-      console.log('Profile data fetched:', data); // Debug log
-      console.log('Phone number from database:', data.phone); // Debug log specifically for phone
-      
       setProfile({
         id: data.id,
         email: data.email || session.user.email,
@@ -85,7 +80,7 @@ const UserProfilePage = () => {
         is_active: data.is_active || false,
         profile_picture: data.profile_picture,
         gallery_images: data.gallery_images,
-        phone: data.phone || null // Ensure phone is properly set
+        phone: data.phone
       });
 
       // Check subscription status for paid roles

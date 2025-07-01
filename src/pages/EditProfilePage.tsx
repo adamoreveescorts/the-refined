@@ -84,9 +84,6 @@ const EditProfilePage = () => {
         return;
       }
       
-      console.log('Edit profile - Profile data fetched:', data); // Debug log
-      console.log('Edit profile - Phone number from database:', data.phone); // Debug log
-      
       setProfile({
         id: data.id,
         email: data.email || session.user.email,
@@ -123,7 +120,7 @@ const EditProfilePage = () => {
         tags: data.tags,
         tattoos: data.tattoos,
         piercings: data.piercings,
-        phone: data.phone || null, // Ensure phone is properly mapped
+        phone: data.phone,
         gallery_images: data.gallery_images,
       });
     } catch (error) {
