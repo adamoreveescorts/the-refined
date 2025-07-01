@@ -144,7 +144,7 @@ serve(async (req) => {
       });
     }
 
-    // If expired or no subscription, check Stripe for any payments
+    // Check for valid paid subscriptions
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     
@@ -184,10 +184,16 @@ serve(async (req) => {
         const subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
         logStep("Active recurring subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
         
+        // Map tier based on subscription metadata or price
+        let tierName = 'Package2'; // Default to Package2 if we can't determine
+        if (subscription.metadata?.subscription_tier) {
+          tierName = subscription.metadata.subscription_tier;
+        }
+        
         subscriptionData = {
           ...subscriptionData,
           subscribed: true,
-          subscription_tier: 'Platinum',
+          subscription_tier: tierName,
           subscription_type: 'recurring',
           subscription_end: subscriptionEnd,
           is_featured: true,
@@ -204,7 +210,7 @@ serve(async (req) => {
         const successfulPayments = paymentIntents.data.filter(pi => 
           pi.status === 'succeeded' && 
           pi.metadata?.tier && 
-          pi.metadata?.duration_days
+          pi.metadata?.subscription_tier
         );
 
         if (successfulPayments.length > 0) {
@@ -212,12 +218,13 @@ serve(async (req) => {
           const latestPayment = successfulPayments[0];
           
           const paymentDate = new Date(latestPayment.created * 1000);
-          const durationDays = parseInt(latestPayment.metadata.duration_days || '0');
+          const durationDays = parseInt(latestPayment.metadata.duration_days || '30');
           const expiresAt = new Date(paymentDate.getTime() + (durationDays * 24 * 60 * 60 * 1000));
           
           logStep("Found successful payment", { 
             paymentId: latestPayment.id, 
             tier: latestPayment.metadata.tier,
+            subscriptionTier: latestPayment.metadata.subscription_tier,
             durationDays,
             expiresAt 
           });
@@ -226,7 +233,7 @@ serve(async (req) => {
             subscriptionData = {
               ...subscriptionData,
               subscribed: true,
-              subscription_tier: 'Platinum',
+              subscription_tier: latestPayment.metadata.subscription_tier,
               subscription_type: 'one_time',
               plan_duration: `${durationDays} days`,
               plan_price: latestPayment.amount,
@@ -243,7 +250,7 @@ serve(async (req) => {
         }
       }
     } else {
-      logStep("No Stripe customer found");
+      logStep("No Stripe customer found - user has no subscription");
     }
 
     // Update profile visibility based on subscription status
@@ -255,7 +262,10 @@ serve(async (req) => {
       })
       .eq('id', user.id);
 
-    await supabaseClient.from("subscribers").upsert(subscriptionData, { onConflict: 'email' });
+    // Only upsert if there's actual subscription data or if we need to clear old data
+    if (subscriptionData.subscription_tier || currentSub) {
+      await supabaseClient.from("subscribers").upsert(subscriptionData, { onConflict: 'email' });
+    }
 
     logStep("Updated database with subscription info", { 
       subscribed: subscriptionData.subscribed, 

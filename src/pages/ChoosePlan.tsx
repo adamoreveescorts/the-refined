@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,7 +33,7 @@ const ChoosePlan = () => {
 
       setUser(session.user);
 
-      // Get user profile to check role and subscription status
+      // Get user profile to check role
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('role, payment_status')
@@ -53,7 +54,7 @@ const ChoosePlan = () => {
 
       setUserRole(profile.role as UserRole);
 
-      // Handle different user roles and payment statuses
+      // Handle different user roles
       if (profile.role === 'client') {
         // Clients don't need subscriptions, redirect to home
         navigate("/");
@@ -77,14 +78,8 @@ const ChoosePlan = () => {
           setShowPaymentFlow(true);
         }
       } else if (profile.role === 'escort') {
-        // For escorts, check payment status
-        if (profile.payment_status === 'completed') {
-          navigate("/");
-          return;
-        } else {
-          // Escort needs subscription, show payment flow
-          setShowPaymentFlow(true);
-        }
+        // For escorts, they need to choose a plan (no more automatic Basic assignment)
+        setShowPaymentFlow(true);
       }
 
     } catch (error) {
@@ -100,7 +95,7 @@ const ChoosePlan = () => {
     setShowPaymentFlow(false);
     toast.success("Plan selected successfully! Welcome to Adam or Eve Escorts.");
     
-    // Redirect based on user role - send to edit-profile page instead of home
+    // Redirect based on user role
     if (userRole === 'agency') {
       navigate("/agency/dashboard");
     } else {
@@ -111,7 +106,7 @@ const ChoosePlan = () => {
   const handlePaymentCancel = () => {
     setShowPaymentFlow(false);
     toast.info("Plan selection cancelled. You can choose a plan anytime from your profile.");
-    navigate("/edit-profile");
+    navigate("/user-profile");
   };
 
   if (isLoading) {

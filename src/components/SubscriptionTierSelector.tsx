@@ -27,7 +27,7 @@ const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
     durationDays: 7,
     trial: true,
     features: [
-      "7 days free access",
+      "7 days free access to all features",
       "Same State base locations",
       "Ad positioning below standard ads",
       "6 photos (+ 1 main photo)",
@@ -126,6 +126,7 @@ interface SubscriptionTierSelectorProps {
   currentTier?: string;
   role: "escort" | "agency";
   hasUsedTrial?: boolean;
+  showNoPlanMessage?: boolean;
 }
 
 const SubscriptionTierSelector = ({
@@ -133,7 +134,8 @@ const SubscriptionTierSelector = ({
   selectedTier,
   currentTier,
   role,
-  hasUsedTrial = false
+  hasUsedTrial = false,
+  showNoPlanMessage = false
 }: SubscriptionTierSelectorProps) => {
   const [loading, setLoading] = useState<string | null>(null);
 
@@ -167,6 +169,15 @@ const SubscriptionTierSelector = ({
 
   return (
     <div className="space-y-6">
+      {showNoPlanMessage && (
+        <div className="text-center space-y-2 mb-8">
+          <h3 className="text-xl font-semibold text-foreground">Choose Your First Plan</h3>
+          <p className="text-muted-foreground">
+            You don't have an active subscription yet. Select a plan to start using premium features.
+          </p>
+        </div>
+      )}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {SUBSCRIPTION_TIERS.filter(tier => !(tier.trial && hasUsedTrial)).map((tier) => {
           const isCurrent = isCurrentTier(tier.id);

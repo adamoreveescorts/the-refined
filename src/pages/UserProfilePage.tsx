@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { UserRound, Calendar, Mail, Shield, User, CreditCard, Crown, Clock } from "lucide-react";
+import { UserRound, Calendar, Mail, Shield, User, CreditCard, Crown, Clock, AlertCircle } from "lucide-react";
 import SubscriptionTierSelector from "@/components/SubscriptionTierSelector";
 import VerificationButton from "@/components/verification/VerificationButton";
 
@@ -68,10 +68,6 @@ const UserProfilePage = () => {
         return;
       }
       
-      // For authenticated users, if email is confirmed, they should be considered active
-      const isEmailConfirmed = session.user.email_confirmed_at != null;
-      const shouldBeActive = data.role === 'client' || isEmailConfirmed;
-      
       setProfile({
         id: data.id,
         email: data.email || session.user.email,
@@ -80,16 +76,8 @@ const UserProfilePage = () => {
         role: data.role || "client",
         created_at: new Date(session.user.created_at || data.created_at).toLocaleDateString(),
         payment_status: data.payment_status || "pending",
-        is_active: shouldBeActive
+        is_active: data.is_active || false
       });
-
-      // If profile should be active but isn't marked as such in the database, update it
-      if (shouldBeActive && !data.is_active) {
-        await supabase
-          .from('profiles')
-          .update({ is_active: true })
-          .eq('id', session.user.id);
-      }
 
       // Check subscription status for paid roles
       if (data.role === 'escort' || data.role === 'agency') {
@@ -141,7 +129,6 @@ const UserProfilePage = () => {
         });
       }
     } catch (error) {
-      // No verification found is fine
       setPhotoVerification(null);
     }
   };
@@ -154,7 +141,6 @@ const UserProfilePage = () => {
         return;
       }
 
-      // Check if user has a Stripe customer ID first
       if (!subscription?.stripe_customer_id) {
         toast.error("No payment method found. Please upgrade to a paid plan first.");
         handleShowUpgrade();
@@ -169,7 +155,6 @@ const UserProfilePage = () => {
 
       if (error) {
         console.error("Portal error:", error);
-        // If customer portal fails, offer alternative
         toast.error("Subscription management is not available at the moment. Please contact support or use the upgrade options below.");
         handleShowUpgrade();
         return;
@@ -201,8 +186,8 @@ const UserProfilePage = () => {
 
       if (error) throw error;
 
-      if (tier.id === 'basic') {
-        toast.success("Downgraded to Basic plan");
+      if (tier.id === 'trial') {
+        toast.success("Free trial activated successfully!");
         await checkSubscriptionStatus(session);
         setShowUpgrade(false);
       } else {
@@ -215,7 +200,6 @@ const UserProfilePage = () => {
     }
   };
 
-  // Helper functions for showing/hiding modals
   const handleShowEditProfile = () => {
     navigate("/edit-profile");
   };
@@ -231,16 +215,19 @@ const UserProfilePage = () => {
   };
 
   const getSubscriptionStatusBadge = () => {
-    if (!subscription) return null;
+    if (!subscription || !subscription.subscription_tier) {
+      return <Badge variant="outline" className="text-muted-foreground">No Plan Selected</Badge>;
+    }
     
     if (subscription.is_trial_active) {
       return <Badge className="bg-blue-500 text-white"><Clock className="h-3 w-3 mr-1" />Trial</Badge>;
     }
     
-    if (subscription.subscription_tier === 'Platinum') {
-      return <Badge className="bg-gold text-white"><Crown className="h-3 w-3 mr-1" />Platinum</Badge>;
+    if (subscription.subscription_tier.startsWith('Package')) {
+      return <Badge className="bg-gold text-white"><Crown className="h-3 w-3 mr-1" />Premium</Badge>;
     }
-    return <Badge variant="outline"><Shield className="h-3 w-3 mr-1" />Basic</Badge>;
+    
+    return <Badge variant="outline"><Shield className="h-3 w-3 mr-1" />Unknown</Badge>;
   };
 
   const getExpirationInfo = () => {
@@ -260,7 +247,9 @@ const UserProfilePage = () => {
   };
 
   const getPlanDurationDisplay = () => {
-    if (!subscription) return null;
+    if (!subscription || !subscription.subscription_tier) {
+      return "No active plan selected";
+    }
     
     if (subscription.is_trial_active) {
       const daysLeft = Math.ceil((new Date(subscription.expires_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
@@ -273,17 +262,14 @@ const UserProfilePage = () => {
         'Active subscription';
     } else if (subscription.subscription_type === 'one_time' && subscription.expires_at) {
       return `Valid until ${new Date(subscription.expires_at).toLocaleDateString()}`;
-    } else if (subscription.subscription_tier === 'Basic') {
-      return 'Forever';
     }
-    return null;
+    
+    return 'Active plan';
   };
 
   const isProfilePublic = () => {
-    // Profile is public if user has any active subscription (Basic, Platinum, or Trial)
-    return subscription && (
-      subscription.subscription_tier === 'Basic' || 
-      subscription.subscription_tier === 'Platinum' ||
+    return subscription && subscription.subscription_tier && (
+      subscription.subscription_tier.startsWith('Package') || 
       subscription.is_trial_active
     );
   };
@@ -293,47 +279,38 @@ const UserProfilePage = () => {
   };
 
   const isActuallyFeatured = () => {
-    // Featured status should be based on actual criteria, not just subscription
-    // For now, only Platinum subscribers with completed profiles are featured
-    return subscription?.subscription_tier === 'Platinum' && 
+    return subscription?.subscription_tier?.startsWith('Package') && 
            !subscription?.is_trial_active && 
            profile?.is_active;
   };
 
-  const handleProfileUpdate = (updatedProfile: any) => {
-    setProfile(prev => prev ? { ...prev, ...updatedProfile } : null);
-    setShowEditProfile(false);
-  };
-
-  // Helper function to get the current tier for SubscriptionTierSelector
   const getCurrentTier = () => {
-    if (!subscription) return 'basic';
+    if (!subscription || !subscription.subscription_tier) return null;
     
-    // If user is on trial, return "Trial" as current tier
     if (subscription.is_trial_active) {
       return 'Trial';
     }
     
-    // Otherwise return the actual subscription tier
     return subscription.subscription_tier;
   };
 
-  // Helper function to get the selected tier for SubscriptionTierSelector
   const getSelectedTier = () => {
-    if (!subscription) return 'basic';
+    if (!subscription || !subscription.subscription_tier) return null;
     
-    // If user is on trial, select the trial tier
     if (subscription.is_trial_active) {
       return 'trial';
     }
     
-    // For Platinum subscribers, default to monthly
-    if (subscription.subscription_tier === 'Platinum') {
-      return 'platinum_monthly';
-    }
+    if (subscription.subscription_tier === 'Package1') return 'package_1_weekly';
+    if (subscription.subscription_tier === 'Package2') return 'package_2_monthly';
+    if (subscription.subscription_tier === 'Package3') return 'package_3_quarterly';
+    if (subscription.subscription_tier === 'Package4') return 'package_4_yearly';
     
-    // For Basic subscribers
-    return 'basic';
+    return null;
+  };
+
+  const hasNoActivePlan = () => {
+    return !subscription || !subscription.subscription_tier || subscription.subscription_tier === null;
   };
 
   if (loading) {
@@ -432,7 +409,7 @@ const UserProfilePage = () => {
                     <div>
                       <p className="text-sm text-muted-foreground">Account Status</p>
                       <Badge variant={profile?.is_active ? "default" : "outline"} className={profile?.is_active ? "bg-green-500" : ""}>
-                        {profile?.is_active ? "Active" : "Pending Activation"}
+                        {profile?.is_active ? "Active" : "Inactive"}
                       </Badge>
                     </div>
                   </div>
@@ -458,6 +435,16 @@ const UserProfilePage = () => {
                           </div>
                         </div>
                       </div>
+
+                      {hasNoActivePlan() && (
+                        <div className="flex items-start">
+                          <AlertCircle className="h-5 w-5 mr-2 text-amber-500" />
+                          <div className="w-full">
+                            <p className="text-sm text-amber-600">No Active Plan</p>
+                            <p className="text-xs text-muted-foreground">Choose a plan to access premium features</p>
+                          </div>
+                        </div>
+                      )}
 
                       <div className="flex items-start">
                         <Shield className="h-5 w-5 mr-2 text-muted-foreground" />
@@ -507,7 +494,7 @@ const UserProfilePage = () => {
                       className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground" 
                       onClick={handleShowUpgrade}
                     >
-                      {subscription?.subscription_tier === 'Platinum' && !subscription?.is_trial_active ? 'Manage Plan' : 'Upgrade Plan'}
+                      {hasNoActivePlan() ? 'Choose Plan' : 'Manage Plan'}
                     </Button>
                   )}
                 </div>
@@ -519,7 +506,9 @@ const UserProfilePage = () => {
               {showUpgrade && (profile?.role === 'escort' || profile?.role === 'agency') ? (
                 <Card className="bg-card shadow-sm border-border">
                   <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-foreground">Choose Your Plan</CardTitle>
+                    <CardTitle className="text-foreground">
+                      {hasNoActivePlan() ? 'Choose Your First Plan' : 'Manage Your Plan'}
+                    </CardTitle>
                     <Button 
                       variant="ghost" 
                       size="sm" 
@@ -536,6 +525,7 @@ const UserProfilePage = () => {
                       currentTier={getCurrentTier()}
                       role={profile?.role as "escort" | "agency"}
                       hasUsedTrial={subscription?.has_used_trial || false}
+                      showNoPlanMessage={hasNoActivePlan()}
                     />
                   </CardContent>
                 </Card>
@@ -557,28 +547,42 @@ const UserProfilePage = () => {
                       <CardContent>
                         {(profile?.role === 'escort' || profile?.role === 'agency') ? (
                           <div className="space-y-6">
+                            {hasNoActivePlan() && (
+                              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                                <div className="flex items-start">
+                                  <AlertCircle className="h-5 w-5 text-amber-500 mr-3 mt-0.5 flex-shrink-0" />
+                                  <div>
+                                    <h4 className="font-medium text-amber-800">No Plan Selected</h4>
+                                    <p className="text-sm text-amber-700 mt-1">
+                                      You need to choose a subscription plan to access premium features and make your profile visible to clients.
+                                    </p>
+                                    <Button 
+                                      className="mt-3 bg-amber-600 hover:bg-amber-700 text-white"
+                                      onClick={handleShowUpgrade}
+                                    >
+                                      Choose Your Plan
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                            
                             <div className="flex justify-between items-center">
                               <div>
                                 <p className="text-sm text-muted-foreground">Subscription Status</p>
                                 <div className="mt-1">
-                                  {subscription?.subscription_tier === 'Platinum' ? (
-                                    <Badge className="bg-green-500">
-                                      {subscription?.subscription_type === 'recurring' ? 'Active Subscription' : 'Active (One-time)'}
-                                    </Badge>
-                                  ) : (
-                                    <Badge className="bg-amber-500">Basic Plan</Badge>
-                                  )}
+                                  {getSubscriptionStatusBadge()}
                                 </div>
                               </div>
                               <div className="space-x-2">
-                                {subscription?.subscription_tier === 'Platinum' && subscription?.stripe_customer_id ? (
+                                {subscription?.subscription_tier && subscription?.stripe_customer_id ? (
                                   <Button variant="outline" onClick={handleManageSubscription}>
                                     <CreditCard className="h-4 w-4 mr-2" />
                                     Manage Subscription
                                   </Button>
                                 ) : (
                                   <Button className="bg-secondary hover:bg-secondary/90 text-secondary-foreground" onClick={handleShowUpgrade}>
-                                    Upgrade Plan
+                                    {hasNoActivePlan() ? 'Choose Plan' : 'Upgrade Plan'}
                                   </Button>
                                 )}
                               </div>
@@ -599,9 +603,9 @@ const UserProfilePage = () => {
                             </div>
 
                             {/* Show subscription benefits */}
-                            {subscription?.subscription_tier === 'Platinum' && (
+                            {subscription?.subscription_tier?.startsWith('Package') && (
                               <div>
-                                <p className="text-sm text-muted-foreground mb-2">Platinum Benefits</p>
+                                <p className="text-sm text-muted-foreground mb-2">Premium Benefits</p>
                                 <div className="p-4 bg-secondary/10 rounded-md border border-secondary/20">
                                   <div className="grid grid-cols-2 gap-2 text-sm">
                                     <div className="flex items-center">
@@ -682,7 +686,9 @@ const UserProfilePage = () => {
                               <p className="text-sm text-muted-foreground mt-1">
                                 {isProfilePublic()
                                   ? "Your profile is visible in the directory" 
-                                  : "Your profile is not visible until you have an active subscription"}
+                                  : hasNoActivePlan()
+                                    ? "Choose a subscription plan to make your profile visible"
+                                    : "Your profile is not visible until you have an active subscription"}
                               </p>
                             </div>
                             
