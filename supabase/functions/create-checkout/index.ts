@@ -161,7 +161,7 @@ serve(async (req) => {
         stripe_customer_id: null,
         subscribed: false,
         subscription_tier: selectedTier.subscriptionTier,
-        subscription_type: 'basic', // Use basic for trial subscriptions
+        subscription_type: 'free', // Use 'free' for trial subscriptions
         plan_duration: selectedTier.duration,
         plan_price: 0,
         expires_at: trialEnd.toISOString(),
