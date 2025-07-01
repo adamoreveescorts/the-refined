@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { getPhotoLimitsByTier, PhotoLimits } from '@/utils/photoLimits';
 
@@ -13,6 +13,7 @@ interface UsePhotoLimitsReturn {
   canUploadMore: boolean;
   subscriptionTier: string | null;
   loading: boolean;
+  refresh: () => Promise<void>;
 }
 
 export const usePhotoLimits = (userId: string): UsePhotoLimitsReturn => {
@@ -21,55 +22,55 @@ export const usePhotoLimits = (userId: string): UsePhotoLimitsReturn => {
   const [subscriptionTier, setSubscriptionTier] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchPhotoLimitsAndUsage = useCallback(async () => {
     if (!userId) return;
     
-    const fetchPhotoLimitsAndUsage = async () => {
-      try {
-        setLoading(true);
-        
-        // Get subscription info
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          const { data: subscriptionData } = await supabase.functions.invoke('check-subscription', {
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-            },
-          });
-          
-          if (subscriptionData) {
-            setSubscriptionTier(subscriptionData.subscription_tier);
-          }
-        }
-
-        // Get current photo usage - count all photos in gallery_images array
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('gallery_images')
-          .eq('id', userId)
-          .single();
-
-        if (error) {
-          console.error('Error fetching profile:', error);
-          return;
-        }
-
-        // Count total photos in the unified photo pool
-        const totalCount = profile?.gallery_images ? profile.gallery_images.length : 0;
-
-        setUsage({
-          totalCount
+    try {
+      setLoading(true);
+      
+      // Get subscription info
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: subscriptionData } = await supabase.functions.invoke('check-subscription', {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
         });
-
-      } catch (error) {
-        console.error('Error fetching photo limits:', error);
-      } finally {
-        setLoading(false);
+        
+        if (subscriptionData) {
+          setSubscriptionTier(subscriptionData.subscription_tier);
+        }
       }
-    };
 
-    fetchPhotoLimitsAndUsage();
+      // Get current photo usage - count all photos in gallery_images array
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('gallery_images')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return;
+      }
+
+      // Count total photos in the unified photo pool
+      const totalCount = profile?.gallery_images ? profile.gallery_images.length : 0;
+
+      setUsage({
+        totalCount
+      });
+
+    } catch (error) {
+      console.error('Error fetching photo limits:', error);
+    } finally {
+      setLoading(false);
+    }
   }, [userId]);
+
+  useEffect(() => {
+    fetchPhotoLimitsAndUsage();
+  }, [fetchPhotoLimitsAndUsage]);
 
   useEffect(() => {
     setLimits(getPhotoLimitsByTier(subscriptionTier));
@@ -82,6 +83,7 @@ export const usePhotoLimits = (userId: string): UsePhotoLimitsReturn => {
     usage,
     canUploadMore,
     subscriptionTier,
-    loading
+    loading,
+    refresh: fetchPhotoLimitsAndUsage
   };
 };

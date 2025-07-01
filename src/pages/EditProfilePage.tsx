@@ -151,6 +151,10 @@ const EditProfilePage = () => {
     }
   };
 
+  const handleClosePhotoGallery = () => {
+    setShowPhotoGallery(false);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
@@ -223,7 +227,7 @@ const EditProfilePage = () => {
 
                 <PhotoGalleryManager
                   isOpen={showPhotoGallery}
-                  onClose={() => setShowPhotoGallery(false)}
+                  onClose={handleClosePhotoGallery}
                   userId={profile.id}
                   currentGallery={profile.gallery_images || []}
                   onGalleryUpdate={handlePhotoGalleryUpdate}

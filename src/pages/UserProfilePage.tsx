@@ -237,9 +237,17 @@ const UserProfilePage = () => {
     setShowPhotoGallery(true);
   };
 
+  const handleClosePhotoGallery = () => {
+    setShowPhotoGallery(false);
+    // Refresh photo limits when modal closes
+    photoLimits.refresh();
+  };
+
   const handlePhotoGalleryUpdate = (newGallery: string[]) => {
     // Update profile state if needed
     console.log('Gallery updated:', newGallery);
+    // Refresh photo limits after gallery update
+    photoLimits.refresh();
   };
 
   const getSubscriptionStatusBadge = () => {
@@ -838,7 +846,7 @@ const UserProfilePage = () => {
       {profile?.role === 'escort' && (
         <PhotoGalleryManager
           isOpen={showPhotoGallery}
-          onClose={() => setShowPhotoGallery(false)}
+          onClose={handleClosePhotoGallery}
           userId={profile.id}
           currentGallery={profile.gallery_images || []}
           onGalleryUpdate={handlePhotoGalleryUpdate}
