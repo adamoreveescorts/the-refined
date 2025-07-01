@@ -12,7 +12,6 @@ import { toast } from "sonner";
 import { useUserRole } from "@/hooks/useUserRole";
 import EditProfileForm from "@/components/EditProfileForm";
 import PhotoGalleryManager from "@/components/PhotoGalleryManager";
-import PaymentFlow from "@/components/PaymentFlow";
 import AnnouncementManager from "@/components/AnnouncementManager";
 import { AnnouncementFeed } from "@/components/AnnouncementFeed";
 
@@ -20,7 +19,6 @@ const UserProfilePage = () => {
   const navigate = useNavigate();
   const { user, profile, isLoading, refreshProfile } = useUserRole();
   const [activeTab, setActiveTab] = useState("profile");
-  const [showPaymentFlow, setShowPaymentFlow] = useState(false);
   const [showGalleryManager, setShowGalleryManager] = useState(false);
 
   useEffect(() => {
@@ -28,11 +26,6 @@ const UserProfilePage = () => {
       navigate("/auth");
     }
   }, [user, isLoading, navigate]);
-
-  const handlePaymentSuccess = () => {
-    setShowPaymentFlow(false);
-    refreshProfile();
-  };
 
   const handleGalleryUpdate = (newGallery: string[]) => {
     // Handle gallery update
@@ -108,18 +101,13 @@ const UserProfilePage = () => {
                   <Settings className="h-4 w-4 mr-2" />
                   Settings
                 </TabsTrigger>
-                {profile?.payment_status !== 'active' && (
-                  <TabsTrigger value="subscription" onClick={() => {
-                    setActiveTab("subscription");
-                    setShowPaymentFlow(true);
-                  }}>
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Subscription
-                  </TabsTrigger>
-                )}
               </TabsList>
               <TabsContent value="profile">
-                <EditProfileForm />
+                <EditProfileForm 
+                  profile={profile}
+                  onProfileUpdate={refreshProfile}
+                  onCancel={() => {}}
+                />
               </TabsContent>
               <TabsContent value="announcements">
                 <AnnouncementManager />
@@ -138,16 +126,6 @@ const UserProfilePage = () => {
                     Sign Out
                   </Button>
                 </div>
-              </TabsContent>
-              <TabsContent value="subscription">
-                {showPaymentFlow ? (
-                  <PaymentFlow onPaymentComplete={handlePaymentSuccess} />
-                ) : (
-                  <div className="text-center">
-                    <p className="text-muted-foreground">Loading subscription options...</p>
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary mx-auto"></div>
-                  </div>
-                )}
               </TabsContent>
             </Tabs>
           </CardContent>

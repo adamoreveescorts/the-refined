@@ -110,64 +110,31 @@ serve(async (req) => {
       const customer = await stripe.customers.create({
         email: user.email,
         name: agency.display_name || agency.username,
-        metadata: {
-          agency_id: agencyId,
-          user_id: user.id,
-          type: 'agency'
-        },
       });
       customerId = customer.id;
     }
 
-    // Create or find product
-    let product;
-    const products = await stripe.products.list({ 
-      limit: 1,
-      metadata: { package_id: packageId }
+    // Create product without metadata
+    const product = await stripe.products.create({
+      name: `Agency ${selectedPackage.name}`,
+      description: `Up to ${selectedPackage.maxProfiles} contained profiles accessed within agency profile`,
     });
 
-    if (products.data.length > 0) {
-      product = products.data[0];
-    } else {
-      product = await stripe.products.create({
-        name: `Agency ${selectedPackage.name}`,
-        description: `Up to ${selectedPackage.maxProfiles} contained profiles accessed within agency profile`,
-        metadata: {
-          package_id: packageId,
-          type: 'agency_subscription'
-        }
-      });
-    }
-
-    // Create or find price
-    let price;
-    const prices = await stripe.prices.list({
+    // Create price without metadata
+    const priceData: any = {
       product: product.id,
-      limit: 1
-    });
+      unit_amount: selectedPackage.price,
+      currency: 'aud',
+      recurring: {
+        interval: selectedPackage.interval,
+      },
+    };
 
-    if (prices.data.length > 0) {
-      price = prices.data[0];
-    } else {
-      const priceData: any = {
-        product: product.id,
-        unit_amount: selectedPackage.price,
-        currency: 'aud',
-        recurring: {
-          interval: selectedPackage.interval,
-        },
-        metadata: {
-          package_id: packageId,
-          billing_cycle: selectedPackage.billingCycle
-        }
-      };
-
-      if (selectedPackage.intervalCount) {
-        priceData.recurring.interval_count = selectedPackage.intervalCount;
-      }
-
-      price = await stripe.prices.create(priceData);
+    if (selectedPackage.intervalCount) {
+      priceData.recurring.interval_count = selectedPackage.intervalCount;
     }
+
+    const price = await stripe.prices.create(priceData);
 
     // Create recurring subscription checkout session
     const session = await stripe.checkout.sessions.create({
@@ -180,12 +147,6 @@ serve(async (req) => {
       mode: 'subscription',
       success_url: `${req.headers.get('origin')}/agency/dashboard?success=true`,
       cancel_url: `${req.headers.get('origin')}/agency/dashboard?cancelled=true`,
-      metadata: {
-        agency_id: agencyId,
-        package_id: packageId,
-        package_type: packageType.toString(),
-        type: 'agency_subscription'
-      },
     });
 
     // Create or update agency subscription record
