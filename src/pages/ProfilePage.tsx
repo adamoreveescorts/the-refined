@@ -25,6 +25,7 @@ import Footer from "@/components/Footer";
 import { MessageButton } from "@/components/messaging/MessageButton";
 import SocialMediaLinks from "@/components/SocialMediaLinks";
 import { ContactRequestDialog } from "@/components/ContactRequestDialog";
+import { FollowButton } from "@/components/FollowButton";
 
 interface ProfileData {
   id: string;
@@ -265,6 +266,16 @@ const ProfilePage = () => {
                           </div>
                         )}
                       </div>
+                      
+                      {/* Follow Button - Add this right after view count */}
+                      {profile.role === 'escort' && (
+                        <div className="mb-4">
+                          <FollowButton 
+                            escortId={profile.id} 
+                            escortName={profile.display_name || "Anonymous"} 
+                          />
+                        </div>
+                      )}
                       
                       {/* Social Media Links */}
                       <SocialMediaLinks

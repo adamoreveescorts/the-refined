@@ -134,6 +134,83 @@ export type Database = {
           },
         ]
       }
+      announcement_reads: {
+        Row: {
+          announcement_id: string
+          id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          announcement_id: string
+          id?: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          announcement_id?: string
+          id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcement_reads_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "announcements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "announcement_reads_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      announcements: {
+        Row: {
+          announcement_type: Database["public"]["Enums"]["announcement_type"]
+          content: string
+          created_at: string
+          escort_id: string
+          id: string
+          is_active: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          announcement_type?: Database["public"]["Enums"]["announcement_type"]
+          content: string
+          created_at?: string
+          escort_id: string
+          id?: string
+          is_active?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          announcement_type?: Database["public"]["Enums"]["announcement_type"]
+          content?: string
+          created_at?: string
+          escort_id?: string
+          id?: string
+          is_active?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcements_escort_id_fkey"
+            columns: ["escort_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_requests: {
         Row: {
           created_at: string
@@ -632,6 +709,45 @@ export type Database = {
         }
         Relationships: []
       }
+      user_follows: {
+        Row: {
+          created_at: string
+          followed_id: string
+          follower_id: string
+          id: string
+          is_active: boolean
+        }
+        Insert: {
+          created_at?: string
+          followed_id: string
+          follower_id: string
+          id?: string
+          is_active?: boolean
+        }
+        Update: {
+          created_at?: string
+          followed_id?: string
+          follower_id?: string
+          id?: string
+          is_active?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_follows_followed_id_fkey"
+            columns: ["followed_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_follows_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -639,6 +755,10 @@ export type Database = {
     Functions: {
       calculate_profile_completion: {
         Args: { profile_id: string }
+        Returns: number
+      }
+      get_follower_count: {
+        Args: { escort_profile_id: string }
         Returns: number
       }
       is_admin: {
@@ -649,8 +769,13 @@ export type Database = {
         Args: { user_id?: string }
         Returns: boolean
       }
+      is_following: {
+        Args: { follower_profile_id: string; followed_profile_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
+      announcement_type: "general" | "availability" | "special_offer" | "update"
       user_role: "escort" | "client" | "agency" | "admin"
     }
     CompositeTypes: {
@@ -767,6 +892,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      announcement_type: ["general", "availability", "special_offer", "update"],
       user_role: ["escort", "client", "agency", "admin"],
     },
   },
