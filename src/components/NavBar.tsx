@@ -164,7 +164,7 @@ const NavBar = () => {
               <img 
                 src="/lovable-uploads/6a51afb5-554f-4dc8-8838-74cee5db480e.png" 
                 alt="Adam or Eve Escorts"
-                className="h-20 w-auto"
+                className="h-24 w-auto"
               />
             </Link>
           </div>
