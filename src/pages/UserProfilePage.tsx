@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -66,6 +65,14 @@ interface Profile {
   view_count: number;
 }
 
+interface FollowedUser {
+  id: string;
+  display_name: string;
+  profile_picture: string;
+  location: string;
+  verified: boolean;
+}
+
 interface Image {
   url: string;
   alt: string;
@@ -74,6 +81,7 @@ interface Image {
 const UserProfilePage = () => {
   const { id } = useParams<{ id: string }>();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [followedUsers, setFollowedUsers] = useState<FollowedUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<Image | null>(null);
@@ -130,6 +138,11 @@ const UserProfilePage = () => {
           email: data.email || '',
           phone: data.phone || '',
         });
+
+        // If this is the current user's profile and they're a client, fetch followed users
+        if (!id && data.role === 'client') {
+          await fetchFollowedUsers(profileId);
+        }
       } catch (error: any) {
         console.error('Error fetching profile:', error);
         toast.error(`Failed to load profile: ${error.message}`);
@@ -140,6 +153,35 @@ const UserProfilePage = () => {
 
     fetchProfile();
   }, [id]);
+
+  const fetchFollowedUsers = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_follows')
+        .select(`
+          followed_id,
+          profiles!user_follows_followed_id_fkey (
+            id,
+            display_name,
+            profile_picture,
+            location,
+            verified
+          )
+        `)
+        .eq('follower_id', userId)
+        .eq('is_active', true);
+
+      if (error) {
+        console.error('Error fetching followed users:', error);
+        return;
+      }
+
+      const followedUsers = data.map((follow: any) => follow.profiles).filter(Boolean);
+      setFollowedUsers(followedUsers);
+    } catch (error) {
+      console.error('Error fetching followed users:', error);
+    }
+  };
 
   const handleImageClick = (imageUrl: string, altText: string) => {
     setSelectedImage({ url: imageUrl, alt: altText });
@@ -405,6 +447,45 @@ const UserProfilePage = () => {
                 </div>
               </div>
             </div>
+
+            {/* Followed Users Section - Only for clients viewing their own profile */}
+            {isClient && isOwnProfile && followedUsers.length > 0 && (
+              <div className="bg-card rounded-lg shadow-md p-6 mb-6">
+                <h2 className="text-xl font-semibold text-foreground mb-4">Following ({followedUsers.length})</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {followedUsers.map((user) => (
+                    <div key={user.id} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="flex-shrink-0">
+                        {user.profile_picture ? (
+                          <img
+                            src={user.profile_picture}
+                            alt={user.display_name}
+                            className="w-12 h-12 object-cover rounded-full"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
+                            <User className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-grow min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-foreground truncate">{user.display_name}</p>
+                          {user.verified && (
+                            <Badge variant="outline" className="border-green-500 text-green-400 text-xs">
+                              <Check className="h-3 w-3" />
+                            </Badge>
+                          )}
+                        </div>
+                        {user.location && (
+                          <p className="text-sm text-muted-foreground truncate">{user.location}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Bio Section - Only for non-clients or if bio exists */}
             {profile.bio && !isClient && (
