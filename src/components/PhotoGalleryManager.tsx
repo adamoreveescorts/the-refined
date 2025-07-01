@@ -46,11 +46,17 @@ const PhotoGalleryManager = ({
   const loadGalleryImages = async () => {
     try {
       // Get current profile to load all photos and videos from the unified pool
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from('profiles')
         .select('profile_picture, gallery_images, gallery_videos')
         .eq('id', userId)
         .single();
+
+      if (error) {
+        console.error('Error loading gallery:', error);
+        toast.error('Failed to load gallery');
+        return;
+      }
 
       if (profile) {
         setProfilePictureUrl(profile.profile_picture);

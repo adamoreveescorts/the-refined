@@ -327,6 +327,7 @@ export type Database = {
           eye_color: string | null
           featured: boolean | null
           gallery_images: string[] | null
+          gallery_videos: string[] | null
           hair_color: string | null
           height: string | null
           hourly_rate: string | null
@@ -383,6 +384,7 @@ export type Database = {
           eye_color?: string | null
           featured?: boolean | null
           gallery_images?: string[] | null
+          gallery_videos?: string[] | null
           hair_color?: string | null
           height?: string | null
           hourly_rate?: string | null
@@ -439,6 +441,7 @@ export type Database = {
           eye_color?: string | null
           featured?: boolean | null
           gallery_images?: string[] | null
+          gallery_videos?: string[] | null
           hair_color?: string | null
           height?: string | null
           hourly_rate?: string | null

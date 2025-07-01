@@ -56,14 +56,16 @@ export const usePhotoLimits = (userId: string): UsePhotoLimitsReturn => {
         return;
       }
 
-      // Count total photos and videos
-      const totalCount = profile?.gallery_images ? profile.gallery_images.length : 0;
-      const videoCount = profile?.gallery_videos ? profile.gallery_videos.length : 0;
+      if (profile) {
+        // Count total photos and videos
+        const totalCount = profile.gallery_images ? profile.gallery_images.length : 0;
+        const videoCount = profile.gallery_videos ? profile.gallery_videos.length : 0;
 
-      setUsage({
-        totalCount,
-        videoCount
-      });
+        setUsage({
+          totalCount,
+          videoCount
+        });
+      }
 
     } catch (error) {
       console.error('Error fetching photo limits:', error);
