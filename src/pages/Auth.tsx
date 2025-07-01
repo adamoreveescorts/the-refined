@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -104,7 +103,7 @@ const Auth = () => {
       console.log('Signup data being sent:', {
         email: signupData.email,
         username: signupData.username,
-        mobile_number: signupData.mobile_number,
+        mobile_number: signupData.mobile_number, // Log the phone number
         role: selectedRole
       });
 
@@ -115,8 +114,7 @@ const Auth = () => {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
             username: signupData.username,
-            mobile_number: signupData.mobile_number,
-            phone: signupData.mobile_number, // Also add as 'phone' for consistency
+            mobile_number: signupData.mobile_number, // Ensure this matches the migration
             role: selectedRole,
           },
         },
@@ -131,25 +129,9 @@ const Auth = () => {
       if (data?.user) {
         console.log('Signup successful, user created:', data.user.id);
         console.log('User metadata:', data.user.user_metadata);
-        
-        // Also try to update the profile directly after signup
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ 
-            phone: signupData.mobile_number,
-            username: signupData.username,
-            role: selectedRole as any
-          })
-          .eq('id', data.user.id);
-
-        if (profileError) {
-          console.error('Profile update error:', profileError);
-        } else {
-          console.log('Profile updated successfully with phone number');
-        }
-
         toast.success("Account created! Please check your email to verify your account.");
         
+        // Don't redirect immediately, let email verification happen first
         if (selectedRole === 'escort' || selectedRole === 'agency') {
           toast.info("After email verification, you'll be able to choose your subscription plan.");
         }
@@ -307,7 +289,7 @@ const Auth = () => {
       </main>
       <Footer />
       <RoleSelectionModal
-        isOpen={showRoleModal}
+        open={showRoleModal}
         onClose={() => setShowRoleModal(false)}
         onSelect={handleRoleSelect}
       />

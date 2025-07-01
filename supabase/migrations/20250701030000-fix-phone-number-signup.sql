@@ -24,7 +24,7 @@ BEGIN
       ELSE 'client'::user_role 
     END),
     NEW.raw_user_meta_data->>'username',
-    COALESCE(NEW.raw_user_meta_data->>'mobile_number', NEW.raw_user_meta_data->>'phone'),
+    NEW.raw_user_meta_data->>'mobile_number',
     (CASE
       WHEN NEW.raw_user_meta_data->>'role' IN ('escort', 'agency') THEN 'pending'
       ELSE 'completed'
