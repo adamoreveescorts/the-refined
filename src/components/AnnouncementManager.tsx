@@ -1,36 +1,38 @@
 
 import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Megaphone, Plus, Trash2, Edit2, Calendar } from 'lucide-react';
+import { Trash2, Edit, Plus, MessageSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useUserRole } from '@/hooks/useUserRole';
+
+type AnnouncementType = 'general' | 'availability' | 'special_offer' | 'update';
 
 interface Announcement {
   id: string;
   title: string;
   content: string;
-  announcement_type: 'general' | 'availability' | 'special_offer' | 'update';
+  announcement_type: AnnouncementType;
   created_at: string;
+  updated_at: string;
   is_active: boolean;
 }
 
-export const AnnouncementManager = () => {
+const AnnouncementManager = () => {
   const { user, profile } = useUserRole();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    announcement_type: 'general' as const
+    announcement_type: 'general' as AnnouncementType
   });
 
   useEffect(() => {
@@ -40,13 +42,12 @@ export const AnnouncementManager = () => {
   }, [user, profile]);
 
   const fetchAnnouncements = async () => {
-    if (!user) return;
-
     try {
       const { data, error } = await supabase
         .from('announcements')
         .select('*')
-        .eq('escort_id', user.id)
+        .eq('escort_id', user?.id)
+        .eq('is_active', true)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -54,17 +55,17 @@ export const AnnouncementManager = () => {
     } catch (error) {
       console.error('Error fetching announcements:', error);
       toast.error('Failed to load announcements');
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !formData.title.trim() || !formData.content.trim()) return;
+    if (!user || profile?.role !== 'escort') return;
 
+    setIsLoading(true);
     try {
       if (editingId) {
+        // Update existing announcement
         const { error } = await supabase
           .from('announcements')
           .update({
@@ -73,11 +74,13 @@ export const AnnouncementManager = () => {
             announcement_type: formData.announcement_type,
             updated_at: new Date().toISOString()
           })
-          .eq('id', editingId);
+          .eq('id', editingId)
+          .eq('escort_id', user.id);
 
         if (error) throw error;
         toast.success('Announcement updated successfully');
       } else {
+        // Create new announcement
         const { error } = await supabase
           .from('announcements')
           .insert({
@@ -91,6 +94,7 @@ export const AnnouncementManager = () => {
         toast.success('Announcement created successfully');
       }
 
+      // Reset form and refresh list
       setFormData({ title: '', content: '', announcement_type: 'general' });
       setShowForm(false);
       setEditingId(null);
@@ -98,6 +102,8 @@ export const AnnouncementManager = () => {
     } catch (error) {
       console.error('Error saving announcement:', error);
       toast.error('Failed to save announcement');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -112,14 +118,17 @@ export const AnnouncementManager = () => {
   };
 
   const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this announcement?')) return;
+
     try {
       const { error } = await supabase
         .from('announcements')
         .update({ is_active: false })
-        .eq('id', id);
+        .eq('id', id)
+        .eq('escort_id', user?.id);
 
       if (error) throw error;
-      toast.success('Announcement deleted');
+      toast.success('Announcement deleted successfully');
       fetchAnnouncements();
     } catch (error) {
       console.error('Error deleting announcement:', error);
@@ -127,7 +136,7 @@ export const AnnouncementManager = () => {
     }
   };
 
-  const getTypeColor = (type: string) => {
+  const getTypeColor = (type: AnnouncementType) => {
     switch (type) {
       case 'availability': return 'bg-green-100 text-green-800';
       case 'special_offer': return 'bg-purple-100 text-purple-800';
@@ -136,7 +145,7 @@ export const AnnouncementManager = () => {
     }
   };
 
-  const getTypeLabel = (type: string) => {
+  const getTypeLabel = (type: AnnouncementType) => {
     switch (type) {
       case 'availability': return 'Availability';
       case 'special_offer': return 'Special Offer';
@@ -152,18 +161,11 @@ export const AnnouncementManager = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Megaphone className="h-5 w-5" />
-          <h2 className="text-xl font-semibold">Announcements</h2>
+        <div>
+          <h2 className="text-2xl font-bold text-foreground">Manage Announcements</h2>
+          <p className="text-muted-foreground">Send updates to your followers</p>
         </div>
-        <Button
-          onClick={() => {
-            setShowForm(true);
-            setEditingId(null);
-            setFormData({ title: '', content: '', announcement_type: 'general' });
-          }}
-          className="btn-gold"
-        >
+        <Button onClick={() => setShowForm(!showForm)} className="btn-gold">
           <Plus className="h-4 w-4 mr-2" />
           New Announcement
         </Button>
@@ -172,25 +174,25 @@ export const AnnouncementManager = () => {
       {showForm && (
         <Card>
           <CardHeader>
-            <CardTitle>{editingId ? 'Edit' : 'Create'} Announcement</CardTitle>
-            <CardDescription>
-              Share updates with your followers
-            </CardDescription>
+            <CardTitle>{editingId ? 'Edit Announcement' : 'Create New Announcement'}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
+                <label className="block text-sm font-medium mb-2">Title</label>
                 <Input
-                  placeholder="Announcement title"
                   value={formData.title}
-                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="Enter announcement title"
                   required
                 />
               </div>
+              
               <div>
-                <Select
-                  value={formData.announcement_type}
-                  onValueChange={(value: any) => setFormData(prev => ({ ...prev, announcement_type: value }))}
+                <label className="block text-sm font-medium mb-2">Type</label>
+                <Select 
+                  value={formData.announcement_type} 
+                  onValueChange={(value: AnnouncementType) => setFormData({ ...formData, announcement_type: value })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -203,25 +205,29 @@ export const AnnouncementManager = () => {
                   </SelectContent>
                 </Select>
               </div>
+
               <div>
+                <label className="block text-sm font-medium mb-2">Content</label>
                 <Textarea
-                  placeholder="Write your announcement..."
                   value={formData.content}
-                  onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                  placeholder="Write your announcement content..."
                   rows={4}
                   required
                 />
               </div>
+
               <div className="flex gap-2">
-                <Button type="submit" className="btn-gold">
-                  {editingId ? 'Update' : 'Create'} Announcement
+                <Button type="submit" disabled={isLoading} className="btn-gold">
+                  {isLoading ? 'Saving...' : editingId ? 'Update' : 'Create'}
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
+                <Button 
+                  type="button" 
+                  variant="outline" 
                   onClick={() => {
                     setShowForm(false);
                     setEditingId(null);
+                    setFormData({ title: '', content: '', announcement_type: 'general' });
                   }}
                 >
                   Cancel
@@ -233,80 +239,48 @@ export const AnnouncementManager = () => {
       )}
 
       <div className="space-y-4">
-        {loading ? (
-          <div className="text-center py-8">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            <p className="mt-2 text-muted-foreground">Loading announcements...</p>
-          </div>
-        ) : announcements.length === 0 ? (
+        {announcements.length === 0 ? (
           <Card>
             <CardContent className="text-center py-8">
-              <Megaphone className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">No announcements yet</p>
-              <p className="text-sm text-muted-foreground">Create your first announcement to engage with your followers</p>
+              <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">No announcements yet. Create your first one to start engaging with your followers!</p>
             </CardContent>
           </Card>
         ) : (
           announcements.map((announcement) => (
-            <Card key={announcement.id} className={!announcement.is_active ? 'opacity-50' : ''}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold">{announcement.title}</h3>
+            <Card key={announcement.id}>
+              <CardContent className="pt-6">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="font-semibold text-foreground">{announcement.title}</h3>
                       <Badge className={getTypeColor(announcement.announcement_type)}>
                         {getTypeLabel(announcement.announcement_type)}
                       </Badge>
-                      {!announcement.is_active && (
-                        <Badge variant="outline">Deleted</Badge>
-                      )}
                     </div>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Calendar className="h-3 w-3" />
-                      {new Date(announcement.created_at).toLocaleDateString()}
-                    </div>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {new Date(announcement.created_at).toLocaleDateString()} at {new Date(announcement.created_at).toLocaleTimeString()}
+                    </p>
                   </div>
-                  {announcement.is_active && (
-                    <div className="flex gap-1">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleEdit(announcement)}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button size="sm" variant="ghost" className="text-red-600 hover:text-red-700">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Announcement</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will delete the announcement. This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(announcement.id)}
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  )}
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(announcement)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(announcement.id)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground whitespace-pre-wrap">
-                  {announcement.content}
-                </p>
+                <p className="text-foreground">{announcement.content}</p>
               </CardContent>
             </Card>
           ))
@@ -315,3 +289,5 @@ export const AnnouncementManager = () => {
     </div>
   );
 };
+
+export default AnnouncementManager;

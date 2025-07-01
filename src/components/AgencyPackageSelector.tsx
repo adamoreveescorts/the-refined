@@ -1,8 +1,10 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Users, Star, Crown } from 'lucide-react';
 import { useState } from 'react';
+
 interface Package {
   id: string;
   name: string;
@@ -11,9 +13,11 @@ interface Package {
   periodWeeks: number;
   maxProfiles: number;
   description: string;
+  tagline: string;
   popular?: boolean;
   stripePriceId: string;
 }
+
 const PACKAGES: Package[] = [{
   id: "package_1",
   name: "Package 1",
@@ -22,6 +26,7 @@ const PACKAGES: Package[] = [{
   periodWeeks: 1,
   maxProfiles: 12,
   description: "Up to 12 contained profiles accessed within agency profile",
+  tagline: "Great for small agencies who want quick exposure",
   stripePriceId: "price_package_1_weekly_aud"
 }, {
   id: "package_2",
@@ -31,6 +36,7 @@ const PACKAGES: Package[] = [{
   periodWeeks: 1,
   maxProfiles: 18,
   description: "Up to 18 contained profiles accessed within agency profile",
+  tagline: "Good for agencies handling multiple profiles weekly",
   popular: true,
   stripePriceId: "price_package_2_weekly_aud"
 }, {
@@ -41,6 +47,7 @@ const PACKAGES: Package[] = [{
   periodWeeks: 4,
   maxProfiles: 24,
   description: "Up to 24 contained profiles accessed within agency profile",
+  tagline: "Ideal for long-term exposure and control",
   stripePriceId: "price_package_3_monthly_aud"
 }, {
   id: "package_4",
@@ -50,19 +57,20 @@ const PACKAGES: Package[] = [{
   periodWeeks: 12,
   maxProfiles: 24,
   description: "Up to 24 contained profiles accessed within agency profile",
+  tagline: "Best for large agencies focused on growth and reach",
   stripePriceId: "price_package_4_quarterly_aud"
 }];
+
 interface AgencyPackageSelectorProps {
   onPackageSelect: (packageId: string, packageType: number) => void;
   isLoading: boolean;
 }
+
 const AgencyPackageSelector = ({
   onPackageSelect,
   isLoading
 }: AgencyPackageSelectorProps) => {
   return <div className="space-y-6">
-      
-
       {/* Package Selection */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {PACKAGES.map((pkg, index) => <Card key={pkg.id} className={`relative transition-all duration-200 hover:shadow-lg ${pkg.popular ? 'border-gold ring-1 ring-gold' : ''}`}>
@@ -75,6 +83,9 @@ const AgencyPackageSelector = ({
             
             <CardHeader className="text-center pb-4">
               <CardTitle className="text-foreground">{pkg.name}</CardTitle>
+              <div className="text-sm font-medium text-secondary mb-2">
+                {pkg.tagline}
+              </div>
               <div className="text-3xl font-bold text-secondary mb-2">
                 From ${pkg.price} AUD
               </div>
@@ -128,4 +139,5 @@ const AgencyPackageSelector = ({
       </div>
     </div>;
 };
+
 export default AgencyPackageSelector;
