@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -163,7 +164,7 @@ const NavBar = () => {
               <img 
                 src="/lovable-uploads/388e8dc8-cfe2-4d20-b02e-1fd5e0f27454.png" 
                 alt="Adam or Eve Escorts"
-                className="h-35 w-auto"
+                className="h-25 w-auto"
               />
             </Link>
           </div>
