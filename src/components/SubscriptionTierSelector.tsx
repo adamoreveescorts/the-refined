@@ -163,7 +163,7 @@ const SubscriptionTierSelector = ({ onTierSelect, selectedTier, currentTier, rol
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-serif font-bold text-foreground mb-2">
-          Choose Your Independent Package
+          Choose Your Package
         </h2>
         <p className="text-muted-foreground">
           {hasUsedTrial 

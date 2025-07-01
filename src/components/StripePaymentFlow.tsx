@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -168,7 +169,7 @@ const StripePaymentFlow = ({ role, onPaymentComplete, onCancel, userSession }: S
       <Card className="w-full max-w-4xl mx-auto">
         <CardHeader>
           <CardTitle className="text-center text-foreground">
-            Choose Your Subscription Plan
+            {userRole === 'agency' ? 'Agency Subscription Plans' : 'Subscription Plans'}
           </CardTitle>
           <CardDescription className="text-center text-muted-foreground">
             {role === 'agency' 
