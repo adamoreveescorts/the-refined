@@ -134,6 +134,53 @@ export type Database = {
           },
         ]
       }
+      contact_requests: {
+        Row: {
+          created_at: string
+          escort_id: string
+          escort_response: string | null
+          id: string
+          message: string | null
+          requester_email: string
+          requester_name: string | null
+          requester_phone: string | null
+          responded_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          escort_id: string
+          escort_response?: string | null
+          id?: string
+          message?: string | null
+          requester_email: string
+          requester_name?: string | null
+          requester_phone?: string | null
+          responded_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          escort_id?: string
+          escort_response?: string | null
+          id?: string
+          message?: string | null
+          requester_email?: string
+          requester_name?: string | null
+          requester_phone?: string | null
+          responded_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_requests_escort_id_fkey"
+            columns: ["escort_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           client_id: string

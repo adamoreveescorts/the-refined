@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -7,7 +6,7 @@ import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, User, Clock } from 'lucide-react';
+import { MessageSquare, User, Clock, Mail, Phone } from 'lucide-react';
 import { MessagingDialog } from '@/components/messaging/MessagingDialog';
 
 interface Conversation {
@@ -29,8 +28,19 @@ interface Conversation {
   unread_count: number;
 }
 
+interface ContactRequest {
+  id: string;
+  requester_name: string;
+  requester_email: string;
+  requester_phone: string | null;
+  message: string | null;
+  created_at: string;
+  status: string;
+}
+
 const MessagesPage = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [contactRequests, setContactRequests] = useState<ContactRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
@@ -43,6 +53,12 @@ const MessagesPage = () => {
     fetchConversations();
     getCurrentUser();
   }, []);
+
+  useEffect(() => {
+    if (currentUserRole === 'escort') {
+      fetchContactRequests();
+    }
+  }, [currentUserRole]);
 
   const getCurrentUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -59,6 +75,31 @@ const MessagesPage = () => {
       if (profile) {
         setCurrentUserRole(profile.role);
       }
+    }
+  };
+
+  const fetchContactRequests = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: requests, error } = await supabase
+        .from('contact_requests')
+        .select('*')
+        .eq('escort_id', user.id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching contact requests:', error);
+        return;
+      }
+
+      if (requests) {
+        setContactRequests(requests);
+      }
+    } catch (error) {
+      console.error('Error:', error);
     }
   };
 
@@ -200,13 +241,83 @@ const MessagesPage = () => {
             </div>
           </div>
 
+          {/* Contact Requests Section (Only for escorts) */}
+          {currentUserRole === 'escort' && contactRequests.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                <Mail className="h-5 w-5 text-gold" />
+                Contact Requests ({contactRequests.length})
+              </h2>
+              <div className="space-y-3">
+                {contactRequests.map((request) => (
+                  <Card key={request.id} className="border-border bg-card">
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h3 className="font-semibold text-foreground">{request.requester_name}</h3>
+                          <div className="text-sm text-muted-foreground flex items-center gap-4 mt-1">
+                            <span className="flex items-center gap-1">
+                              <Mail className="h-3 w-3" />
+                              {request.requester_email}
+                            </span>
+                            {request.requester_phone && (
+                              <span className="flex items-center gap-1">
+                                <Phone className="h-3 w-3" />
+                                {request.requester_phone}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center text-xs text-muted-foreground">
+                          <Clock className="h-3 w-3 mr-1" />
+                          {formatTime(request.created_at)}
+                        </div>
+                      </div>
+                      {request.message && (
+                        <p className="text-sm text-muted-foreground mb-3 bg-muted/30 p-3 rounded-md">
+                          {request.message}
+                        </p>
+                      )}
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          className="btn-gold"
+                          onClick={() => window.open(`mailto:${request.requester_email}?subject=Re: Contact Request&body=Hi ${request.requester_name},%0D%0A%0D%0A`)}
+                        >
+                          Reply via Email
+                        </Button>
+                        {request.requester_phone && (
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => window.open(`tel:${request.requester_phone}`)}
+                          >
+                            Call
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Regular Conversations */}
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-gold" />
+              Conversations
+            </h2>
+          </div>
+
           {conversations.length === 0 ? (
             <Card className="border-border bg-card">
               <CardContent className="p-12 text-center">
                 <div className="p-4 bg-muted/50 rounded-full w-fit mx-auto mb-6">
                   <MessageSquare className="h-8 w-8 text-muted-foreground" />
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-3">No messages yet</h3>
+                <h3 className="text-xl font-semibold text-foreground mb-3">No conversations yet</h3>
                 <p className="text-muted-foreground max-w-md mx-auto leading-relaxed">
                   {currentUserRole === 'client' 
                     ? 'Start a conversation by messaging an escort from their profile page. Your conversations will appear here.'

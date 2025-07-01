@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,6 +24,7 @@ import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import { MessageButton } from "@/components/messaging/MessageButton";
 import SocialMediaLinks from "@/components/SocialMediaLinks";
+import { ContactRequestDialog } from "@/components/ContactRequestDialog";
 
 interface ProfileData {
   id: string;
@@ -73,6 +73,7 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showContactDialog, setShowContactDialog] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -275,12 +276,24 @@ const ProfilePage = () => {
                       />
                     </div>
                     
-                    {currentUser && currentUser.id !== profile.id && (
-                      <MessageButton 
-                        escortId={profile.id} 
-                        escortName={profile.display_name || "Anonymous"} 
-                      />
-                    )}
+                    {/* Contact Buttons */}
+                    <div className="flex flex-col gap-2">
+                      {currentUser && currentUser.id !== profile.id ? (
+                        <MessageButton 
+                          escortId={profile.id} 
+                          escortName={profile.display_name || "Anonymous"} 
+                        />
+                      ) : !currentUser ? (
+                        <Button 
+                          className="btn-gold" 
+                          size="lg" 
+                          onClick={() => setShowContactDialog(true)}
+                        >
+                          <MessageSquare className="h-5 w-5 mr-2" />
+                          Request Contact Info
+                        </Button>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
 
@@ -526,6 +539,14 @@ const ProfilePage = () => {
       </main>
       
       <Footer />
+
+      {/* Contact Request Dialog */}
+      <ContactRequestDialog
+        isOpen={showContactDialog}
+        onClose={() => setShowContactDialog(false)}
+        escortId={profile.id}
+        escortName={profile.display_name || "Anonymous"}
+      />
     </div>
   );
 };
