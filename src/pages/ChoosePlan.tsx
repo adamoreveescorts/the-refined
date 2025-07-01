@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -146,7 +145,7 @@ const ChoosePlan = () => {
           <p className="mt-2 text-sm text-muted-foreground">
             {userRole === 'agency' 
               ? "Choose your agency subscription plan to start managing escorts."
-              : "Your email has been verified. Choose your subscription plan to get started."
+              : "Your email has been verified. Now choose your subscription plan to get started."
             }
           </p>
         </div>
