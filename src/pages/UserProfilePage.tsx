@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import NavBar from '@/components/NavBar';
@@ -83,6 +83,7 @@ interface Image {
 
 const UserProfilePage = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [followedUsers, setFollowedUsers] = useState<FollowedUser[]>([]);
   const [subscriptionInfo, setSubscriptionInfo] = useState<any>(null);
@@ -90,18 +91,8 @@ const UserProfilePage = () => {
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<Image | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [showContactDialog, setShowContactDialog] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [showContactDialog, setShowContactRequestDialog] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [editData, setEditData] = useState({
-    display_name: '',
-    email: '',
-    phone: '',
-    bio: '',
-    location: '',
-    services: '',
-    hourly_rate: '',
-  });
 
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -139,15 +130,6 @@ const UserProfilePage = () => {
         }
 
         setProfile(data as Profile);
-        setEditData({
-          display_name: data.display_name || '',
-          email: data.email || '',
-          phone: data.phone || '',
-          bio: data.bio || '',
-          location: data.location || '',
-          services: data.services || '',
-          hourly_rate: data.hourly_rate || '',
-        });
 
         // If this is the current user's profile, fetch additional info
         if (!id) {
@@ -165,6 +147,7 @@ const UserProfilePage = () => {
       }
     };
 
+    getCurrentUser();
     fetchProfile();
   }, [id]);
 
@@ -273,46 +256,6 @@ const UserProfilePage = () => {
     }
   };
 
-  const handleSaveProfile = async () => {
-    if (!profile) return;
-
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          display_name: editData.display_name,
-          email: editData.email,
-          phone: editData.phone,
-          bio: editData.bio,
-          location: editData.location,
-          services: editData.services,
-          hourly_rate: editData.hourly_rate,
-        })
-        .eq('id', profile.id);
-
-      if (error) {
-        toast.error("Failed to update profile");
-        return;
-      }
-
-      setProfile({
-        ...profile,
-        display_name: editData.display_name,
-        email: editData.email,
-        phone: editData.phone,
-        bio: editData.bio,
-        location: editData.location,
-        services: editData.services,
-        hourly_rate: editData.hourly_rate,
-      });
-      setIsEditing(false);
-      toast.success("Profile updated successfully");
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      toast.error("Failed to update profile");
-    }
-  };
-
   const toggleVisibility = async () => {
     if (!profile) return;
 
@@ -333,6 +276,10 @@ const UserProfilePage = () => {
       console.error("Error updating visibility:", error);
       toast.error("Failed to update visibility");
     }
+  };
+
+  const handleEditProfile = () => {
+    navigate("/edit-profile");
   };
 
   const isOwnProfile = currentUser && profile && currentUser.id === profile.id;
@@ -443,136 +390,58 @@ const UserProfilePage = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setIsEditing(!isEditing)}
+                          onClick={handleEditProfile}
                         >
-                          {isEditing ? <X className="h-4 w-4" /> : <Edit className="h-4 w-4" />}
+                          <Edit className="h-4 w-4" />
+                          Edit Profile
                         </Button>
                       </div>
                     )}
                   </div>
 
-                  {/* Profile Info Display/Edit */}
-                  {isEditing && isOwnProfile ? (
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-sm font-medium text-foreground">Display Name</label>
-                          <Input
-                            value={editData.display_name}
-                            onChange={(e) => setEditData({ ...editData, display_name: e.target.value })}
-                            placeholder="Enter your display name"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-foreground">Email</label>
-                          <Input
-                            value={editData.email}
-                            onChange={(e) => setEditData({ ...editData, email: e.target.value })}
-                            placeholder="Enter your email"
-                            type="email"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-foreground">Phone</label>
-                          <Input
-                            value={editData.phone}
-                            onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
-                            placeholder="Enter your phone number"
-                            type="tel"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-foreground">Location</label>
-                          <Input
-                            value={editData.location}
-                            onChange={(e) => setEditData({ ...editData, location: e.target.value })}
-                            placeholder="Enter your location"
-                          />
-                        </div>
-                        {isEscort && (
-                          <>
-                            <div>
-                              <label className="text-sm font-medium text-foreground">Hourly Rate</label>
-                              <Input
-                                value={editData.hourly_rate}
-                                onChange={(e) => setEditData({ ...editData, hourly_rate: e.target.value })}
-                                placeholder="Enter hourly rate"
-                              />
-                            </div>
-                          </>
-                        )}
+                  {/* Profile Info Display */}
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Email:</span>
+                        <span className="ml-2 text-foreground">{profile.email || 'Not provided'}</span>
                       </div>
-                      {isEscort && (
-                        <>
-                          <div>
-                            <label className="text-sm font-medium text-foreground">Bio</label>
-                            <Textarea
-                              value={editData.bio}
-                              onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
-                              placeholder="Tell us about yourself"
-                              rows={3}
-                            />
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium text-foreground">Services</label>
-                            <Textarea
-                              value={editData.services}
-                              onChange={(e) => setEditData({ ...editData, services: e.target.value })}
-                              placeholder="Describe your services"
-                              rows={3}
-                            />
-                          </div>
-                        </>
-                      )}
-                      <Button onClick={handleSaveProfile} className="btn-gold">
-                        <Save className="h-4 w-4 mr-2" />
-                        Save Changes
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="text-muted-foreground">Email:</span>
-                          <span className="ml-2 text-foreground">{profile.email || 'Not provided'}</span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Phone:</span>
-                          <span className="ml-2 text-foreground">{profile.phone || 'Not provided'}</span>
-                        </div>
-                        {profile.location && (
-                          <div>
-                            <span className="text-muted-foreground">Location:</span>
-                            <span className="ml-2 text-foreground">{profile.location}</span>
-                          </div>
-                        )}
-                        <div>
-                          <span className="text-muted-foreground">Role:</span>
-                          <span className="ml-2 text-foreground capitalize">{profile.role}</span>
-                        </div>
-                        {isEscort && profile.hourly_rate && (
-                          <div>
-                            <span className="text-muted-foreground">Hourly Rate:</span>
-                            <span className="ml-2 text-foreground">${profile.hourly_rate}</span>
-                          </div>
-                        )}
+                      <div>
+                        <span className="text-muted-foreground">Phone:</span>
+                        <span className="ml-2 text-foreground">{profile.phone || 'Not provided'}</span>
                       </div>
-                      
-                      {isEscort && profile.bio && (
+                      {profile.location && (
                         <div>
-                          <span className="text-muted-foreground">Bio:</span>
-                          <p className="ml-2 text-foreground mt-1">{profile.bio}</p>
+                          <span className="text-muted-foreground">Location:</span>
+                          <span className="ml-2 text-foreground">{profile.location}</span>
                         </div>
                       )}
-                      
-                      {isEscort && profile.services && (
+                      <div>
+                        <span className="text-muted-foreground">Role:</span>
+                        <span className="ml-2 text-foreground capitalize">{profile.role}</span>
+                      </div>
+                      {isEscort && profile.hourly_rate && (
                         <div>
-                          <span className="text-muted-foreground">Services:</span>
-                          <p className="ml-2 text-foreground mt-1">{profile.services}</p>
+                          <span className="text-muted-foreground">Hourly Rate:</span>
+                          <span className="ml-2 text-foreground">${profile.hourly_rate}</span>
                         </div>
                       )}
                     </div>
-                  )}
+                    
+                    {isEscort && profile.bio && (
+                      <div>
+                        <span className="text-muted-foreground">Bio:</span>
+                        <p className="ml-2 text-foreground mt-1">{profile.bio}</p>
+                      </div>
+                    )}
+                    
+                    {isEscort && profile.services && (
+                      <div>
+                        <span className="text-muted-foreground">Services:</span>
+                        <p className="ml-2 text-foreground mt-1">{profile.services}</p>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Only show rating for non-clients */}
                   {!isClient && (
@@ -898,8 +767,8 @@ const UserProfilePage = () => {
                   <ContactRequestDialog 
                     escortId={profile.id}
                     escortName={profile.display_name || profile.username || 'Anonymous'}
-                    isOpen={showContactDialog}
-                    onClose={() => setShowContactDialog(false)}
+                    isOpen={showContactRequestDialog}
+                    onClose={() => setShowContactRequestDialog(false)}
                   />
                   <MessageButton 
                     escortId={profile.id} 
