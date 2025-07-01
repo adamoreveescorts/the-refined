@@ -2,9 +2,11 @@
 import { Link } from 'react-router-dom';
 
 const popularLocations = [
-  "New York", "London", "Paris", "Tokyo", "Sydney", 
-  "Los Angeles", "Berlin", "Madrid", "Toronto", "Dubai",
-  "Milan", "Amsterdam", "Bangkok", "Singapore", "Hong Kong"
+  // Australia
+  "Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", 
+  "Gold Coast", "Canberra", "Darwin", "Hobart", "Cairns",
+  // Thailand
+  "Bangkok", "Phuket"
 ];
 
 const LocationsSection = () => {
@@ -14,7 +16,7 @@ const LocationsSection = () => {
         <div className="text-center mb-10">
           <h2 className="text-3xl sm:text-4xl font-bold text-navy mb-4">Popular Locations</h2>
           <p className="text-charcoal max-w-2xl mx-auto">
-            Find premium companions in these top destinations worldwide
+            Find premium companions in Australia and Thailand
           </p>
         </div>
         

@@ -55,7 +55,7 @@ const WhyChooseUs = () => {
         <div className="text-center mb-10">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Why Choose Us</h2>
           <p className="text-gray-200 max-w-2xl mx-auto">
-            Experience the difference with our premium escort directory platform
+            Experience the difference with our premium escort directory platform across Australia and Thailand
           </p>
         </div>
         

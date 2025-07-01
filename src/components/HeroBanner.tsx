@@ -404,7 +404,7 @@ const HeroBanner = () => {
             Discover Elite Companionship
           </h1>
           <p className={`text-base sm:text-xl text-gray-100 max-w-3xl mx-auto mb-3 sm:mb-6 px-2 sm:px-0 transition-all duration-700 delay-100 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
-            Connect with sophisticated escorts worldwide through our premium directory
+            Connect with sophisticated escorts in Australia and Thailand through our premium directory
           </p>
           
           {/* CTA Buttons */}
