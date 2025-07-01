@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,13 +8,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Check, Star, Upload, User, Edit, Save, X, Eye, EyeOff, Crown, Calendar, Camera, Settings, CreditCard, Shield } from 'lucide-react';
+import { Check, Star, Upload, User, Edit, Save, X, Eye, EyeOff, Crown, Calendar, Camera, Settings, CreditCard, Shield, Send } from 'lucide-react';
 import { ImageZoomModal } from '@/components/ImageZoomModal';
 import { ContactRequestDialog } from '@/components/ContactRequestDialog';
 import { MessageButton } from '@/components/messaging/MessageButton';
 import { FollowButton } from '@/components/FollowButton';
 import PhotoGalleryManager from '@/components/PhotoGalleryManager';
 import VerificationButton from '@/components/verification/VerificationButton';
+import SendAnnouncementModal from '@/components/SendAnnouncementModal';
 
 interface Profile {
   id: string;
@@ -97,6 +97,8 @@ const UserProfilePage = () => {
   const [showContactDialog, setShowContactDialog] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [showGalleryManager, setShowGalleryManager] = useState(false);
+  const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
 
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -165,6 +167,14 @@ const UserProfilePage = () => {
 
       if (!error && data) {
         setSubscriptionInfo(data);
+      }
+
+      // Fetch follower count for escorts
+      const { data: followerData, error: followerError } = await supabase
+        .rpc('get_follower_count', { escort_profile_id: userId });
+
+      if (!followerError && followerData !== null) {
+        setFollowerCount(followerData);
       }
     } catch (error) {
       console.error('Error fetching subscription info:', error);
@@ -575,7 +585,7 @@ const UserProfilePage = () => {
                     <Settings className="h-6 w-6 text-gray-500" />
                     <h3 className="text-lg font-semibold text-foreground">Profile Settings</h3>
                   </div>
-                  <div className="flex gap-4">
+                  <div className="flex flex-wrap gap-4">
                     <Button onClick={handleEditProfile} variant="outline">
                       <Edit className="h-4 w-4 mr-2" />
                       Edit Profile
@@ -583,6 +593,14 @@ const UserProfilePage = () => {
                     <Button onClick={() => navigate('/edit-profile')} variant="outline">
                       <User className="h-4 w-4 mr-2" />
                       Update Information
+                    </Button>
+                    <Button 
+                      onClick={() => setShowAnnouncementModal(true)} 
+                      variant="outline"
+                      className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      Send Announcement ({followerCount})
                     </Button>
                   </div>
                 </div>
@@ -829,6 +847,13 @@ const UserProfilePage = () => {
         currentGallery={profile.gallery_images || []}
         onGalleryUpdate={handleGalleryUpdate}
         onUpgrade={() => navigate('/choose-plan')}
+      />
+
+      {/* Send Announcement Modal */}
+      <SendAnnouncementModal
+        isOpen={showAnnouncementModal}
+        onClose={() => setShowAnnouncementModal(false)}
+        followerCount={followerCount}
       />
 
       {/* Image Zoom Modal */}
