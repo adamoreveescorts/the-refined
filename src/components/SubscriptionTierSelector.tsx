@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Star, Crown, Zap, Gift } from "lucide-react";
+import { CheckCircle, Star, Crown, Zap, Gift, Loader2 } from "lucide-react";
 
 export interface SubscriptionTier {
   id: string;
@@ -138,16 +137,16 @@ const SubscriptionTierSelector = ({
   hasUsedTrial = false,
   showNoPlanMessage = false
 }: SubscriptionTierSelectorProps) => {
-  const [loading, setLoading] = useState<string | null>(null);
+  const [loadingTier, setLoadingTier] = useState<string | null>(null);
 
   const handleSelectTier = async (tier: SubscriptionTier) => {
     if (tier.id === currentTier) return;
     
-    setLoading(tier.id);
+    setLoadingTier(tier.id);
     try {
-      onTierSelect(tier);
+      await onTierSelect(tier);
     } finally {
-      setLoading(null);
+      setLoadingTier(null);
     }
   };
 
@@ -187,6 +186,7 @@ const SubscriptionTierSelector = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {availableTiers.map((tier) => {
           const isCurrent = isCurrentTier(tier.id);
+          const isLoading = loadingTier === tier.id;
           
           return (
             <Card 
@@ -256,7 +256,7 @@ const SubscriptionTierSelector = ({
                 
                 <Button
                   onClick={() => handleSelectTier(tier)}
-                  disabled={loading === tier.id || isCurrent}
+                  disabled={isLoading || isCurrent}
                   className={`w-full mt-auto ${
                     isCurrent 
                       ? "bg-green-500 hover:bg-green-500 cursor-not-allowed text-white" 
@@ -265,14 +265,18 @@ const SubscriptionTierSelector = ({
                         : "btn-gold"
                   }`}
                 >
-                  {loading === tier.id 
-                    ? "Processing..." 
-                    : isCurrent 
-                      ? "Your Current Plan" 
-                      : tier.isTrial
-                        ? "Start Free Trial"
-                        : `Subscribe ${tier.duration}`
-                  }
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : isCurrent ? (
+                    "Your Current Plan"
+                  ) : tier.isTrial ? (
+                    "Start Free Trial"
+                  ) : (
+                    `Subscribe ${tier.duration}`
+                  )}
                 </Button>
               </CardContent>
             </Card>
