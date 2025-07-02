@@ -26,7 +26,7 @@ import { MessageButton } from "@/components/messaging/MessageButton";
 import SocialMediaLinks from "@/components/SocialMediaLinks";
 import { ContactRequestDialog } from "@/components/ContactRequestDialog";
 import { FollowButton } from "@/components/FollowButton";
-import { ImageZoomModal } from "@/components/ImageZoomModal";
+
 
 interface ProfileData {
   id: string;
@@ -72,7 +72,7 @@ const ProfilePage = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showContactDialog, setShowContactDialog] = useState(false);
-  const [showZoomModal, setShowZoomModal] = useState(false);
+  const [isImageZoomed, setIsImageZoomed] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -245,35 +245,43 @@ const ProfilePage = () => {
               </div>
               {/* Left Side - Image Gallery */}
               <div className="space-y-4">
-                {/* Main Image Display */}
-                <div className="relative aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden">
-                  {allImages.length > 0 ? (
-                    <>
-                      <img
-                        src={allImages[currentImageIndex]}
-                        alt={`${profile.display_name || "Profile"} - Image ${currentImageIndex + 1}`}
-                        className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
-                        onClick={() => setShowZoomModal(true)}
-                      />
-                      {allImages.length > 1 && (
-                        <>
-                          <button
-                            onClick={prevImage}
-                            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
-                          >
-                            <ChevronLeft className="h-5 w-5" />
-                          </button>
-                          <button
-                            onClick={nextImage}
-                            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
-                          >
-                            <ChevronRight className="h-5 w-5" />
-                          </button>
-                          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-                            {currentImageIndex + 1} / {allImages.length}
-                          </div>
-                        </>
-                      )}
+                 {/* Main Image Display */}
+                 <div className={`relative aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden transition-all duration-300 ${isImageZoomed ? 'fixed inset-4 z-50 aspect-auto' : ''}`}>
+                   {allImages.length > 0 ? (
+                     <>
+                       <img
+                         src={allImages[currentImageIndex]}
+                         alt={`${profile.display_name || "Profile"} - Image ${currentImageIndex + 1}`}
+                         className={`w-full h-full object-cover cursor-pointer transition-transform duration-300 ${isImageZoomed ? 'object-contain bg-black' : 'hover:scale-105'}`}
+                         onClick={() => setIsImageZoomed(!isImageZoomed)}
+                       />
+                       {allImages.length > 1 && !isImageZoomed && (
+                         <>
+                           <button
+                             onClick={prevImage}
+                             className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
+                           >
+                             <ChevronLeft className="h-5 w-5" />
+                           </button>
+                           <button
+                             onClick={nextImage}
+                             className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
+                           >
+                             <ChevronRight className="h-5 w-5" />
+                           </button>
+                           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+                             {currentImageIndex + 1} / {allImages.length}
+                           </div>
+                         </>
+                       )}
+                       {isImageZoomed && (
+                         <button
+                           onClick={() => setIsImageZoomed(false)}
+                           className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors z-10"
+                         >
+                           ✕
+                         </button>
+                       )}
                     </>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -602,13 +610,6 @@ const ProfilePage = () => {
         escortName={profile.display_name || "Anonymous"}
       />
 
-      {/* Image Zoom Modal */}
-      <ImageZoomModal
-        isOpen={showZoomModal}
-        onClose={() => setShowZoomModal(false)}
-        imageUrl={allImages[currentImageIndex] || ''}
-        altText={`${profile.display_name || "Profile"} - Image ${currentImageIndex + 1}`}
-      />
     </div>
   );
 };
