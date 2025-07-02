@@ -184,6 +184,23 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
         />
       </div>
       
+      {/* Gender */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-2 text-foreground">Gender</label>
+        <Select value={filters.gender || 'all'} onValueChange={(value) => handleFilterChange({ ...filters, gender: value === 'all' ? '' : value })}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select gender" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="Female">Female</SelectItem>
+            <SelectItem value="Male">Male</SelectItem>
+            <SelectItem value="Ladyboy">Ladyboy</SelectItem>
+            <SelectItem value="Trans">Trans</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Ethnicity */}
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2 text-foreground">Ethnicity</label>
@@ -539,30 +556,6 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
             />
             <label htmlFor="featured" className="ml-2 text-sm text-foreground">Featured Only</label>
           </div>
-          <div className="flex items-center">
-            <Checkbox 
-              id="tattoos"
-              checked={filters.tattoos}
-              onCheckedChange={(checked) => handleFilterChange({ ...filters, tattoos: checked === true })}
-            />
-            <label htmlFor="tattoos" className="ml-2 text-sm text-foreground">Has Tattoos</label>
-          </div>
-          <div className="flex items-center">
-            <Checkbox 
-              id="piercings"
-              checked={filters.piercings}
-              onCheckedChange={(checked) => handleFilterChange({ ...filters, piercings: checked === true })}
-            />
-            <label htmlFor="piercings" className="ml-2 text-sm text-foreground">Has Piercings</label>
-          </div>
-          <div className="flex items-center">
-            <Checkbox 
-              id="activeToday"
-              checked={filters.activeToday}
-              onCheckedChange={(checked) => handleFilterChange({ ...filters, activeToday: checked === true })}
-            />
-            <label htmlFor="activeToday" className="ml-2 text-sm text-foreground">Active Today</label>
-          </div>
         </div>
       </div>
       
@@ -570,6 +563,7 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
         className="w-full btn-gold"
         onClick={() => handleFilterChange({ 
           location: '',
+          gender: '',
           ethnicity: '',
           nationality: '',
           body_type: '',
@@ -590,9 +584,6 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
           languages: [],
           verifiedOnly: false,
           featuredOnly: false,
-          tattoos: false,
-          piercings: false,
-          activeToday: false,
           searchQuery: ''
         })}
       >
@@ -642,6 +633,7 @@ const Directory = () => {
   const [searchVisible, setSearchVisible] = useState(false);
   const [filters, setFilters] = useState({
     location: initialLocation,
+    gender: '',
     ethnicity: '',
     nationality: '',
     body_type: '',
@@ -662,9 +654,6 @@ const Directory = () => {
     languages: [],
     verifiedOnly: false,
     featuredOnly: false,
-    tattoos: false,
-    piercings: false,
-    activeToday: false,
     searchQuery: initialSearch
   });
   
@@ -721,6 +710,10 @@ const Directory = () => {
   // Apply filters to escorts
   const filteredEscorts = escorts.filter(escort => {
     if (filters.location && !escort.location?.toLowerCase().includes(filters.location.toLowerCase())) {
+      return false;
+    }
+    
+    if (filters.gender && escort.gender !== filters.gender) {
       return false;
     }
     
@@ -859,24 +852,6 @@ const Directory = () => {
 
     if (filters.featuredOnly && !escort.featured) {
       return false;
-    }
-    
-    if (filters.tattoos && !escort.tattoos) {
-      return false;
-    }
-    
-    if (filters.piercings && !escort.piercings) {
-      return false;
-    }
-
-    if (filters.activeToday) {
-      const today = new Date();
-      const lastActive = new Date(escort.last_active);
-      const diffTime = Math.abs(today.getTime() - lastActive.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      if (diffDays > 1) {
-        return false;
-      }
     }
 
     // Filter by services
