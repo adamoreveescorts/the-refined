@@ -167,10 +167,86 @@ const ProfilePage = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <NavBar />
       
-      <main className="flex-grow py-8">
+      <main className="flex-grow py-4 md:py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="flex flex-col lg:grid lg:grid-cols-2 gap-6 lg:gap-8">
+              {/* Mobile Header - Shows first on mobile */}
+              <div className="lg:hidden space-y-4">
+                <div className="text-center space-y-2">
+                  <div className="flex flex-wrap items-center justify-center gap-2 mb-2">
+                    <h1 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">
+                      {profile.display_name || "Anonymous"}
+                    </h1>
+                    {profile.verified && (
+                      <Badge variant="secondary" className="bg-green-100 text-green-800">
+                        <Star className="h-3 w-3 mr-1" />
+                        Verified
+                      </Badge>
+                    )}
+                    {profile.featured && (
+                      <Badge variant="secondary" className="bg-gold text-white">
+                        Featured
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap items-center justify-center text-sm text-muted-foreground gap-x-4 gap-y-1">
+                    <span className="capitalize">{profile.role}</span>
+                    {profile.rating && (
+                      <div className="flex items-center">
+                        <Star className="h-4 w-4 fill-current text-gold mr-1" />
+                        <span>{profile.rating}</span>
+                      </div>
+                    )}
+                    {profile.view_count !== null && (
+                      <div className="flex items-center">
+                        <Eye className="h-4 w-4 mr-1" />
+                        <span>{profile.view_count} views</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Mobile Contact Button */}
+                  <div className="flex justify-center mt-4">
+                    {currentUser && currentUser.id !== profile.id ? (
+                      <MessageButton 
+                        escortId={profile.id} 
+                        escortName={profile.display_name || "Anonymous"} 
+                      />
+                    ) : !currentUser ? (
+                      <Button 
+                        className="btn-gold w-full max-w-xs" 
+                        size="lg" 
+                        onClick={() => setShowContactDialog(true)}
+                      >
+                        <MessageSquare className="h-5 w-5 mr-2" />
+                        Request Contact Info
+                      </Button>
+                    ) : null}
+                  </div>
+                  
+                  {/* Mobile Follow Button */}
+                  {profile.role === 'escort' && (
+                    <div className="flex justify-center">
+                      <FollowButton 
+                        escortId={profile.id} 
+                        escortName={profile.display_name || "Anonymous"} 
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Mobile Social Media Links */}
+                  <div className="flex justify-center">
+                    <SocialMediaLinks
+                      instagram_url={profile.instagram_url}
+                      twitter_url={profile.twitter_url}
+                      facebook_url={profile.facebook_url}
+                      linkedin_url={profile.linkedin_url}
+                      youtube_url={profile.youtube_url}
+                    />
+                  </div>
+                </div>
+              </div>
               {/* Left Side - Image Gallery */}
               <div className="space-y-4">
                 {/* Main Image Display */}
@@ -212,12 +288,12 @@ const ProfilePage = () => {
 
                 {/* Thumbnail Strip */}
                 {allImages.length > 1 && (
-                  <div className="flex space-x-2 overflow-x-auto pb-2">
+                  <div className="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
                     {allImages.map((image, index) => (
                       <button
                         key={index}
                         onClick={() => setCurrentImageIndex(index)}
-                        className={`flex-shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 transition-colors ${
+                        className={`flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-md overflow-hidden border-2 transition-colors ${
                           index === currentImageIndex ? 'border-primary' : 'border-gray-200'
                         }`}
                       >
@@ -233,9 +309,9 @@ const ProfilePage = () => {
               </div>
 
               {/* Right Side - Profile Information */}
-              <div className="space-y-6">
-                {/* Header */}
-                <div className="space-y-4">
+              <div className="space-y-4 lg:space-y-6">
+                {/* Desktop Header - Hidden on mobile */}
+                <div className="hidden lg:block space-y-4">
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-3 mb-2">
