@@ -508,33 +508,6 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
         </div>
       </div>
 
-      {/* Languages */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium mb-2 text-foreground">Languages</label>
-        <div className="space-y-2">
-          {['English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Russian', 'Japanese', 'Chinese', 'Arabic'].map((language) => (
-            <div key={language} className="flex items-center">
-              <Checkbox 
-                id={`language-${language}`}
-                checked={filters.languages?.includes(language)}
-                onCheckedChange={(checked) => {
-                  const languages = filters.languages || [];
-                  const newLanguages = checked === true
-                    ? [...languages, language]
-                    : languages.filter((l: string) => l !== language);
-                  handleFilterChange({ ...filters, languages: newLanguages });
-                }}
-              />
-              <label 
-                htmlFor={`language-${language}`} 
-                className="ml-2 text-sm text-foreground"
-              >
-                {language}
-              </label>
-            </div>
-          ))}
-        </div>
-      </div>
 
       {/* Additional Attributes */}
       <div className="mb-6">
@@ -581,7 +554,6 @@ const FilterSidebar = ({ onFilterChange, filters }: { onFilterChange: any, filte
           priceMin: null,
           priceMax: null,
           services: [],
-          languages: [],
           verifiedOnly: false,
           featuredOnly: false,
           searchQuery: ''
@@ -651,7 +623,6 @@ const Directory = () => {
     priceMin: null,
     priceMax: null,
     services: [],
-    languages: [],
     verifiedOnly: false,
     featuredOnly: false,
     searchQuery: initialSearch
@@ -861,17 +832,6 @@ const Directory = () => {
         escortServices.includes(service.toLowerCase())
       );
       if (!hasService) {
-        return false;
-      }
-    }
-
-    // Filter by languages
-    if (filters.languages && filters.languages.length > 0) {
-      const escortLanguages = escort.languages?.toLowerCase() || '';
-      const hasLanguage = filters.languages.some((language: string) => 
-        escortLanguages.includes(language.toLowerCase())
-      );
-      if (!hasLanguage) {
         return false;
       }
     }
