@@ -16,6 +16,7 @@ import { FollowButton } from '@/components/FollowButton';
 import PhotoGalleryManager from '@/components/PhotoGalleryManager';
 import VerificationButton from '@/components/verification/VerificationButton';
 import SendAnnouncementModal from '@/components/SendAnnouncementModal';
+import ProfilePauseManager from '@/components/ProfilePauseManager';
 
 interface Profile {
   id: string;
@@ -90,6 +91,7 @@ const UserProfilePage = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [followedUsers, setFollowedUsers] = useState<FollowedUser[]>([]);
   const [subscriptionInfo, setSubscriptionInfo] = useState<any>(null);
+  const [agencySubscription, setAgencySubscription] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<Image | null>(null);
@@ -143,6 +145,7 @@ const UserProfilePage = () => {
             await fetchFollowedUsers(profileId);
           } else if (data.role === 'escort') {
             await fetchSubscriptionInfo(profileId);
+            await fetchAgencySubscription(profileId);
           }
         }
       } catch (error: any) {
@@ -156,6 +159,22 @@ const UserProfilePage = () => {
     getCurrentUser();
     fetchProfile();
   }, [id]);
+
+  const fetchAgencySubscription = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('agency_subscriptions')
+        .select('*')
+        .eq('agency_id', userId)
+        .single();
+
+      if (!error && data) {
+        setAgencySubscription(data);
+      }
+    } catch (error) {
+      console.error('Error fetching agency subscription:', error);
+    }
+  };
 
   const fetchSubscriptionInfo = async (userId: string) => {
     try {
@@ -299,6 +318,30 @@ const UserProfilePage = () => {
   const handleGalleryUpdate = (newGallery: string[]) => {
     if (profile) {
       setProfile({ ...profile, gallery_images: newGallery });
+    }
+  };
+
+  const handleProfilePauseToggle = async () => {
+    if (!profile) return;
+
+    try {
+      // Toggle the is_active status
+      const newActiveStatus = !profile.is_active;
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_active: newActiveStatus })
+        .eq('id', profile.id);
+
+      if (error) {
+        toast.error("Failed to update profile status");
+        return;
+      }
+
+      setProfile({ ...profile, is_active: newActiveStatus });
+    } catch (error) {
+      console.error("Error updating profile status:", error);
+      toast.error("Failed to update profile status");
     }
   };
 
@@ -578,6 +621,21 @@ const UserProfilePage = () => {
                     </Button>
                   </div>
                 </div>
+
+                {/* Profile Pause Feature - Only for packages 3 and 4 */}
+                {(subscriptionInfo?.subscription_tier === 'Package 3' || 
+                  subscriptionInfo?.subscription_tier === 'Package 4' ||
+                  agencySubscription?.package_type >= 3) && (
+                  <div className="mb-6">
+                    <ProfilePauseManager
+                      packageType={agencySubscription?.package_type || 
+                                 (subscriptionInfo?.subscription_tier === 'Package 3' ? 3 : 4)}
+                      packageName={agencySubscription?.package_name || subscriptionInfo?.subscription_tier || 'Premium'}
+                      isActive={profile.is_active || false}
+                      onPauseToggle={handleProfilePauseToggle}
+                    />
+                  </div>
+                )}
 
                 {/* Profile Settings Section */}
                 <div className="bg-card rounded-lg shadow-md p-6 mb-6">
