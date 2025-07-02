@@ -230,7 +230,7 @@ const NavBar = () => {
           {/* Mobile menu button */}
           <div className="flex md:hidden">
             <Button variant="ghost" onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-4">
-              {isMenuOpen ? <X className="h-24 w-24" /> : <Menu className="h-24 w-24" />}
+              {isMenuOpen ? <X size={48} /> : <Menu size={48} />}
             </Button>
           </div>
         </div>
