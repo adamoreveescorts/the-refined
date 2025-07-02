@@ -30,10 +30,6 @@ interface UserProfile {
   drinking?: string | null;
   languages?: string | null;
   services?: string | null;
-  hourly_rate?: string | null;
-  two_hour_rate?: string | null;
-  dinner_rate?: string | null;
-  overnight_rate?: string | null;
   incall_hourly_rate?: string | null;
   outcall_hourly_rate?: string | null;
   incall_two_hour_rate?: string | null;
@@ -110,10 +106,6 @@ const EditProfilePage = () => {
         drinking: data.drinking,
         languages: data.languages,
         services: data.services,
-        hourly_rate: data.hourly_rate,
-        two_hour_rate: data.two_hour_rate,
-        dinner_rate: data.dinner_rate,
-        overnight_rate: data.overnight_rate,
         incall_hourly_rate: data.incall_hourly_rate,
         outcall_hourly_rate: data.outcall_hourly_rate,
         incall_two_hour_rate: data.incall_two_hour_rate,

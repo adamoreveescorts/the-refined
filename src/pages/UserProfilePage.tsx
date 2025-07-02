@@ -40,16 +40,11 @@ interface Profile {
   location: string;
   languages: string;
   services: string;
-  rates: string;
   availability: string;
   tags: string;
   profile_picture: string;
   gallery_images: string[];
   gallery_videos: string[];
-  hourly_rate: string;
-  two_hour_rate: string;
-  dinner_rate: string;
-  overnight_rate: string;
   incall_hourly_rate: string;
   outcall_hourly_rate: string;
   incall_two_hour_rate: string;
@@ -460,12 +455,6 @@ const UserProfilePage = () => {
                         <span className="text-muted-foreground">Role:</span>
                         <span className="ml-2 text-foreground capitalize">{profile.role}</span>
                       </div>
-                      {isEscort && profile.hourly_rate && (
-                        <div>
-                          <span className="text-muted-foreground">Hourly Rate:</span>
-                          <span className="ml-2 text-foreground">${profile.hourly_rate}</span>
-                        </div>
-                      )}
                     </div>
                     
                     {isEscort && profile.bio && (

@@ -48,10 +48,6 @@ interface ProfileData {
   weight: string | null;
   languages: string | null;
   services: string | null;
-  hourly_rate: string | null;
-  two_hour_rate: string | null;
-  dinner_rate: string | null;
-  overnight_rate: string | null;
   incall_hourly_rate: string | null;
   outcall_hourly_rate: string | null;
   incall_two_hour_rate: string | null;
@@ -492,7 +488,7 @@ const ProfilePage = () => {
                 )}
 
                 {/* Rates */}
-                {(profile.hourly_rate || profile.incall_hourly_rate || profile.outcall_hourly_rate) && (
+                {(profile.incall_hourly_rate || profile.outcall_hourly_rate) && (
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center">
@@ -502,38 +498,6 @@ const ProfilePage = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {/* General Rates */}
-                        {(profile.hourly_rate || profile.two_hour_rate || profile.dinner_rate || profile.overnight_rate) && (
-                          <div>
-                            <h4 className="font-medium mb-2 text-sm">General</h4>
-                            <div className="space-y-1 text-sm">
-                              {profile.hourly_rate && (
-                                <div className="flex justify-between">
-                                  <span>1 Hour:</span>
-                                  <span>${profile.hourly_rate}</span>
-                                </div>
-                              )}
-                              {profile.two_hour_rate && (
-                                <div className="flex justify-between">
-                                  <span>2 Hours:</span>
-                                  <span>${profile.two_hour_rate}</span>
-                                </div>
-                              )}
-                              {profile.dinner_rate && (
-                                <div className="flex justify-between">
-                                  <span>Dinner:</span>
-                                  <span>${profile.dinner_rate}</span>
-                                </div>
-                              )}
-                              {profile.overnight_rate && (
-                                <div className="flex justify-between">
-                                  <span>Overnight:</span>
-                                  <span>${profile.overnight_rate}</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )}
 
                         {/* Incall Rates */}
                         {(profile.incall_hourly_rate || profile.incall_two_hour_rate || profile.incall_dinner_rate || profile.incall_overnight_rate) && (
