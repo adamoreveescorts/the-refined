@@ -38,7 +38,7 @@ function App() {
           <BrowserRouter>
             <ScrollToTop />
             <Routes>
-              <Route path="/" element={<Index />} />
+              <Route path="/" element={<Directory />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/directory" element={<Directory />} />
