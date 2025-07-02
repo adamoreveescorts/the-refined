@@ -183,7 +183,7 @@ const SubscriptionTierSelector = ({
         </div>
       )}
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {availableTiers.map((tier) => {
           const isCurrent = isCurrentTier(tier.id);
           const isLoading = loadingTier === tier.id;
@@ -191,19 +191,19 @@ const SubscriptionTierSelector = ({
           return (
             <Card 
               key={tier.id} 
-              className={`relative transition-all duration-200 hover:shadow-lg min-h-[600px] flex flex-col ${
+              className={`relative transition-all duration-200 hover:shadow-lg min-h-[500px] sm:min-h-[600px] flex flex-col ${
                 selectedTier === tier.id ? 'ring-2 ring-gold' : ''
               } ${
                 tier.recommended ? 'border-gold' : ''
               } ${
                 isCurrent ? 'ring-2 ring-green-500 bg-accent' : ''
               } ${
-                tier.isTrial ? 'border-green-500' : ''
+                tier.isTrial ? 'border-green-500 shadow-lg' : ''
               }`}
             >
               {tier.isTrial && !isCurrent && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-green-500 text-white px-3 py-1">
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
+                  <Badge className="bg-green-500 text-white px-3 py-1 text-xs sm:text-sm">
                     <Gift className="h-3 w-3 mr-1" />
                     Free Trial
                   </Badge>
