@@ -159,7 +159,7 @@ const NavBar = () => {
         <div className="flex items-center justify-between h-24">
           {/* Logo */}
           <div className="flex items-center">
-            <Link to="/directory">
+            <Link to="/directory" className="flex items-center mt-2">
               <img 
                 src="/lovable-uploads/388e8dc8-cfe2-4d20-b02e-1fd5e0f27454.png" 
                 alt="Adam or Eve Escorts"
@@ -227,12 +227,12 @@ const NavBar = () => {
             )}
           </div>
           
-          {/* Mobile menu button */}
-          <div className="flex md:hidden">
-            <Button variant="ghost" onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-4">
-              {isMenuOpen ? <X size={48} /> : <Menu size={48} />}
-            </Button>
-          </div>
+           {/* Mobile menu button */}
+           <div className="flex md:hidden">
+             <Button variant="outline" onClick={() => setIsMenuOpen(!isMenuOpen)} className="px-3 py-2">
+               {isMenuOpen ? "Close" : "Menu"}
+             </Button>
+           </div>
         </div>
       </div>
       
