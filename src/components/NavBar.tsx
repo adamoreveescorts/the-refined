@@ -159,7 +159,7 @@ const NavBar = () => {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <div className="flex items-center">
-            <Link to="/">
+            <Link to="/directory">
               <img 
                 src="/lovable-uploads/388e8dc8-cfe2-4d20-b02e-1fd5e0f27454.png" 
                 alt="Adam or Eve Escorts"
