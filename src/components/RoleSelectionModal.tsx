@@ -68,7 +68,7 @@ const RoleSelectionModal = ({ isOpen, onRoleSelect, onClose, inline = false }: R
                         <UserCircle className="h-5 w-5 mr-2 text-gold" />
                         <div>
                           <p className="font-medium">Sign up as an Escort</p>
-                          <p className="text-sm text-muted-foreground">Create a profile and offer services (Subscription required)</p>
+                          <p className="text-sm text-muted-foreground">Create a profile and offer services (1 week free trial)</p>
                         </div>
                       </FormLabel>
                     </div>
@@ -79,7 +79,7 @@ const RoleSelectionModal = ({ isOpen, onRoleSelect, onClose, inline = false }: R
                         <Building2 className="h-5 w-5 mr-2 text-gold" />
                         <div>
                           <p className="font-medium">Sign up as an Agency</p>
-                          <p className="text-sm text-muted-foreground">Manage multiple profiles and services (Subscription required)</p>
+                          <p className="text-sm text-muted-foreground">Manage multiple profiles and services (1 week free trial)</p>
                         </div>
                       </FormLabel>
                     </div>
@@ -143,7 +143,7 @@ const RoleSelectionModal = ({ isOpen, onRoleSelect, onClose, inline = false }: R
                           <UserCircle className="h-5 w-5 mr-2 text-gold" />
                           <div>
                             <p className="font-medium">Sign up as an Escort</p>
-                            <p className="text-sm text-muted-foreground">Create a profile and offer services (Subscription required)</p>
+                            <p className="text-sm text-muted-foreground">Create a profile and offer services (1 week free trial)</p>
                           </div>
                         </FormLabel>
                       </div>
@@ -154,7 +154,7 @@ const RoleSelectionModal = ({ isOpen, onRoleSelect, onClose, inline = false }: R
                           <Building2 className="h-5 w-5 mr-2 text-gold" />
                           <div>
                             <p className="font-medium">Sign up as an Agency</p>
-                            <p className="text-sm text-muted-foreground">Manage multiple profiles and services (Subscription required)</p>
+                            <p className="text-sm text-muted-foreground">Manage multiple profiles and services (1 week free trial)</p>
                           </div>
                         </FormLabel>
                       </div>

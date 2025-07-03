@@ -171,9 +171,6 @@ const NavBar = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:block">
             <div className="flex items-center space-x-4">
-              <Link to="/directory" className="px-3 py-2 text-sm font-medium text-foreground hover:text-gold transition-colors">
-                Directory
-              </Link>
               <Link to="/about" className="px-3 py-2 text-sm font-medium text-foreground hover:text-gold transition-colors">
                 About
               </Link>
@@ -243,9 +240,6 @@ const NavBar = () => {
         }`}
       >
         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-          <Link to="/directory" className="block px-3 py-2 text-base font-medium text-foreground hover:text-gold transition-colors">
-            Directory
-          </Link>
           <Link to="/about" className="block px-3 py-2 text-base font-medium text-foreground hover:text-gold transition-colors">
             About
           </Link>
