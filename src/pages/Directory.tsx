@@ -448,13 +448,13 @@ const FilterSidebar = ({
         </div>
       </div>
       
-      {/* Price Range */}
+      {/* Incall Price Range */}
       <div className="mb-6">
-        <label className="block text-sm font-medium mb-2 text-foreground">Price Range ($)</label>
+        <label className="block text-sm font-medium mb-2 text-foreground">Incall Price Range ($)</label>
         <div className="grid grid-cols-2 gap-2">
-          <Select value={filters.priceMin?.toString() || 'all'} onValueChange={value => handleFilterChange({
+          <Select value={filters.incallPriceMin?.toString() || 'all'} onValueChange={value => handleFilterChange({
           ...filters,
-          priceMin: value === 'all' ? null : parseInt(value)
+          incallPriceMin: value === 'all' ? null : parseInt(value)
         })}>
             <SelectTrigger>
               <SelectValue placeholder="Min" />
@@ -464,9 +464,40 @@ const FilterSidebar = ({
               {[100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 2000].map(price => <SelectItem key={price} value={price.toString()}>${price}</SelectItem>)}
             </SelectContent>
           </Select>
-          <Select value={filters.priceMax?.toString() || 'all'} onValueChange={value => handleFilterChange({
+          <Select value={filters.incallPriceMax?.toString() || 'all'} onValueChange={value => handleFilterChange({
           ...filters,
-          priceMax: value === 'all' ? null : parseInt(value)
+          incallPriceMax: value === 'all' ? null : parseInt(value)
+        })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Max" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Any</SelectItem>
+              {[100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 2000].map(price => <SelectItem key={price} value={price.toString()}>${price}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Outcall Price Range */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-2 text-foreground">Outcall Price Range ($)</label>
+        <div className="grid grid-cols-2 gap-2">
+          <Select value={filters.outcallPriceMin?.toString() || 'all'} onValueChange={value => handleFilterChange({
+          ...filters,
+          outcallPriceMin: value === 'all' ? null : parseInt(value)
+        })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Min" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Any</SelectItem>
+              {[100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 2000].map(price => <SelectItem key={price} value={price.toString()}>${price}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={filters.outcallPriceMax?.toString() || 'all'} onValueChange={value => handleFilterChange({
+          ...filters,
+          outcallPriceMax: value === 'all' ? null : parseInt(value)
         })}>
             <SelectTrigger>
               <SelectValue placeholder="Max" />
@@ -538,8 +569,10 @@ const FilterSidebar = ({
       heightMax: null,
       weightMin: null,
       weightMax: null,
-      priceMin: null,
-      priceMax: null,
+      incallPriceMin: null,
+      incallPriceMax: null,
+      outcallPriceMin: null,
+      outcallPriceMax: null,
       services: [],
       verifiedOnly: false,
       featuredOnly: false,
@@ -595,8 +628,10 @@ const Directory = () => {
     heightMax: null,
     weightMin: null,
     weightMax: null,
-    priceMin: null,
-    priceMax: null,
+    incallPriceMin: null,
+    incallPriceMax: null,
+    outcallPriceMin: null,
+    outcallPriceMax: null,
     services: [],
     verifiedOnly: false,
     featuredOnly: false,
@@ -746,30 +781,33 @@ const Directory = () => {
       }
     }
 
-    // Price range filtering - using new incall/outcall rates
-    if (filters.priceMin !== null || filters.priceMax !== null) {
-      let escortPrice = null;
-
-      // Use incall hourly rate as primary price point for filtering
+    // Incall price range filtering
+    if (filters.incallPriceMin !== null || filters.incallPriceMax !== null) {
+      let escortIncallPrice = null;
       if (escort.incall_hourly_rate) {
-        escortPrice = parseInt(escort.incall_hourly_rate.toString().replace(/\D/g, ''));
+        escortIncallPrice = parseInt(escort.incall_hourly_rate.toString().replace(/\D/g, ''));
       }
-      // Fallback to outcall if no incall rate
-      else if (escort.outcall_hourly_rate) {
-        escortPrice = parseInt(escort.outcall_hourly_rate.toString().replace(/\D/g, ''));
-      }
-      // Legacy fallback to old rates field
-      else if (escort.rates) {
-        const hourlyMatch = escort.rates.match(/\$?(\d+)(?:\/hour|\/hr|per hour)/i);
-        if (hourlyMatch) {
-          escortPrice = parseInt(hourlyMatch[1]);
-        }
-      }
-      if (escortPrice !== null && !isNaN(escortPrice)) {
-        if (filters.priceMin !== null && escortPrice < filters.priceMin) {
+      if (escortIncallPrice !== null && !isNaN(escortIncallPrice)) {
+        if (filters.incallPriceMin !== null && escortIncallPrice < filters.incallPriceMin) {
           return false;
         }
-        if (filters.priceMax !== null && escortPrice > filters.priceMax) {
+        if (filters.incallPriceMax !== null && escortIncallPrice > filters.incallPriceMax) {
+          return false;
+        }
+      }
+    }
+
+    // Outcall price range filtering
+    if (filters.outcallPriceMin !== null || filters.outcallPriceMax !== null) {
+      let escortOutcallPrice = null;
+      if (escort.outcall_hourly_rate) {
+        escortOutcallPrice = parseInt(escort.outcall_hourly_rate.toString().replace(/\D/g, ''));
+      }
+      if (escortOutcallPrice !== null && !isNaN(escortOutcallPrice)) {
+        if (filters.outcallPriceMin !== null && escortOutcallPrice < filters.outcallPriceMin) {
+          return false;
+        }
+        if (filters.outcallPriceMax !== null && escortOutcallPrice > filters.outcallPriceMax) {
           return false;
         }
       }
