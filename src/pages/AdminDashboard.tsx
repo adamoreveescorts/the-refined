@@ -44,13 +44,14 @@ const AdminDashboard = () => {
         return;
       }
 
-      const { data: profile, error } = await supabase
-        .from('profiles')
+      const { data: userRoles, error } = await supabase
+        .from('user_roles')
         .select('role')
-        .eq('id', session.user.id)
-        .single();
+        .eq('user_id', session.user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
 
-      if (error || !profile || profile.role !== 'admin') {
+      if (error || !userRoles) {
         toast.error('Access denied. Admin privileges required.');
         navigate('/');
         return;

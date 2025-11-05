@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -34,9 +34,25 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showGalleryModal, setShowGalleryModal] = useState(false);
+  const [adminUserIds, setAdminUserIds] = useState<Set<string>>(new Set());
 
-  const isAdminUser = (profile: any) => {
-    return profile.role === 'admin' || profile.email === 'info@eternalsecurity.com.au';
+  useEffect(() => {
+    const checkAdminUsers = async () => {
+      const { data } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'admin');
+      
+      if (data) {
+        setAdminUserIds(new Set(data.map(r => r.user_id)));
+      }
+    };
+    
+    checkAdminUsers();
+  }, [profiles]);
+
+  const isAdminUser = (userId: string) => {
+    return adminUserIds.has(userId);
   };
 
   const getStatusBadge = (status: string) => {
@@ -121,7 +137,7 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
   };
 
   const handleActionClick = (profile: any, action: string) => {
-    if (isAdminUser(profile)) {
+    if (isAdminUser(profile.id)) {
       toast.error('Cannot perform actions on admin users');
       return;
     }
@@ -137,7 +153,7 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
   };
 
   const handleStatusUpdate = (profile: any, status: string) => {
-    if (isAdminUser(profile)) {
+    if (isAdminUser(profile.id)) {
       toast.error('Cannot modify admin user status');
       return;
     }
@@ -165,7 +181,7 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
           </TableHeader>
           <TableBody>
             {profiles.map((profile) => (
-              <TableRow key={profile.id} className={isAdminUser(profile) ? 'bg-gold/5' : ''}>
+              <TableRow key={profile.id} className={isAdminUser(profile.id) ? 'bg-gold/5' : ''}>
                 <TableCell>
                   <Avatar className="h-10 w-10">
                     <AvatarImage 
@@ -180,7 +196,7 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
                     {profile.display_name || profile.username || 'N/A'}
-                    {isAdminUser(profile) && (
+                    {isAdminUser(profile.id) && (
                       <Shield className="h-4 w-4 text-gold" />
                     )}
                   </div>
@@ -211,7 +227,7 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
                     size="sm"
                     onClick={() => handleActionClick(profile, 'featured')}
                     className={profile.featured ? 'text-gold' : 'text-gray-400'}
-                    disabled={isAdminUser(profile)}
+                    disabled={isAdminUser(profile.id)}
                   >
                     <Star className={`h-4 w-4 ${profile.featured ? 'fill-current' : ''}`} />
                   </Button>
@@ -222,7 +238,7 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
                     size="sm"
                     onClick={() => handleActionClick(profile, 'verified')}
                     className={profile.verified ? 'text-green-600' : 'text-gray-400'}
-                    disabled={isAdminUser(profile)}
+                    disabled={isAdminUser(profile.id)}
                   >
                     <Check className={`h-4 w-4 ${profile.verified ? 'fill-current' : ''}`} />
                   </Button>
@@ -248,7 +264,7 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
                         <Eye className="mr-2 h-4 w-4" />
                         View Details
                       </DropdownMenuItem>
-                      {!isAdminUser(profile) && (
+                      {!isAdminUser(profile.id) && (
                         <>
                           <DropdownMenuItem
                             onClick={() => {
@@ -297,7 +313,7 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
                           )}
                         </>
                       )}
-                      {isAdminUser(profile) && (
+                      {isAdminUser(profile.id) && (
                         <DropdownMenuItem disabled className="text-gray-400">
                           <Shield className="mr-2 h-4 w-4" />
                           Admin Protected
@@ -319,7 +335,7 @@ const ProfileManagementTable = ({ profiles, onProfileUpdate }: ProfileManagement
             open={showDetailsModal}
             onOpenChange={setShowDetailsModal}
           />
-          {!isAdminUser(selectedProfile) && (
+          {!isAdminUser(selectedProfile.id) && (
             <>
               <ProfileEditModal
                 profile={selectedProfile}
